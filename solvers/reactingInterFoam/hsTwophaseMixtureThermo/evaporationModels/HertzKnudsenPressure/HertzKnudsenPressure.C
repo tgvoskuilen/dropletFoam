@@ -105,13 +105,16 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     //Update the mask
     mask_ = (pos(0.8 - alphaL_) * evapMask * neg(T_ - Tc_*0.9)
-                          + pos(0.8 - alphaL_) * pos(T_ - Tc_*0.9)) * pos(alphaV_.Yp() - 1e-3);
+             + pos(0.8 - alphaL_) * pos(T_ - Tc_*0.9)) 
+             * pos(alphaV_.Yp() - 1e-3);
                           
                           
     //Calculate the vapor mol fraction
     x_ = alphaV_.Y(vapor_specie_) / (W_ * alphaV_.Np()) * mask_;
     
-    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*3.14159*R_*T_))
+    scalar pi = constant::mathematical::pi;
+    
+    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_*T_))
                 * (p_vap_ - p_*x_);
                 
     m_evap_.max(0.0);

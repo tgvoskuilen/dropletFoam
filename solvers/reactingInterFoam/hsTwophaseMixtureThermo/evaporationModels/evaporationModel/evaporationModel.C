@@ -79,18 +79,41 @@ Foam::evaporationModel::evaporationModel
     ),
     Lb_(evapDict_.lookup("Lb")),
     Tb_(evapDict_.lookup("Tb")),
-    La_(readScalar(evapDict_.lookup("La"))),
-    Tc_(evapDict_.lookup("Tc")), //TODO: Get from host specie?
+    La_(0.0),
+    Tc_(evapDict_.lookupOrDefault("Tc",dimensionedScalar("Tc",dimTemperature,300))),
     R_(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314)), // J/kmol-K
     W_(alphaV_.subSpecies()[vapor_specie_]->W())
-{}
+{
+    if( evapDict_.found("La") )
+    {
+        La_ = readScalar(evapDict_.lookup("La"));
+    }
+}
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 tmp<volScalarField> Foam::evaporationModel::L() const
 {
-    tmp<volScalarField> tL = Lb_*Foam::pow(Foam::mag(Tc_ - T_)/(Tc_ - Tb_),La_)
-                             * pos(Tc_ - T_) / W_;    
+    tmp<volScalarField> tL
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tL",
+                alphaL_.mesh().time().timeName(),
+                alphaL_.mesh()
+            ),
+            alphaL_.mesh(),
+            Lb_ / W_
+        )
+    );
+        
+    if( La_ > 0.0 )
+    {
+        tL() *= Foam::pow(Foam::mag(Tc_ - T_)/(Tc_ - Tb_),La_)*pos(Tc_ - T_);
+    }
+    
     return tL;
 }
 
