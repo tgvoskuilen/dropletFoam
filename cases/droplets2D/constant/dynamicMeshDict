@@ -1,0 +1,73 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      dynamicMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dynamicFvMesh   dynamicRefineFvMesh; //staticFvMesh
+
+dynamicRefineFvMeshCoeffs
+{
+    // How often to refine
+    refineInterval  1;
+
+    // Field to be refinement on (keep this as refinementField)
+    field           refinementField;
+
+    // Refine field inbetween lower..upper
+    //  Because we are using the laplacian, there should be no upper limit, so
+    //  set upperRefineLevel very high.
+    lowerRefineLevel 0.3;
+    upperRefineLevel 10000000;
+
+    // If refinementField < unrefineLevel unrefine
+    //  to avoid oscillatory refinement behavior, this should be more than 4(?)
+    //  times lower than 'lowerRefineLevel'
+    unrefineLevel    0.05;
+
+    // Have slower than 2:1 refinement
+    nBufferLayers   1;
+
+    // Refine cells only up to maxRefinement levels
+    maxRefinement   2;
+
+    // Stop refinement if maxCells reached
+    maxCells        5000000;
+
+    // Flux field and corresponding velocity field. Fluxes on changed
+    // faces get recalculated by interpolating the velocity. Use 'none'
+    // on surfaceScalarFields that do not need to be reinterpolated.
+    //
+    // The first argument is the flux (surface scalar)
+    // The second argument is the volume vector used to calculate the flux
+    //
+    correctFluxes
+    (
+        (phi U)
+        (phi_0 U_0)
+        (phiAlpha none)
+        (rho*phi U)
+        (phiAbs none)
+        (ghf none)
+        (rhoPhiAlphaLiquid U)
+        (rhoPhiAlphaVapor U)
+        (rho*phi*Hs U)
+    );
+
+    // Write the refinement level as a volScalarField
+    dumpLevel       true;
+}
+
+
+// ************************************************************************* //

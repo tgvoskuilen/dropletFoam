@@ -1,0 +1,9 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+set -x
+
+wclean
+wclean hsTwophaseMixtureThermo
+find . -name '*~' -delete
+
+# ----------------------------------------------------------------- end-of-file

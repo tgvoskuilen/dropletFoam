@@ -1,0 +1,9 @@
+subSpecie/subSpecie.C
+phase/phase.C
+evaporationModels/evaporationModel/evaporationModel.C
+evaporationModels/evaporationModel/newEvaporationModel.C
+evaporationModels/HertzKnudsenPressure/HertzKnudsenPressure.C
+
+hsNewReactionThermos.C
+
+LIB = $(FOAM_USER_LIBBIN)/libreactingInterFoam

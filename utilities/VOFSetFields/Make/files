@@ -1,0 +1,4 @@
+droplet.C
+VOFSetFields.C
+
+EXE = $(FOAM_USER_APPBIN)/VOFSetFields

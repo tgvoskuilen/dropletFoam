@@ -1,0 +1,18 @@
+ELEMENTS
+H C O N
+END
+
+SPECIES
+CH3NHNH2 N2O4 N2 CH3NHNH2L N2O4L NO2 HONO H2 CH3NNH2 CH3NNH CH3NN O2
+MMHNTOL
+END
+
+REACTIONS
+CH3NHNH2L+N2O4L=>MMHNTOL               6.00E9       0.0   5200.
+N2O4(+M)=NO2+NO2(+M)                   4.05E18     -1.1   12840.
+                                  LOW/ 1.96E28     -3.8   12800. /
+CH3NHNH2+NO2=CH3NNH2+HONO              2.2E11       0.0    5900.
+CH3NHNH2L+NO2=CH3NNH2+HONO             2.2E11       0.0    5900.
+CH3NNH+NO2=CH3NN+HONO                  2.2E11       0.0    5900.
+CH3NHNH2=CH3NNH+H2                     3.16E13      0.0   57000.
+END

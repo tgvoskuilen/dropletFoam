@@ -1,0 +1,123 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      thermophysicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+thermoType hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics>>;
+
+chemistryReader foamChemistryReader;
+
+foamChemistryFile "$FOAM_CASE/constant/reactions";
+
+foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
+
+// No mass diffusion before this time to let the phase interfaces relax
+relaxTime  5e-6;
+
+Vapor
+{
+   transportModel  Newtonian;
+   nu              nu [ 0 2 -1 0 0 0 0 ] 8.91e-07; //NOT USED
+   
+   subspecies
+   (
+       CH3NHNH2 { sigmaLJ 0.4982e+01; TLJ 266.8; }
+       N2O4     { sigmaLJ 0.3828e+01; TLJ 232.4; }
+       NO2      { sigmaLJ 0.3798e+01; TLJ 71.40; }
+       H2       { sigmaLJ 0.2827e+01; TLJ 59.70; }
+       CH3NNH2  { sigmaLJ 0.4850e+01; TLJ 260.0; }
+       CH3NNH   { sigmaLJ 0.3828e+01; TLJ 232.4; }
+       HONO     { sigmaLJ 0.3798e+01; TLJ 71.40; }
+       CH3NN    { sigmaLJ 0.3828e+01; TLJ 232.4; }
+       N2       { sigmaLJ 0.3798e+01; TLJ 71.40; }
+       O2       { sigmaLJ 0.3798e+01; TLJ 71.40; }
+   );
+}
+
+
+
+Liquid
+{
+   transportModel  Newtonian;
+   nu              nu [ 0 2 -1 0 0 0 0 ] 8.91e-07;
+   
+   subspecies
+   (
+        CH3NHNH2L
+        {
+            rho0         rho0 [ 1 -3 0 0 0 0 0 ] 870.0;
+            Tc           Tc   [ 0 0 0 1 0 0 0] 585.0;
+            kappa        kappa [1 1 -3 -1 0 0 0] 1; 
+            
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
+            sigmaa          0.884;
+               
+            evaporationModel HertzKnudsenPressure;
+            
+            HertzKnudsenPressureCoeffs
+            {
+               vapor           CH3NHNH2;
+               Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
+               Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
+               La              0.38;
+               betaM           0.03;
+
+               Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
+               Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
+               PvCoeffs        (9.1834 1943.89 492587.8);
+            }
+        }
+        
+        N2O4L
+        {
+              rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1447.0;
+              Tc        Tc   [ 0 0 0 1 0 0 0] 431.35;
+              kappa        kappa [1 1 -3 -1 0 0 0] 1; 
+              
+              sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
+              sigmaa          0.745;
+              
+              evaporationModel HertzKnudsenPressure;
+              
+              HertzKnudsenPressureCoeffs
+              {
+                   vapor           N2O4;
+                   Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
+                   Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
+                   La              0.38;
+                   betaM           0.03;
+
+                   Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
+                   Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
+                   PvCoeffs        (16.1 5400.115 -194831.8);
+              }
+         }
+         
+         MMHNTOL
+         {
+              rho0      rho0  [ 1 -3  0  0 0 0 0] 1160.0;
+              Tc        Tc    [ 0  0  0  1 0 0 0] 510;
+              kappa     kappa [ 1  1 -3 -1 0 0 0] 1; 
+              
+              sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
+              sigmaa          0.8;
+         }
+   );
+}
+
+
+
+
+// ************************************************************************* //
