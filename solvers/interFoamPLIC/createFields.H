@@ -30,9 +30,11 @@
 
 
     Info<< "Reading transportProperties\n" << endl;
+    
     twoPhaseMixture twoPhaseProperties(U, phi);
-
     volScalarField& alpha1(twoPhaseProperties.alpha1());
+    
+    PLICInterface interface(alpha1);
 
     #include "createPLICFields.H"
 

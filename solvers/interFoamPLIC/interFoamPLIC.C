@@ -81,9 +81,10 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         twoPhaseProperties.correct();
-
-        #include "alphaEqnSubCycle.H"
-
+        interface.moveInterface(phi, U);
+        rhoPhi = interface.phiAlpha()*(rho1 - rho2) + phi*rho2;
+        rho == alpha1*rho1 + (scalar(1) - alpha1)*rho2;
+        
         // --- Pressure-velocity PIMPLE corrector loop
         while (pimple.loop())
         {
