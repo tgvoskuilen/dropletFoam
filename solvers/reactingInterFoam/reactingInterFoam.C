@@ -139,13 +139,10 @@ int main(int argc, char *argv[])
             Info<<"Solving alpha transport equations"<<endl;
             mixture.solve( rho );
 
-            //maxVolSource = gMax(mixture.totalVolumeSource()());
-
             dQ = combustion->dQ();
 
             #include "UEqn.H"	
             #include "TEqn.H"
-            //#include "hsEqnSubCycle.H"
 
             // --- Pressure corrector loop
             while (pimple.correct())
