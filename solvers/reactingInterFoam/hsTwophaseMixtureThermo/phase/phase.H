@@ -183,7 +183,7 @@ public:
         ) const;
                 
 
-        tmp<volScalarField> hs(const volScalarField& T) const;
+        //tmp<volScalarField> hs(const volScalarField& T) const;
         tmp<volScalarField> Yp() const;
         tmp<volScalarField> Np() const;
         

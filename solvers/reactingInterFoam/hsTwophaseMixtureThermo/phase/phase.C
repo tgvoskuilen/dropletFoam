@@ -148,7 +148,7 @@ bool Foam::phase::read(const dictionary& phaseDict)
 }
 
 // Calculates the total net volumetric source due to evaporation. Only relevant
-// for the liquid phase, and called by S_evap() in thermo
+// for the liquid phase, and called by S_evap() in thermo for in pEqn
 Foam::tmp<Foam::volScalarField> Foam::phase::S_evap
 (
     const volScalarField& p,
@@ -220,7 +220,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Su_Yi_evap
             {
                 if (specieLI().evapModel().vaporName() == specieI.Y().name())
                 {
-                    tSu_evap() += specieLI().evapModel().m_evap(); //specieLI().evapModel().Su();
+                    tSu_evap() += specieLI().evapModel().m_evap();
                     break;
                 }
             }
@@ -336,6 +336,7 @@ Foam::tmp<volScalarField> Foam::phase::Sh_evap() const
 
 // This calculates the sensible enthalpy of the phase. I do not think it is
 // ever used
+/*
 Foam::tmp<volScalarField> Foam::phase::hs
 (
     const volScalarField& T
@@ -364,7 +365,7 @@ Foam::tmp<volScalarField> Foam::phase::hs
     
     return ths;
 }
-
+*/
 
 // Get the mass fraction sum of this phase
 Foam::tmp<volScalarField> Foam::phase::Yp() const
@@ -807,7 +808,7 @@ void Foam::phase::solveSubSpecies
             YiEqn.solve(mesh().solver("Yi"));
             
             Yi.max(0.0);
-            Yi.min(1.0);
+            Yi.min(1.0); //TODO: Try removing this
             
             Info<< "  Pre-coerce: " << Yi.name() << " min,max,avg = " 
                 << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
