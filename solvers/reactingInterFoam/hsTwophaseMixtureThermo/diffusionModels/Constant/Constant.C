@@ -23,47 +23,56 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include "Constant.H"
+#include "addToRunTimeSelectionTable.H"
 #include "evaporationModel.H"
-#include "diffusionModel.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::evaporationModel>
-Foam::evaporationModel::New
-(
-    dictionary specieDict,
-    const volScalarField& p,
-    const volScalarField& T,
-    const phase& alphaL,
-    const phase& alphaV
-)
+namespace Foam
 {
-    word evaporationModelTypeName
-    (
-        specieDict.lookup("evaporationModel")
-    );
-
-    Info<< "Selecting evaporation model "
-        << evaporationModelTypeName << endl;
-
-    componentsConstructorTable::iterator cstrIter =
-        componentsConstructorTablePtr_
-            ->find(evaporationModelTypeName);
-
-    if (cstrIter == componentsConstructorTablePtr_->end())
-    {
-        FatalErrorIn
-        (
-            "evaporationModel::New"
-        )   << "Unknown evaporationModel type "
-            << evaporationModelTypeName << endl << endl
-            << "Valid  evaporationModel are : " << endl
-            << componentsConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
-
-    return autoPtr<evaporationModel>(cstrIter()(specieDict, p, T, alphaL, alphaV));
+namespace diffusionModels
+{
+    defineTypeNameAndDebug(Constant, 0);
+    addToRunTimeSelectionTable(diffusionModel, Constant, components);
+}
 }
 
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+Foam::diffusionModels::Constant::Constant
+(
+    dictionary specieDict
+)
+:
+    diffusionModel(typeName, specieDict),
+    constD_(diffusionDict_.lookup("D"))
+{}
+    
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+Foam::tmp<Foam::volScalarField> Foam::diffusionModels::Constant::Dij
+(
+    const subSpecie& sI,
+    const subSpecie& sJ
+) const
+{
+    const fvMesh& mesh = sI.Y().mesh();
+    
+    tmp<volScalarField> tDij
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tDij",
+                mesh.time().timeName(),
+                mesh
+            ),
+            mesh,
+            constD_
+        )
+    );
+    
+    return tDij;
+}
 
 // ************************************************************************* //

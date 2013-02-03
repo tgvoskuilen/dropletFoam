@@ -54,6 +54,7 @@ SourceFiles
 #include "phase.H"
 #include "subSpecie.H"
 #include "evaporationModel.H"
+#include "diffusionModel.H"
 #include "PtrDictionary.H"
 #include "volFields.H"
 #include "surfaceFields.H"

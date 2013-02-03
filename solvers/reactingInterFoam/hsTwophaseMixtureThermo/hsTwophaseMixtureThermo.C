@@ -720,78 +720,18 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
     calculateAlphaVapor();
     calculateSurfaceTension();
-        
-
 
     // Update density field to satisfy continuity with new mass flux field
     Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     Info<< "Min,max rho = " << Foam::min(rho).value() << ", " 
         << Foam::max(rho).value() << endl;
-    
-    // Disable diffusion in the phase interface region to prevent cross-phase
-    //  diffusion. Transfer between phases is handled by the evaporation model
-    tmp<volScalarField> DmaskV = pos(alphaVapor_ - 0.9);
-    tmp<volScalarField> DmaskL = pos(alphaLiquid_ - 0.9);
-    
-    // TODO: Construct this for each specie (store in the subSpecie class) ?
-    volScalarField DiMV = DmaskV * muV(); //combustionPtr_->turbulence().muEff();
-    volScalarField DiML = DmaskL * alphaLiquid_.mu(p_,T_); //combustionPtr_->turbulence().muEff();
-    
-    // Disable diffusion at the onset to allow the phases to relax first
-    if( mesh_.time().time().value() < phaseRelaxTime_ )
-    {
-        DiMV *= 0.0;
-        DiML *= 0.0;
-    }
-    
 
-    volVectorField ucV
-    (
-        IOobject
-        (
-            "UcV",
-            mesh_.time().timeName(),
-            mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh_,
-        dimensionedVector("zero",dimMass/dimArea/dimTime,vector::zero)
-    );
+    tmp<volVectorField> ucL = alphaLiquid_.calculateDs(0.9, mesh_.time().time().value() > phaseRelaxTime_);
+    tmp<volVectorField> ucV = alphaVapor_.calculateDs(0.9, mesh_.time().time().value() > phaseRelaxTime_);
     
-    volVectorField ucL
-    (
-        IOobject
-        (
-            "UcL",
-            mesh_.time().timeName(),
-            mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh_,
-        dimensionedVector("zero",dimMass/dimArea/dimTime,vector::zero)
-    );
+    Info<< "Max ucL = " << Foam::max(Foam::mag(ucL())).value() << endl;
+    Info<< "Max ucV = " << Foam::max(Foam::mag(ucV())).value() << endl;
     
-    tmp<volScalarField> YpL = alphaLiquid_.Yp();
-    tmp<volScalarField> YpV = alphaVapor_.Yp();
-    
-    forAllIter(PtrDictionary<subSpecie>, alphaLiquid_.subSpecies(), specieI)
-    {
-        volScalarField& Yi = specieI().Y();
-        ucL += DiML  * fvc::grad(Yi / (YpL()+SMALL));
-    }
-    
-    forAllIter(PtrDictionary<subSpecie>, alphaVapor_.subSpecies(), specieI)
-    {
-        volScalarField& Yi = specieI().Y();
-        ucV += DiMV * fvc::grad(Yi / (YpV()+SMALL) );
-    }
-    
-    Info<< "Max ucL = " << Foam::max(Foam::mag(ucL)).value() << endl;
-    Info<< "Max ucV = " << Foam::max(Foam::mag(ucV)).value() << endl;
-    
-
     // Create convection scheme for species
     tmp<fv::convectionScheme<scalar> > mvConvection
     (
@@ -805,8 +745,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     );
     
     // Solve for subspecie transport within each phase
-    alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_,  DiML, ucL, mvConvection);
-    alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, DiMV, ucV, mvConvection);
+    alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
+    alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
 
 
     

@@ -56,6 +56,7 @@ namespace Foam
 {
     //Forward declaration of evaporation model class
     class evaporationModel;
+    class diffusionModel;
     
 /*---------------------------------------------------------------------------*\
                            Class phase Declaration
@@ -74,14 +75,17 @@ class subSpecie
         //- Subspecie dictionary (in thermophysicalProperties)
         dictionary subSpecieDict_;
         
-        //- Evaporation dictionary
-        dictionary evapDict_;
-        
         //- Pointer to subspecie evaporation model
         autoPtr<evaporationModel> evapModel_;
         
+        //- Pointer to the subspecie diffusion model
+        autoPtr<diffusionModel> diffusionModel_;
+        
         //- Mass fraction of this subspecie
         volScalarField& Y_;
+        
+        //- Mass diffusion coefficient of this subspecie
+        volScalarField D_;
         
         //- Thermo properties of this subspecie
         const gasThermoPhysics& thermo_;
@@ -173,11 +177,6 @@ public:
             return subSpecieDict_;
         }
         
-        dictionary& evapDict()
-        {
-            return evapDict_;
-        }
-
         const word& name() const
         {
             return name_;
@@ -203,6 +202,11 @@ public:
             return evapModel_();
         }
         
+        const diffusionModel& diffModel() const
+        {
+            return diffusionModel_();
+        }
+        
         bool hasEvaporation() const
         {
             return subSpecieDict_.found("evaporationModel");
@@ -222,13 +226,25 @@ public:
         {
             return Y_;
         }
-        
+                
         volScalarField& Y()
         {
             return Y_;
         }
         
+        const volScalarField& D() const
+        {
+            return D_;
+        }
+        
+        volScalarField& D()
+        {
+            return D_;
+        }
+            
         tmp<volScalarField> sigma(const volScalarField& T) const;
+        
+        tmp<volScalarField> Dij(const subSpecie& specieJ) const;
         
         const gasThermoPhysics& thermo() const
         {

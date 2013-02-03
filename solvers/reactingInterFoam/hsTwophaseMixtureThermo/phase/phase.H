@@ -240,14 +240,10 @@ public:
         tmp<volScalarField> Dk
         (
             const word& specieKName
-        ) const;
+        ) const;*/
+                
         
-        tmp<volScalarField> Dij
-        (
-            const subSpecie& specieI,
-            const subSpecie& specieJ
-        ) const;
-        */
+        tmp<volVectorField> calculateDs( scalar maskTol, bool allow );
 
         void solveSubSpecies
         (
@@ -256,7 +252,6 @@ public:
             const volScalarField& p,
             const volScalarField& T,
             const phase& alphaLiquid,
-            const volScalarField& Dmask,
             const volVectorField& uc,
             const tmp<fv::convectionScheme<scalar> >& mvConvection
         );

@@ -23,46 +23,42 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "evaporationModel.H"
 #include "diffusionModel.H"
+#include "evaporationModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::evaporationModel>
-Foam::evaporationModel::New
+Foam::autoPtr<Foam::diffusionModel>
+Foam::diffusionModel::New
 (
-    dictionary specieDict,
-    const volScalarField& p,
-    const volScalarField& T,
-    const phase& alphaL,
-    const phase& alphaV
+    dictionary specieDict
 )
 {
-    word evaporationModelTypeName
+    word diffusionModelTypeName
     (
-        specieDict.lookup("evaporationModel")
+        specieDict.lookup("diffusionModel")
     );
 
-    Info<< "Selecting evaporation model "
-        << evaporationModelTypeName << endl;
+    Info<< "Selecting diffusion model "
+        << diffusionModelTypeName << endl;
 
     componentsConstructorTable::iterator cstrIter =
         componentsConstructorTablePtr_
-            ->find(evaporationModelTypeName);
+            ->find(diffusionModelTypeName);
 
     if (cstrIter == componentsConstructorTablePtr_->end())
     {
         FatalErrorIn
         (
-            "evaporationModel::New"
-        )   << "Unknown evaporationModel type "
-            << evaporationModelTypeName << endl << endl
-            << "Valid  evaporationModel are : " << endl
+            "diffusionModel::New"
+        )   << "Unknown diffusionModel type "
+            << diffusionModelTypeName << endl << endl
+            << "Valid  diffusionModel are : " << endl
             << componentsConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<evaporationModel>(cstrIter()(specieDict, p, T, alphaL, alphaV));
+    return autoPtr<diffusionModel>(cstrIter()(specieDict));
 }
 
 

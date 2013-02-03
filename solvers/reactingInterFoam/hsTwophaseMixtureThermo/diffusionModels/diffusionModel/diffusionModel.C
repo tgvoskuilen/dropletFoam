@@ -23,47 +23,32 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "evaporationModel.H"
 #include "diffusionModel.H"
+#include "evaporationModel.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::evaporationModel>
-Foam::evaporationModel::New
-(
-    dictionary specieDict,
-    const volScalarField& p,
-    const volScalarField& T,
-    const phase& alphaL,
-    const phase& alphaV
-)
+namespace Foam
 {
-    word evaporationModelTypeName
-    (
-        specieDict.lookup("evaporationModel")
-    );
-
-    Info<< "Selecting evaporation model "
-        << evaporationModelTypeName << endl;
-
-    componentsConstructorTable::iterator cstrIter =
-        componentsConstructorTablePtr_
-            ->find(evaporationModelTypeName);
-
-    if (cstrIter == componentsConstructorTablePtr_->end())
-    {
-        FatalErrorIn
-        (
-            "evaporationModel::New"
-        )   << "Unknown evaporationModel type "
-            << evaporationModelTypeName << endl << endl
-            << "Valid  evaporationModel are : " << endl
-            << componentsConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
-
-    return autoPtr<evaporationModel>(cstrIter()(specieDict, p, T, alphaL, alphaV));
+    defineTypeNameAndDebug(diffusionModel, 0);
+    defineRunTimeSelectionTable(diffusionModel, components);
 }
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::diffusionModel::diffusionModel
+(
+    const word& type,
+    dictionary specieDict
+)
+:
+    name_(type+"Diffusion"),
+    diffusionDict_(specieDict.subDict(type + "Coeffs"))
+{
+}
+
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 
 // ************************************************************************* //
+

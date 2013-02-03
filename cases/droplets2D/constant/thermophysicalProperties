@@ -33,16 +33,16 @@ Vapor
    
    subspecies
    (
-       CH3NHNH2 { sigmaLJ 0.4982e+01; TLJ 266.8; }
-       N2O4     { sigmaLJ 0.3828e+01; TLJ 232.4; }
-       NO2      { sigmaLJ 0.3798e+01; TLJ 71.40; }
-       H2       { sigmaLJ 0.2827e+01; TLJ 59.70; }
-       CH3NNH2  { sigmaLJ 0.4850e+01; TLJ 260.0; }
-       CH3NNH   { sigmaLJ 0.3828e+01; TLJ 232.4; }
-       HONO     { sigmaLJ 0.3798e+01; TLJ 71.40; }
-       CH3NN    { sigmaLJ 0.3828e+01; TLJ 232.4; }
-       N2       { sigmaLJ 0.3798e+01; TLJ 71.40; }
-       O2       { sigmaLJ 0.3798e+01; TLJ 71.40; }
+       CH3NHNH2 { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.4982e+01; T 266.8; } }
+       N2O4     { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3828e+01; T 232.4; } }
+       NO2      { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
+       H2       { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.2827e+01; T 59.70; } }
+       CH3NNH2  { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.4850e+01; T 260.0; } }
+       CH3NNH   { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3828e+01; T 232.4; } }
+       HONO     { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
+       CH3NN    { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3828e+01; T 232.4; } }
+       N2       { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
+       O2       { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
    );
 }
 
@@ -78,6 +78,13 @@ Liquid
                Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
                PvCoeffs        (9.1834 1943.89 492587.8);
             }
+            
+            diffusionModel Constant;
+            
+            ConstantCoeffs
+            {
+                D   D [ 0 2 -1 0 0 0 0] 1e-9;
+            }
         }
         
         N2O4L
@@ -103,6 +110,13 @@ Liquid
                    Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
                    PvCoeffs        (16.1 5400.115 -194831.8);
               }
+              
+              diffusionModel Constant;
+            
+              ConstantCoeffs
+              {
+                  D   D [ 0 2 -1 0 0 0 0] 1e-9;
+              }
          }
          
          MMHNTOL
@@ -113,6 +127,13 @@ Liquid
               
               sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
               sigmaa          0.8;
+              
+              diffusionModel Constant;
+            
+              ConstantCoeffs
+              {
+                  D   D [ 0 2 -1 0 0 0 0] 1e-9;
+              }
          }
    );
 }

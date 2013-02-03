@@ -21,49 +21,74 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+Class
+    Foam::Constant
+
+Description
+    Constant diffusion coefficient model
+
+SourceFiles
+    Constant.C
+
 \*---------------------------------------------------------------------------*/
 
-#include "evaporationModel.H"
+#ifndef Constant_H
+#define Constant_H
+
 #include "diffusionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::evaporationModel>
-Foam::evaporationModel::New
-(
-    dictionary specieDict,
-    const volScalarField& p,
-    const volScalarField& T,
-    const phase& alphaL,
-    const phase& alphaV
-)
+namespace Foam
 {
-    word evaporationModelTypeName
-    (
-        specieDict.lookup("evaporationModel")
-    );
+namespace diffusionModels
+{
+/*---------------------------------------------------------------------------*\
+                      Class Constant Declaration
+\*---------------------------------------------------------------------------*/
 
-    Info<< "Selecting evaporation model "
-        << evaporationModelTypeName << endl;
+class Constant
+:
+    public diffusionModel
+{
 
-    componentsConstructorTable::iterator cstrIter =
-        componentsConstructorTablePtr_
-            ->find(evaporationModelTypeName);
+    //model-specific stuff
+        dimensionedScalar constD_;
 
-    if (cstrIter == componentsConstructorTablePtr_->end())
-    {
-        FatalErrorIn
+public:
+
+    //- Runtime type information
+    TypeName("Constant");
+
+    // Constructors
+
+        //- construct from components
+        Constant
         (
-            "evaporationModel::New"
-        )   << "Unknown evaporationModel type "
-            << evaporationModelTypeName << endl << endl
-            << "Valid  evaporationModel are : " << endl
-            << componentsConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
+            dictionary specieDict
+        );
+        
+    //- Destructor
+        virtual ~Constant() {}
 
-    return autoPtr<evaporationModel>(cstrIter()(specieDict, p, T, alphaL, alphaV));
-}
 
+    // Member Functions
+        virtual tmp<volScalarField> Dij
+        (
+            const subSpecie& sI,
+            const subSpecie& sJ
+        ) const;
+
+};
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+} // End namespace diffusionModels
+
+} // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
 
 // ************************************************************************* //

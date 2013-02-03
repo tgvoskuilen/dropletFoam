@@ -26,6 +26,7 @@ License
 #include "phase.H"
 #include "subSpecie.H"
 #include "evaporationModel.H"
+#include "diffusionModel.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -676,17 +677,74 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Dk
 
     return (1 - xk()) / trDk;
 }
-
-Foam::tmp<Foam::volScalarField> Foam::phase::Dij
-(
-    const subSpecie& specieI,
-    const subSpecie& specieJ
-) const
-{
-
-
-}
 */
+
+
+tmp<volVectorField> Foam::phase::calculateDs(scalar maskTol, bool allow)
+{
+    tmp<volVectorField> tUc
+    (
+        new volVectorField
+        (
+            IOobject
+            (
+                "tUc"+name_,
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedVector("Uc",dimVelocity,vector::zero)
+        )
+    );
+        
+    // DiM = sum((1-xk)/(xk/Dki) i ne k)  <-- TODO: VERIFY THIS!
+    const phase& alpha = *this;
+    tmp<volScalarField> tYp = Yp();
+    
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        tmp<volScalarField> tDen
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "tDen"+name_,
+                    mesh().time().timeName(),
+                    mesh()
+                ),
+                mesh(),
+                dimensionedScalar("tDen",dimTime/dimArea,SMALL)
+            )
+        );
+        
+        if( allow )
+        {
+        
+            tmp<volScalarField> xI = specieI().Y() / (specieI().W() * Np());
+            
+            forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieJ)
+            {
+                if( specieJ().name() != specieI().name() )
+                {
+                    tDen() += specieI().Y() / (specieI().W() * Np()) / specieI().Dij( specieJ() );
+                }
+            }
+            
+            specieI().D() = (1.0 - xI) / tDen * pos(alpha - maskTol);
+            
+            const volScalarField& Yi = specieI().Y();
+            tUc() += specieI().D()  * fvc::grad(Yi / (tYp()+SMALL));
+        }
+        else
+        {
+            specieI().D() = 0.0/tDen;
+        }
+    }
+
+    return tUc;
+}
+
 
 // Calculate phase specific heat using subspecie Cv model, which calls the
 // underlying thermo model for each specie (Janaf table)
@@ -739,7 +797,6 @@ void Foam::phase::solveSubSpecies
     const volScalarField& p,
     const volScalarField& T,
     const phase& alphaLiquid,
-    const volScalarField& DiM,
     const volVectorField& uc,
     const tmp<fv::convectionScheme<scalar> >& mvConvection
 )
@@ -795,8 +852,8 @@ void Foam::phase::solveSubSpecies
                 fvm::ddt(rhoTotal, Yi)
               //+ fvm::div(rhoPhi, Yi, divScheme)
               + mvConvection->fvmDiv(rhoPhi, Yi)
-              - fvc::laplacian(DiM, Yi/(Yp0()+SMALL)) //need to relax alpha field before this can work stably
-              + fvc::div(uc*Yi, divSchemeCorr)
+              - fvc::laplacian(specieI().D()*rho(p,T), Yi/(Yp0()+SMALL)) //need to relax alpha field before this can work stably
+              + fvc::div(uc*Yi*rho(p,T), divSchemeCorr)
              ==
                 combustionPtr_->R(Yi)
               + Su_Yi_evap( alphaLiquid, specieI() )

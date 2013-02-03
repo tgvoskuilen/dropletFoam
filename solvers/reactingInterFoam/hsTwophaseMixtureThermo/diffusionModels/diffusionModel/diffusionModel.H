@@ -22,18 +22,18 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::evaporationModel
+    Foam::diffusionModel
 
 Description
-    General evaporation model
+    General diffusion model
 
 SourceFiles
-    evaporationModel.C
+    diffusionModel.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef evaporationModel_H
-#define evaporationModel_H
+#ifndef diffusionModel_H
+#define diffusionModel_H
 
 #include "volFields.H"
 #include "PtrDictionary.H"
@@ -41,9 +41,7 @@ SourceFiles
 #include "fvCFD.H"
 #include "dimensionedScalar.H"
 #include "dimensionedScalarFwd.H"
-#include "phase.H"
 #include "subSpecie.H"
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -51,49 +49,27 @@ namespace Foam
 {
    
 /*---------------------------------------------------------------------------*\
-                      Class evaporationModel Declaration
+                      Class diffusionModel Declaration
 \*---------------------------------------------------------------------------*/
 
-class evaporationModel
+class diffusionModel
 {
-    // Private data
+    // Protected data
     protected:
-        const phase& alphaL_;
-        const phase& alphaV_;
-        const volScalarField& p_;
-        const volScalarField& T_;
-        dictionary evapDict_;
-
-        word vapor_specie_;
-
-        volScalarField m_evap_;
-        volScalarField mask_;
+        const word name_;
         
-        //- Heat of vaporization (J/kmol)
-        //  L = Lb * ((Tc-T)/(Tc-Tb))^La
-        dimensionedScalar Lb_;
-        dimensionedScalar Tb_;
-        scalar La_;
-
-        //- Specie critical temperature
-        dimensionedScalar Tc_;
-                
-        //- Universal gas constant
-        dimensionedScalar R_;
-        
-        //- Specie molar mass
-        dimensionedScalar W_;
+        dictionary diffusionDict_;
         
         
-        evaporationModel(const evaporationModel&);
+        diffusionModel(const diffusionModel&);
         
-        void operator=(const evaporationModel&);
+        void operator=(const diffusionModel&);
         
         
 public:
 
     //- Runtime type information
-    TypeName("evaporationModel");
+    TypeName("diffusionModel");
 
 
     // Declare run-time constructor selection table
@@ -101,76 +77,48 @@ public:
         declareRunTimeSelectionTable
         (
             autoPtr,
-            evaporationModel,
+            diffusionModel,
             components,
             (
-                dictionary specieDict,
-                const volScalarField& p,
-                const volScalarField& T,
-                const phase& alphaL,
-                const phase& alphaV
+                dictionary specieDict
             ),
-            (specieDict, p, T, alphaL, alphaV)
+            (specieDict)
         );
 
 
     // Selectors
 
         //- Return a reference to the selected phaseChange model
-        static autoPtr<evaporationModel> New
+        static autoPtr<diffusionModel> New
         (
-            dictionary specieDict,
-            const volScalarField& p,
-            const volScalarField& T,
-            const phase& alphaL,
-            const phase& alphaV
+            dictionary specieDict
         );
         
     // Constructors
     
-        evaporationModel
+        diffusionModel
         (
             const word& type,
-            dictionary specieDict,
-            const volScalarField& p,
-            const volScalarField& T,
-            const phase& alphaL,
-            const phase& alphaV
+            dictionary specieDict
         );
         
-        virtual ~evaporationModel() {}
+        virtual ~diffusionModel() {}
 
 
     // Member Functions
     
         word name() const
         {
-            return vapor_specie_+" Evaporation";
+            return name_;
         }
 
-        const word& vaporName() const
-        {
-            return vapor_specie_;
-        }
-        
-        const volScalarField& m_evap() const
-        {
-            return m_evap_;
-        }
-        
-        virtual void calculate
+
+        virtual tmp<volScalarField> Dij
         (
-            const volScalarField& evapMask
-        ) = 0;
-        
-        //- Calculate enthalpy source due to evaporation
-        tmp<volScalarField> Sh() const;
-        
-        //- Calculate latent heat of vaporization (function of T)
-        tmp<volScalarField> L() const;
-        
-        //- Calculate interface area/volume
-        tmp<volScalarField> area() const;
+            const subSpecie& sI,
+            const subSpecie& sJ
+        ) const = 0;
+
 
 };
 
