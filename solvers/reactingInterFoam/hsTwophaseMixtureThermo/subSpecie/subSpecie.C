@@ -67,6 +67,17 @@ Foam::subSpecie::subSpecie
     sigmaa_ = (subSpecieDict_.found("sigmaa")) ? readScalar(subSpecieDict_.lookup("sigmaa")) : 0;
 
     diffusionModel_ = diffusionModel::New(subSpecieDict_);
+    
+    if( subSpecieDict_.found("transportModel") )
+    {
+        nuModel_ = viscosityModel::New
+        (
+            "nu" + name_, 
+            subSpecieDict_, 
+            mesh.lookupObject<volVectorField>("U"), 
+            mesh.lookupObject<surfaceScalarField>("phi")
+        );
+    }
         
     Foam::Info<< "Created and linked subSpecie " << name << Foam::endl;
     Foam::Info<< "  idx = " << idx_ << Foam::endl;
@@ -79,6 +90,14 @@ Foam::subSpecie::subSpecie
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void Foam::subSpecie::correct()
+{
+    if( subSpecieDict_.found("transportModel") )
+    {
+        nuModel_->correct();
+    }
+}
 
 Foam::autoPtr<Foam::subSpecie> Foam::subSpecie::clone() const
 {

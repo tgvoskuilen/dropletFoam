@@ -81,6 +81,9 @@ class subSpecie
         //- Pointer to the subspecie diffusion model
         autoPtr<diffusionModel> diffusionModel_;
         
+        //- Viscosity model for this phase
+        autoPtr<viscosityModel> nuModel_;
+        
         //- Mass fraction of this subspecie
         volScalarField& Y_;
         
@@ -241,6 +244,16 @@ public:
         {
             return D_;
         }
+        
+        bool hasNuModel() const
+        {
+            return subSpecieDict_.found("transportModel");
+        }
+        
+        const viscosityModel& nuModel() const
+        {
+            return nuModel_();
+        }
             
         tmp<volScalarField> sigma(const volScalarField& T) const;
         
@@ -283,6 +296,8 @@ public:
         ) const;
         
         tmp<volScalarField> Cv(const volScalarField& T) const;
+        
+        void correct();
 };
 
 

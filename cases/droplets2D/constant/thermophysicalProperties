@@ -28,9 +28,6 @@ relaxTime  5e-6;
 
 Vapor
 {
-   transportModel  Newtonian;
-   nu              nu [ 0 2 -1 0 0 0 0 ] 8.91e-07; //NOT USED
-   
    subspecies
    (
        CH3NHNH2 { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.4982e+01; T 266.8; } }
@@ -50,13 +47,15 @@ Vapor
 
 Liquid
 {
-   transportModel  Newtonian;
-   nu              nu [ 0 2 -1 0 0 0 0 ] 8.91e-07;
+   
    
    subspecies
    (
         CH3NHNH2L
         {
+            transportModel  Newtonian;
+            nu              nu [ 0 2 -1 0 0 0 0 ] 8.91e-07;
+   
             rho0         rho0 [ 1 -3 0 0 0 0 0 ] 870.0;
             Tc           Tc   [ 0 0 0 1 0 0 0] 585.0;
             kappa        kappa [1 1 -3 -1 0 0 0] 1; 
@@ -89,51 +88,57 @@ Liquid
         
         N2O4L
         {
-              rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1447.0;
-              Tc        Tc   [ 0 0 0 1 0 0 0] 431.35;
-              kappa        kappa [1 1 -3 -1 0 0 0] 1; 
-              
-              sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
-              sigmaa          0.745;
-              
-              evaporationModel HertzKnudsenPressure;
-              
-              HertzKnudsenPressureCoeffs
-              {
-                   vapor           N2O4;
-                   Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
-                   Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
-                   La              0.38;
-                   betaM           0.03;
-
-                   Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
-                   Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
-                   PvCoeffs        (16.1 5400.115 -194831.8);
-              }
-              
-              diffusionModel Constant;
+            transportModel  Newtonian;
+            nu              nu [ 0 2 -1 0 0 0 0 ] 8.91e-07;
             
-              ConstantCoeffs
-              {
-                  D   D [ 0 2 -1 0 0 0 0] 1e-9;
-              }
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1447.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 431.35;
+            kappa        kappa [1 1 -3 -1 0 0 0] 1; 
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
+            sigmaa          0.745;
+              
+            evaporationModel HertzKnudsenPressure;
+             
+            HertzKnudsenPressureCoeffs
+            {
+                 vapor           N2O4;
+                 Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
+                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
+                 La              0.38;
+                 betaM           0.03;
+
+                 Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
+                 Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
+                 PvCoeffs        (16.1 5400.115 -194831.8);
+            }
+              
+            diffusionModel Constant;
+            
+            ConstantCoeffs
+            {
+                D   D [ 0 2 -1 0 0 0 0] 1e-9;
+            }
          }
          
          MMHNTOL
          {
-              rho0      rho0  [ 1 -3  0  0 0 0 0] 1160.0;
-              Tc        Tc    [ 0  0  0  1 0 0 0] 510;
-              kappa     kappa [ 1  1 -3 -1 0 0 0] 1; 
-              
-              sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
-              sigmaa          0.8;
-              
-              diffusionModel Constant;
+            transportModel  Newtonian;
+            nu              nu [ 0 2 -1 0 0 0 0 ] 8.91e-07;
             
-              ConstantCoeffs
-              {
-                  D   D [ 0 2 -1 0 0 0 0] 1e-9;
-              }
+            rho0      rho0  [ 1 -3  0  0 0 0 0] 1160.0;
+            Tc        Tc    [ 0  0  0  1 0 0 0] 510;
+            kappa     kappa [ 1  1 -3 -1 0 0 0] 1; 
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
+            sigmaa          0.8;
+              
+            diffusionModel Constant;
+            
+            ConstantCoeffs
+            {
+                D   D [ 0 2 -1 0 0 0 0] 1e-9;
+            }
          }
    );
 }

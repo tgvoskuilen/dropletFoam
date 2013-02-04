@@ -66,16 +66,6 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("rhoPhiAlpha"+name, dimMass/dimTime, 0.0)
     ),
-    nuModel_
-    (
-        viscosityModel::New
-        (
-            "nu" + name, 
-            phaseDict_, 
-            this->db().lookupObject<volVectorField>("U"), 
-            this->db().lookupObject<surfaceScalarField>("phi")
-        )
-    ),
     combustionPtr_(NULL),
     species_(species),
     speciesData_(speciesData),
@@ -97,13 +87,37 @@ Foam::autoPtr<Foam::phase> Foam::phase::clone() const
     return autoPtr<phase>(NULL);
 }
 
+// Only applicable for liquid phase. Vapor phase will return 0 here.
 Foam::tmp<Foam::volScalarField> Foam::phase::mu
 (
     const volScalarField& p,
     const volScalarField& T
 ) const
 {
-    return nuModel_->nu() * rho(p,T);
+    tmp<volScalarField> tmu
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tmu",
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("tmu", dimArea*dimDensity/dimTime, 0.0)
+        )
+    );
+    
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {   
+        if( specieI().hasNuModel() )
+        {
+            tmu() += specieI().nuModel().nu() * specieI().Y() * rho(p,T);
+        }
+    }
+    
+    return tmu;
 }
 
 
@@ -130,7 +144,10 @@ void Foam::phase::setCombustionPtr
 
 void Foam::phase::correct()
 {
-    nuModel_->correct();
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {   
+        specieI().correct();
+    }
 }
 
 
@@ -138,14 +155,7 @@ bool Foam::phase::read(const dictionary& phaseDict)
 {
     phaseDict_ = phaseDict;
 
-    if (nuModel_->read(phaseDict_))
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return true;
 }
 
 // Calculates the total net volumetric source due to evaporation. Only relevant

@@ -76,9 +76,6 @@ class phase
         
         //- Volume flux field for this phase
         surfaceScalarField rhoPhiAlpha_;
-
-        //- Viscosity model for this phase
-        autoPtr<viscosityModel> nuModel_;
         
         //- Pointer to the top-level combustion model
         const combustionModels::rhoChemistryCombustionModel* combustionPtr_;

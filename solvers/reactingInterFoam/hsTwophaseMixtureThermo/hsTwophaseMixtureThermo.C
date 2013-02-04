@@ -85,7 +85,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     calculateMu();
     calculateRho();
     calculatePsi();
-    //calculateAlphaTh();
 }
 
 
@@ -210,19 +209,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     ),
     phi_( rhoPhi_.db().lookupObject<surfaceScalarField>("phi") ),
     U_( rhoPhi_.db().lookupObject<volVectorField>("U") ),
-    /*DpDt_
-    (
-        IOobject
-        (
-            "DpDt",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        pos(alphaVapor_)*fvc::div(phi_)/max(alphaVapor_, scalar(0.0001))
-            * dimensionedScalar("conversion",dimPressure,1.0)
-    ),*/
     alphaVaporSharp_
     (
         IOobject
