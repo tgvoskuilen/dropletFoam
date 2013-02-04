@@ -24,7 +24,6 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "evaporationModel.H"
-#include "diffusionModel.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 

@@ -25,7 +25,6 @@ License
 
 #include "subSpecie.H"
 #include "evaporationModel.H"
-#include "diffusionModel.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -42,19 +41,6 @@ Foam::subSpecie::subSpecie
     name_(name),
     subSpecieDict_(subSpecieDict),
     Y_(specie),
-    D_
-    (
-        IOobject
-        (
-            "D"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("D"+name, dimArea/dimTime, 0.0)
-    ),
     thermo_(specieData),
     idx_(idx),
     rho0_(subSpecieDict.lookupOrDefault("rho0",dimensionedScalar("rho0",dimDensity,0.0))),
@@ -66,8 +52,6 @@ Foam::subSpecie::subSpecie
     // Set scalars
     sigmaa_ = (subSpecieDict_.found("sigmaa")) ? readScalar(subSpecieDict_.lookup("sigmaa")) : 0;
 
-    diffusionModel_ = diffusionModel::New(subSpecieDict_);
-    
     if( subSpecieDict_.found("transportModel") )
     {
         nuModel_ = viscosityModel::New
@@ -103,15 +87,6 @@ Foam::autoPtr<Foam::subSpecie> Foam::subSpecie::clone() const
 {
     notImplemented("subSpecie::clone() const");
     return autoPtr<subSpecie>(NULL);
-}
-
-tmp<volScalarField> Foam::subSpecie::Dij
-(
-    const subSpecie& specieJ,
-    const compressible::turbulenceModel& turb
-) const
-{
-    return diffusionModel_().Dij( *this, specieJ, turb );
 }
 
 tmp<volScalarField> Foam::subSpecie::hs

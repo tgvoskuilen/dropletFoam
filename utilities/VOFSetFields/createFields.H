@@ -37,6 +37,14 @@
         mesh
     );
     
+    word relaxPhases(VOFDict.lookup("relaxPhases"));
+    bool relax = (relaxPhases == "on");
+    scalar DTau = 0;
+    
+    if( relax )
+    {
+        DTau = readScalar(VOFDict.lookup("DTau"));
+    }
     
     volVectorField U
     (

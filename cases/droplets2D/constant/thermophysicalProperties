@@ -28,18 +28,35 @@ relaxTime  5e-6;
 
 Vapor
 {
+   SchmidtNo  0.9;
+   
    subspecies
    (
-       CH3NHNH2 { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.4982e+01; T 266.8; } }
-       N2O4     { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3828e+01; T 232.4; } }
-       NO2      { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
-       H2       { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.2827e+01; T 59.70; } }
-       CH3NNH2  { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.4850e+01; T 260.0; } }
-       CH3NNH   { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3828e+01; T 232.4; } }
-       HONO     { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
-       CH3NN    { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3828e+01; T 232.4; } }
-       N2       { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
-       O2       { diffusionModel LennardJones; LennardJonesCoeffs{ sigma 0.3798e+01; T 71.40; } }
+       CH3NHNH2 {}
+       N2O4     {}
+       NO2      {}
+       H2       {}
+       CH3NNH2  {}
+       CH3NNH   {}
+       HONO     {}
+       CH3NN    {}
+       N2       {}
+       O2       {}
+       H        {}
+       H2O      {}
+       CO2      {}
+       CO       {}
+       NO       {}
+       OH       {}
+       O        {}
+       HO2      {}
+       CH3O     {}
+       CH3      {}
+       CH2O     {}
+       CH3OH    {}
+       HCO      {}
+       HNO      {}
+       HNO3     {}
    );
 }
 
@@ -47,7 +64,7 @@ Vapor
 
 Liquid
 {
-   
+   SchmidtNo  0.9;
    
    subspecies
    (
@@ -77,10 +94,6 @@ Liquid
                Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
                PvCoeffs        (9.1834 1943.89 492587.8);
             }
-            
-            diffusionModel UnitySchmidtNo;
-            
-            UnitySchmidtNoCoeffs {}
         }
         
         N2O4L
@@ -109,10 +122,6 @@ Liquid
                  Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
                  PvCoeffs        (16.1 5400.115 -194831.8);
             }
-              
-            diffusionModel UnitySchmidtNo;
-            
-            UnitySchmidtNoCoeffs {}
          }
          
          MMHNTOL //averaged properties of MMH and NTO
@@ -126,10 +135,6 @@ Liquid
               
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
             sigmaa          0.8;
-              
-            diffusionModel UnitySchmidtNo;
-            
-            UnitySchmidtNoCoeffs {}
          }
    );
 }

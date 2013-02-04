@@ -9,37 +9,32 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "constant";
-    object      chemistryProperties;
+    class       polyBoundaryMesh;
+    location    "constant/polyMesh";
+    object      boundary;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-rhoChemistryModel  ODEChemistryModel<gasThermoPhysics>;
-
-chemistry           off;
-
-chemistrySolver     ode;
-
-initialChemicalTimeStep 1e-08;
-
-sequentialCoeffs
-{
-    cTauChem        0.001;
-}
-
-EulerImplicitCoeffs
-{
-    cTauChem        0.05;
-    equilibriumRateLimiter off;
-}
-
-// Solvers are RK, KRR4, and SIBS
-odeCoeffs
-{
-    solver          SIBS;
-    eps             1e-2;
-    scale           1.0;
-}
+3
+(
+    atmosphere
+    {
+        type            patch;
+        nFaces          100;
+        startFace       27900;
+    }
+    sides
+    {
+        type            symmetryPlane;
+        nFaces          4000;
+        startFace       28000;
+    }
+    heatedWall
+    {
+        type            patch;
+        nFaces          100;
+        startFace       32000;
+    }
+)
 
 // ************************************************************************* //

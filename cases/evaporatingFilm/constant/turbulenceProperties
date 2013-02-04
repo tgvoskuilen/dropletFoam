@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.x                                 |
+|  \\    /   O peration     | Version:  2.1.1                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -11,35 +11,11 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      chemistryProperties;
+    object      turbulenceProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-rhoChemistryModel  ODEChemistryModel<gasThermoPhysics>;
+simulationType  laminar;
 
-chemistry           off;
-
-chemistrySolver     ode;
-
-initialChemicalTimeStep 1e-08;
-
-sequentialCoeffs
-{
-    cTauChem        0.001;
-}
-
-EulerImplicitCoeffs
-{
-    cTauChem        0.05;
-    equilibriumRateLimiter off;
-}
-
-// Solvers are RK, KRR4, and SIBS
-odeCoeffs
-{
-    solver          SIBS;
-    eps             1e-2;
-    scale           1.0;
-}
 
 // ************************************************************************* //

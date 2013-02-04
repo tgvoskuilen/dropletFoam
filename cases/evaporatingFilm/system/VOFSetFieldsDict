@@ -10,36 +10,37 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant";
-    object      chemistryProperties;
+    location    "system";
+    object      VOFSetFieldsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-rhoChemistryModel  ODEChemistryModel<gasThermoPhysics>;
+relaxPhases  on;
+DTau         1e-10;
 
-chemistry           off;
+defaultSpecies
+(
+    N2   1.0
+);
 
-chemistrySolver     ode;
+droplets
+(
+    WaterFilm
+    {
+        center   (-10 0.0005 0.0005);
+        radius   (10.004 10.004 10.004);
+        delVapor 1e-3;
+        U        (0 0 0);
+        liquidSpecies
+        (
+            H2OL  1.0
+        );
+        vaporSpecies
+        (
+            H2O   0.001
+        );
+    }
+);
 
-initialChemicalTimeStep 1e-08;
-
-sequentialCoeffs
-{
-    cTauChem        0.001;
-}
-
-EulerImplicitCoeffs
-{
-    cTauChem        0.05;
-    equilibriumRateLimiter off;
-}
-
-// Solvers are RK, KRR4, and SIBS
-odeCoeffs
-{
-    solver          SIBS;
-    eps             1e-2;
-    scale           1.0;
-}
 
 // ************************************************************************* //

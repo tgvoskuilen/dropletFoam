@@ -3,11 +3,6 @@ phase/phase.C
 evaporationModels/evaporationModel/evaporationModel.C
 evaporationModels/evaporationModel/newEvaporationModel.C
 evaporationModels/HertzKnudsenPressure/HertzKnudsenPressure.C
-diffusionModels/diffusionModel/diffusionModel.C
-diffusionModels/diffusionModel/newDiffusionModel.C
-diffusionModels/Constant/Constant.C
-diffusionModels/LennardJones/LennardJones.C
-diffusionModels/UnitySchmidtNo/UnitySchmidtNo.C
 
 
 hsNewReactionThermos.C

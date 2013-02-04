@@ -580,9 +580,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
 
     // Normalized Gradient Method
     //  RF = max( |grad alpha| * V^(1/3) )
-
-
-
     tRefinementField().internalField() = max
     (
         tRefinementField().internalField(), 
@@ -622,7 +619,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateAlphaVapor()
 {
     //Sharpen the remaining field
     scalar Cpc = 0.02;
-    alphaVaporSharp_ = (Foam::min(Foam::max(alphaVapor_, 0.5*Cpc),1.0-0.5*Cpc) - 0.5*Cpc)/(1.0-Cpc);
+    alphaVaporSharp_ = (Foam::min(Foam::max(alphaVapor_, 0.5*Cpc),1.0-0.5*Cpc)
+                         - 0.5*Cpc)/(1.0-Cpc);
     alphaVaporSharp_.correctBoundaryConditions();
 }
 
@@ -648,7 +646,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateSurfaceTension()
 
     //Calculate the surface tension field
     dimensionedScalar one("one",dimLength,1.0);
-    tmp<volScalarField> mask = pos(Foam::mag(kappaI_)*one - 1e-4) + neg(alphaVaporSharp_ - 0.5);
+    tmp<volScalarField> mask = pos(Foam::mag(kappaI_)*one - 1e-4)
+                             + neg(alphaVaporSharp_ - 0.5);
     sigma_ = alphaLiquid_.sigma(T_, mask());
 }
 
@@ -714,14 +713,14 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
     tmp<volVectorField> ucL = alphaLiquid_.calculateDs
     (
-        0.9, 
+        0.95, 
         mesh_.time().time().value() > phaseRelaxTime_, 
         combustionPtr_->turbulence()
     );
     
     tmp<volVectorField> ucV = alphaVapor_.calculateDs
     (
-        0.9, 
+        0.95, 
         mesh_.time().time().value() > phaseRelaxTime_, 
         combustionPtr_->turbulence()
     );
@@ -745,103 +744,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
     alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
 
-
-    
-
-
-    // if a liquid specie diffuses out into the vapor, change its phase
-    // from "liquid" to "vapor"
-    /*
-
-    tmp<volScalarField> YLmax = alphaLiquid_.rho(p_,T_)/rho*alphaLiquid_.sharp(1e-4); //rho or rho_ ?
-    tmp<volScalarField> YpL = alphaLiquid_.Yp();
-    tmp<volScalarField> YpV = alphaVapor_.Yp();
-    
-    forAllIter(PtrDictionary<subSpecie>, alphaLiquid_.subSpecies(), specieL)
-    {
-        if( specieL().hasEvaporation() )
-        {
-            const word vapor_name = specieL().evapModel().vaporName();
-            
-            volScalarField& YL = specieL().Y();
-            tmp<volScalarField> dY = YL - YLmax();
-            
-            // allow transfer anywhere the liquid is out of its phase
-            // boundaries and there is a non-negligible amount of vapor
-            dY() = dY() * pos(dY()) * pos(YpV() - 1e-2);
-            
-            volScalarField& Yv = alphaVapor_.Y(vapor_name);
-            
-            Yv += dY();
-            YL -= dY();
-        }
-    }
-    
-    */
-    
-
-    // Initial Ysum
+    // Calculate Ysum
     YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
     
     Foam::Info << "Min,Max Ysum = " << Foam::min(YSum_).value() 
                << ", " << Foam::max(YSum_).value() << Foam::endl;
                
-               
-               
-    //tmp<volScalarField> YLmax = alphaLiquid_.rho(p_,T_)/rho * alphaLiquid_.sharp(1e-4);
-               
-               
-               
-               
-               /*
-    // Keep vapor out of the liquids
-    
-    volScalarField Yvapor = 1.0 - alphaLiquid_.Yp();
-    
-
-    
-    // Shave near-zero noise and outliers out of Yvapor (tol = 1e-4)
-    //scalar tol = 1e-4;
-    //Yvapor = (Foam::max(Yvapor, tol) - tol)/(1.0-tol);
-    
-    //Apply limit to vapor species
-    tmp<volScalarField> Yp0 = alphaVapor_.Yp();
-    
-    
-    tmp<volScalarField> f = Yvapor / (Yp0() + VSMALL);
-        
-    
-    volScalarField& Y_N2 = alphaVapor_.Y("N2");
-    
-    forAll(Yvapor, cellI)
-    {
-        if( f()[cellI] < 100.0)
-        { //Ys need shrinking, or only a little expanding, shrink all vapor species
-            forAllIter(PtrDictionary<subSpecie>, alphaVapor_.subSpecies(), specieI)
-            {
-                specieI().Y()[cellI] *= f()[cellI];
-            }
-        }
-        else
-        { //Ys need more than just scaling, add inert specie
-            Y_N2[cellI] += Yvapor[cellI] - Yp0()[cellI];
-        }
-    }
-    
-    
-    forAllIter(PtrDictionary<subSpecie>, alphaVapor_.subSpecies(), specieI)
-    {
-        specieI().Y().correctBoundaryConditions();
-    }
-            
-    // Recalculate Ysum
-    YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
-    
-    Foam::Info << "Min,Max Ysum = " << Foam::min(YSum_).value() 
-               << ", " << Foam::max(YSum_).value() << Foam::endl;
-               */
-    // Not sure if this is necessary - I don't think it's used in the UEqn
-    //setHs(T_);
 }
 
 template<class MixtureType>
@@ -874,7 +782,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     surfaceScalarField phic(mag(phi_/mesh_.magSf()));
     phic = min(cAlpha*phic, max(phic));
     
-    
     //Calculate interface curvature field
     // Cell gradient of alpha
     const volVectorField gradAlpha(fvc::grad(alphaLiquid_)); //TODO: Use alphaVapor ?
@@ -899,7 +806,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             ),
             // Divergence term is handled explicitly to be
             // consistent with the explicit transport solution
-            divU*min(alphaLiquid_, scalar(1)) - alphaLiquid_.Sv_evap() // *alphaLiquid_
+            divU*min(alphaLiquid_, scalar(1)) - alphaLiquid_.Sv_evap()
         );        
 
         surfaceScalarField phiAlphaL
@@ -931,6 +838,13 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         );
         
         alphaLiquid_.max(0.0);
+        
+        // WARNING:
+        //   This solution provides a rho and rhoPhi pair that do not satisfy
+        //   continuity (DaDt is solved). The rhoEqn must be solved to get
+        //   an appropriate density field before other equations in
+        //   conservative form can be solved. Updating rho using
+        //   rho = sum(alphaI * rhoI) will NOT work properly.
 
         surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
         surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));

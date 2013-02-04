@@ -25,7 +25,6 @@ License
 
 #include "HertzKnudsenPressure.H"
 #include "addToRunTimeSelectionTable.H"
-#include "diffusionModel.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 

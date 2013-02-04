@@ -26,7 +26,6 @@ License
 #include "phase.H"
 #include "subSpecie.H"
 #include "evaporationModel.H"
-#include "diffusionModel.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -73,8 +72,27 @@ Foam::phase::phase
     (
         phaseDict_.lookup("subspecies"),
         subSpecie::iNew(mesh, species, speciesData)
+    ),
+    Sc_(1.0),
+    D_
+    (
+        IOobject
+        (
+            "D_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
     )
 {
+    if( phaseDict_.found("SchmidtNo") )
+    {
+        Sc_ = readScalar(phaseDict_.lookup("SchmidtNo"));
+    }
+    
     Foam::Info<< "Created phase " << name << Foam::endl;
 }
 
@@ -345,38 +363,6 @@ Foam::tmp<volScalarField> Foam::phase::Sh_evap() const
     return tSh;    
 }
 
-// This calculates the sensible enthalpy of the phase. I do not think it is
-// ever used
-/*
-Foam::tmp<volScalarField> Foam::phase::hs
-(
-    const volScalarField& T
-) const
-{
-    Foam::Info<< "Calling phase::hs(T)" << Foam::endl;
-    tmp<volScalarField> ths
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "ths"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("ths"+name_, dimEnergy/dimMass, 0.0)
-        )
-    );
-    
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        ths() += specieI().Y() * specieI().hs(T);
-    }
-    
-    return ths;
-}
-*/
 
 // Get the mass fraction sum of this phase
 Foam::tmp<volScalarField> Foam::phase::Yp() const
@@ -564,44 +550,6 @@ Foam::tmp<volScalarField> Foam::phase::W() const
 
 
 
-// Returns a sharpened version of the phase volume fraction
-Foam::tmp<Foam::volScalarField> Foam::phase::sharp
-(
-    scalar tol
-) const
-{
-    tmp<volScalarField> ts
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tAlphaSharp"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            *this
-        )
-    );
-    volScalarField& s = ts();
-    
-    //Sharpen the alpha field
-    scalar Cpc = 2.0*tol;
-    s = (Foam::min(Foam::max(s, 0.5*Cpc),1.0-0.5*Cpc) - 0.5*Cpc)/(1.0-Cpc);
-
-    return ts;
-}
-
-
-
-// Returns a mask of ones everywhere "in" the phase (to limit diffusion across
-// the phase boundary)
-Foam::tmp<Foam::volScalarField> Foam::phase::phaseMask() const
-{    
-    return pos(sharp(0.01) - 0.95);
-}
-
-
 // Calculate the phase thermal conductivity using the method from Harvazinski
 // This is only used for the liquid phase. The gas phase conducitivty is 
 // evaluated using the selected transport model (Sutherland)
@@ -658,6 +606,8 @@ tmp<volVectorField> Foam::phase::calculateDs
     const compressible::turbulenceModel& turb
 )
 {
+    Info<< "Calculating diffusion coefficients for " << name_ << endl;
+    
     tmp<volVectorField> tUc
     (
         new volVectorField
@@ -669,7 +619,7 @@ tmp<volVectorField> Foam::phase::calculateDs
                 mesh()
             ),
             mesh(),
-            dimensionedVector("Uc",dimVelocity,vector::zero)
+            dimensionedVector("Uc",dimVelocity*dimDensity,vector::zero)
         )
     );
         
@@ -678,46 +628,19 @@ tmp<volVectorField> Foam::phase::calculateDs
     const phase& alpha = *this;
     tmp<volScalarField> tYp = Yp();
     
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    D_ = Sc_ * turb.muEff() * pos(alpha - maskTol);
+    
+    if( allowDiffusion )
     {
-        tmp<volScalarField> tDen
-        (
-            new volScalarField
-            (
-                IOobject
-                (
-                    "tDen"+name_,
-                    mesh().time().timeName(),
-                    mesh()
-                ),
-                mesh(),
-                dimensionedScalar("tDen",dimTime/dimArea,SMALL)
-            )
-        );
-        
-        if( allowDiffusion )
+        forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
         {
-        
-            tmp<volScalarField> xI = specieI().Y() / (specieI().W() * Np());
-            
-            forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieJ)
-            {
-                if( specieJ().name() != specieI().name() )
-                {
-                    tmp<volScalarField> xJ = specieJ().Y() / (specieJ().W() * Np());
-                    tDen() += xJ / specieI().Dij( specieJ(), turb );
-                }
-            }
-            
-            specieI().D() = (1.0 - xI) / tDen * pos(alpha - maskTol);
-            
             const volScalarField& Yi = specieI().Y();
-            tUc() += specieI().D()  * fvc::grad(Yi / (tYp()+SMALL));
+            tUc() += D_ * fvc::grad(Yi / (tYp()+SMALL));
         }
-        else
-        {
-            specieI().D() = 0.0/tDen;
-        }
+    }
+    else
+    {
+        D_ *= 0.0;
     }
 
     return tUc;
@@ -786,107 +709,36 @@ void Foam::phase::solveSubSpecies
         <<" subspecie(s) for phase: " 
         << name_ << endl;
         
-    /*
-        Approaches:
-            next up - adding back turbulent mu (only in purely vapor cells, alphaLiquid < SMALL - see how much alphaL diffuses in current scheme)
-            move DiM and uc into phase (it no longer needs to be in thermo)
-            
-            checkerboarding could be due to implicit evaporation source.
-                this makes Sv and Sl inconsistent, and implicitly allows
-                  condensation, but may be oscillatory. If current case still
-                  checkboards, then try this avenue.
-                  
-                  Perhaps allowing condensation would be the best approach?
-                  
-              changing S_evap to explicit, checkerboarding does eventually go away tho
-              
-              Sp_Yi_evap uses Np, so it is changing as we loop through species. - Fix this
-                fully explicit now so this isn't used, if it works, we can make it "smart implicit"
-                adding condensation did not remove checkerboarding
-                
-            explicit, no Np issue still checkerboards!!
-            
-            trying it with no diffusion to see if that is the source of the checkerboarding
-            
-            currently running
-                Dmask is based on alpha > 0.01
-                    try a non-overlapping mask (alpha > 0.9) - boundedness much improved at first, maybe not later...
-            
-                let it run for awhile and look at
-                    1. how it does
-                    2. how a 0.99 mask would look (too diffuse?)
-    */
-
-    if (subSpecies_.size() > 1)
-    {        
-        tmp<volScalarField> Yp0 = Yp();
-        
-        forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-        {
-            volScalarField& Yi = specieI().Y();
-            
-            fvScalarMatrix YiEqn
-            (
-                fvm::ddt(rhoTotal, Yi)
-              //+ fvm::div(rhoPhi, Yi, divScheme)
-              + mvConvection->fvmDiv(rhoPhi, Yi)
-              - fvc::laplacian(specieI().D()*rho(p,T), Yi/(Yp0()+SMALL)) //need to relax alpha field before this can work stably
-              + fvc::div(uc*Yi*rho(p,T), divSchemeCorr)
-             ==
-                combustionPtr_->R(Yi)
-              + Su_Yi_evap( alphaLiquid, specieI() )
-              //- Sp_Yi_evap( alphaLiquid, specieI() )*Yi
-              //- fvm::Sp( Sp_Yi_evap( alphaLiquid, specieI()), Yi)
-            );
-
-            YiEqn.relax();
-            YiEqn.solve(mesh().solver("Yi"));
-            
-            Yi.max(0.0);
-            Yi.min(1.0); //TODO: Try removing this
-            
-            Info<< "  Pre-coerce: " << Yi.name() << " min,max,avg = " 
-                << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
-                << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
-        }
-        
-        
-        // Coerce subspecies to host phase
-        // This can only constrict (reduce) Ys, not expand (in Vapors)
-
-/*
-        tmp<volScalarField> Yp0 = Yp();
-        tmp<volScalarField> YpMax = rho(p,T)/rhoTotal*sharp(0.0001);
-        
-        tmp<volScalarField> factor = YpMax / (Yp0+SMALL);
-        
-        if( name_ == "Vapor" )
-        { //Do not expand vapors, but liquid phases must be expanded to fill host phase
-            factor() = pos(factor() - 1.0) + neg(factor() - 1.0 + VSMALL)*factor();
-        }
-        
-        forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-        {
-            volScalarField& Yi = specieI().Y();
-            
-            Yi *= factor();
-            
-            Yi.max(0.0);
-            Yi.min(1.0);
-            
-            Info<< "  " << Yi.name() << " min,max,avg = " 
-                << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
-                << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
-        }
-        
-        */
-        
-    }
-    else
+    // Save Yp so it is constant throughout subspecie solving
+    tmp<volScalarField> Yp0 = Yp();
+    
+    // Loop through phase's subspecies
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
-        Info<<"  Setting Y for phase " << name() << endl;
-        PtrDictionary<subSpecie>::iterator specieI = subSpecies_.begin();
-        specieI().Y() = rho(p,T)/rhoTotal*sharp(0.0001);
+        volScalarField& Yi = specieI().Y();
+        
+        Info<< "Max D = " << Foam::max(D_).value() << endl;
+        
+        fvScalarMatrix YiEqn
+        (
+            fvm::ddt(rhoTotal, Yi)
+          + mvConvection->fvmDiv(rhoPhi, Yi)
+          - fvm::laplacian(D_/(Yp0()+SMALL), Yi) //need to relax alpha field before this can work stably
+          + fvc::div(uc*Yi/(Yp0()+SMALL), divSchemeCorr) //Harvazinski PhD thesis mass conservation correction term
+         ==
+            combustionPtr_->R(Yi)
+          + Su_Yi_evap( alphaLiquid, specieI() )
+        );
+
+        YiEqn.relax();
+        YiEqn.solve(mesh().solver("Yi"));
+        
+        Yi.max(0.0);
+        Yi.min(1.0);
+        
+        Info<< "  Pre-coerce: " << Yi.name() << " min,max,avg = " 
+            << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
+            << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
     }
     
 }

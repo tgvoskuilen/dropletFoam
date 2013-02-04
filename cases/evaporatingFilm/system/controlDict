@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.x                                 |
+|  \\    /   O peration     | Version:  2.1.1                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,36 +10,48 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant";
-    object      chemistryProperties;
+    location    "system";
+    object      controlDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-rhoChemistryModel  ODEChemistryModel<gasThermoPhysics>;
+application     multiphaseCompRxnFoam;
 
-chemistry           off;
+startFrom       latestTime;
 
-chemistrySolver     ode;
+startTime       0;
 
-initialChemicalTimeStep 1e-08;
+stopAt          endTime;
 
-sequentialCoeffs
-{
-    cTauChem        0.001;
-}
+endTime         0.1;
 
-EulerImplicitCoeffs
-{
-    cTauChem        0.05;
-    equilibriumRateLimiter off;
-}
+deltaT          1e-6;
 
-// Solvers are RK, KRR4, and SIBS
-odeCoeffs
-{
-    solver          SIBS;
-    eps             1e-2;
-    scale           1.0;
-}
+writeControl    adjustableRunTime; //timeStep
+
+writeInterval   1e-5;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  7;
+
+writeCompression compressed;
+
+timeFormat      general;
+
+timePrecision   7;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.2;
+maxAlphaCo      0.2;
+
+maxDeltaT       1;
+
+volSourceLimit  0.2;
 
 // ************************************************************************* //

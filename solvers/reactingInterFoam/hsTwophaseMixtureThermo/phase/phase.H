@@ -88,6 +88,12 @@ class phase
 
         //- Dictionary of pointers to phase subspecies
         PtrDictionary<subSpecie> subSpecies_;
+        
+        //- Schmidt number
+        scalar Sc_;
+        
+        //- Mass diffusion coefficient
+        volScalarField D_;
 
 
 public:
@@ -160,13 +166,7 @@ public:
         ) const;
         
         tmp<volScalarField> Sv_evap() const;
-        
-        //- Get a mask of 0s and 1s to indicate where this phase is
-        tmp<volScalarField> phaseMask() const;
-        
-        //- Get a sharpened alpha field of this phase
-        tmp<volScalarField> sharp(scalar tol = 0.01) const;
-        
+                       
         //- Return the phase compressibility
         tmp<volScalarField> psi
         (
@@ -174,7 +174,6 @@ public:
         ) const;
                 
 
-        //tmp<volScalarField> hs(const volScalarField& T) const;
         tmp<volScalarField> Yp() const;
         tmp<volScalarField> Np() const;
         

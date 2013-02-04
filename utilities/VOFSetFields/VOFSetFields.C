@@ -36,7 +36,6 @@ Description
 #include "fvMesh.H"
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
-//#include "cuttableCell.H"
 #include "droplet.H"
 
 using namespace Foam;
@@ -49,11 +48,11 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createDynamicFvMesh.H"
     #include "createFields.H"
-
+    
     // Set drop species and liquid fraction
-    forAllConstIter(PtrDictionary<droplet>, droplets, dropI)
+    forAllIter(PtrDictionary<droplet>, droplets, dropI)
     {
-        dropI().set(alphaLiquid, U, species);
+        dropI().set(alphaLiquid, U, species, relax, DTau);
     }
     
     // Set vapor fraction

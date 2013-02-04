@@ -74,6 +74,9 @@ class droplet
         HashTable<scalar> liquidSpecies_;
         HashTable<scalar> vaporSpecies_;
         
+        volScalarField dropMask_;
+        volScalarField vaporMask_;
+        
 public:
 
     // Constructors
@@ -130,18 +133,31 @@ public:
             return name();
         }
         
+        const volScalarField& dropMask() const
+        {
+            return dropMask_;
+        }
+        
+        const volScalarField& vaporMask() const
+        {
+            return vaporMask_;
+        }
+        
+        
         void set
         (
             volScalarField& alphaLiquid,
             volVectorField& U,
-            PtrList<volScalarField>& species
-        ) const;
+            PtrList<volScalarField>& species,
+            bool relax,
+            scalar DTau
+        );
         
         List<word> species() const;
         
-        tmp<scalarField> dropMask() const;
         tmp<scalarField> r() const;
-        tmp<scalarField> vaporMask() const;
+
+        void calculate(bool relax, scalar DTau);
 };
 
 

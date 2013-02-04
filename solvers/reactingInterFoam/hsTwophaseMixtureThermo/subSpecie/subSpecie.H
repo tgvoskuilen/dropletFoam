@@ -56,7 +56,6 @@ namespace Foam
 {
     //Forward declaration of evaporation model class
     class evaporationModel;
-    class diffusionModel;
     
 /*---------------------------------------------------------------------------*\
                            Class phase Declaration
@@ -77,18 +76,12 @@ class subSpecie
         
         //- Pointer to subspecie evaporation model
         autoPtr<evaporationModel> evapModel_;
-        
-        //- Pointer to the subspecie diffusion model
-        autoPtr<diffusionModel> diffusionModel_;
-        
+               
         //- Viscosity model for this phase
         autoPtr<viscosityModel> nuModel_;
         
         //- Mass fraction of this subspecie
         volScalarField& Y_;
-        
-        //- Mass diffusion coefficient of this subspecie
-        volScalarField D_;
         
         //- Thermo properties of this subspecie
         const gasThermoPhysics& thermo_;
@@ -205,11 +198,6 @@ public:
             return evapModel_();
         }
         
-        const diffusionModel& diffModel() const
-        {
-            return diffusionModel_();
-        }
-        
         bool hasEvaporation() const
         {
             return subSpecieDict_.found("evaporationModel");
@@ -234,17 +222,7 @@ public:
         {
             return Y_;
         }
-        
-        const volScalarField& D() const
-        {
-            return D_;
-        }
-        
-        volScalarField& D()
-        {
-            return D_;
-        }
-        
+                
         bool hasNuModel() const
         {
             return subSpecieDict_.found("transportModel");
@@ -256,13 +234,7 @@ public:
         }
             
         tmp<volScalarField> sigma(const volScalarField& T) const;
-        
-        tmp<volScalarField> Dij
-        (
-            const subSpecie& specieJ,
-            const compressible::turbulenceModel& turb
-        ) const;
-        
+                
         const gasThermoPhysics& thermo() const
         {
             return thermo_;

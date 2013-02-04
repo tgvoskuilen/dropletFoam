@@ -42,7 +42,35 @@ Foam::droplet::droplet
     dV_(readScalar(dropletDict.lookup("delVapor"))),
     Uinit_(dropletDict.lookup("U")),
     liquidSpecies_(dropletDict.lookup("liquidSpecies")),
-    vaporSpecies_(dropletDict.lookup("vaporSpecies"))
+    vaporSpecies_(dropletDict.lookup("vaporSpecies")),
+    dropMask_
+    (
+        IOobject
+        (
+            "drop_mask_" + name_,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("dropMask",dimless,0),
+        zeroGradientFvPatchScalarField::typeName
+    ),
+    vaporMask_
+    (
+        IOobject
+        (
+            "vapor_mask_" + name_,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("vaporMask",dimless,0),
+        zeroGradientFvPatchScalarField::typeName
+    )
 {
     Foam::Info<< "Created droplet " << name << Foam::endl;
 }
@@ -82,46 +110,72 @@ Foam::tmp<Foam::scalarField> Foam::droplet::r() const
     
     tmp<scalarField> r = Foam::mag(Isr & (cellCenters.internalField() - center_));
     
-    
-    
     return r;
 }
 
-Foam::tmp<Foam::scalarField> Foam::droplet::dropMask() const
-{    
-    return neg(r() - 1.0);
-}
 
-Foam::tmp<Foam::scalarField> Foam::droplet::vaporMask() const
+
+void Foam::droplet::calculate(bool relax, scalar DTau)
 {
+    //calculate drop mask
+    dropMask_.internalField() = neg(r() - 1.0);
+    dropMask_.correctBoundaryConditions();
+    
+    if( relax )
+    {
+        //first relax diffusively
+        dimensionedScalar dTau("dTau",dimArea,DTau);
+        
+        for(label i = 0; i < 5; i++)
+        {
+            dropMask_ += dTau * fvc::laplacian(dropMask_);
+            dropMask_.correctBoundaryConditions();
+        }
+        
+        //then sharpen
+        scalar tol = 0.01;
+        dropMask_ = (Foam::min(Foam::max(dropMask_, tol),1.0-tol)
+                         - tol)/(1.0-2.0*tol);
+    }
+    
+    //re-enforce inner regions
+    
+    
+    //calculate vapor mask
     scalar d_layer = Foam::mag(radius_)/dV_;
 
     tmp<scalarField> f = Foam::max(1.0 - d_layer*(r() - 1.0), 0.0);
     
-    return f * (1.0 - dropMask());
+    vaporMask_.internalField() = f * (1.0 - dropMask_);
+    vaporMask_.correctBoundaryConditions();
 }
+
 
 
 void Foam::droplet::set
 (
     Foam::volScalarField& alphaLiquid,
     Foam::volVectorField& U,
-    PtrList<volScalarField>& species
-) const
+    PtrList<volScalarField>& species,
+    bool relax,
+    scalar DTau
+)
 {
-    alphaLiquid.internalField() += dropMask();
-    U.internalField() += Uinit_*dropMask();
+    calculate(relax,DTau);
+    
+    alphaLiquid.internalField() += dropMask_;
+    U.internalField() += Uinit_*dropMask_;
 
     forAll(species, i)
     {
         if( liquidSpecies_.found(species[i].name()) )
         {
-            species[i].internalField() += dropMask()*liquidSpecies_[species[i].name()];
+            species[i].internalField() += dropMask_*liquidSpecies_[species[i].name()];
         }
         
         if( vaporSpecies_.found(species[i].name()) )
         {
-            species[i].internalField() += vaporMask()*vaporSpecies_[species[i].name()];
+            species[i].internalField() += vaporMask_*vaporSpecies_[species[i].name()];
         }
     }
 }
