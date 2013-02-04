@@ -53,7 +53,8 @@ Foam::diffusionModels::LennardJones::LennardJones
 Foam::tmp<Foam::volScalarField> Foam::diffusionModels::LennardJones::Dij
 (
     const subSpecie& sI,
-    const subSpecie& sJ
+    const subSpecie& sJ,
+    const compressible::turbulenceModel& turb
 ) const
 {
     const fvMesh& mesh = sI.Y().mesh();
@@ -61,8 +62,10 @@ Foam::tmp<Foam::volScalarField> Foam::diffusionModels::LennardJones::Dij
     const volScalarField& p = mesh.lookupObject<volScalarField>("p");
     
     //TODO: Check that sI and sJ have the same diffusion model
+    // This cast will fail if sJ is not a LennardJones model
     const LennardJones& dmJ = dynamic_cast<const LennardJones&>(sJ.diffModel());
     
+    // Energies given as e/kB (so in Kelvin)
     tmp<volScalarField> Ts = T / 
             dimensionedScalar
             (
@@ -71,18 +74,24 @@ Foam::tmp<Foam::volScalarField> Foam::diffusionModels::LennardJones::Dij
                 Foam::sqrt(T_*dmJ.T())
             );
             
+    // sigma in Angstroms
     scalar sigmaijSqr = Foam::pow(0.5*(sigma_ + dmJ.sigma()),2.0);
+    
+    // Ws in g/mol or kg/kmol
     scalar Wij = Foam::sqrt(0.5*(1.0/sI.W().value() + 1.0/sJ.W().value()));
     
+    // Livermore document (Cloutman, August 2000, eq. 20)
     tmp<volScalarField> OmegaD = Foam::pow(Ts, -0.145) + Foam::pow(0.5+Ts,-2.0);
     
+    // Neufeld et al. 1972
     /*tmp<volScalarField> OmegaD = 
           1.06036 * Foam::pow(Ts, -0.15610)
         + 0.19300 * Foam::exp(-0.47635*Ts)
         + 1.03587 * Foam::exp(-1.52996*Ts)
-        + 1.76474 * Foam::exp(-3.89411*Ts);*/ // Neufeld 1972 form
+        + 1.76474 * Foam::exp(-3.89411*Ts);*/
         
-        
+    // Coefficient derived from analytics and unit conversions. See Cloutman
+    // document for details
     dimensionedScalar A("factor",dimensionSet(1, 1, -3, -1.5, 0),0.026693);
         
     return A*Foam::pow(T,1.5)*Wij / (p*sigmaijSqr*OmegaD);

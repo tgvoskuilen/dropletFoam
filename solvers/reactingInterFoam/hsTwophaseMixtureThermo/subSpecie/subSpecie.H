@@ -257,7 +257,11 @@ public:
             
         tmp<volScalarField> sigma(const volScalarField& T) const;
         
-        tmp<volScalarField> Dij(const subSpecie& specieJ) const;
+        tmp<volScalarField> Dij
+        (
+            const subSpecie& specieJ,
+            const compressible::turbulenceModel& turb
+        ) const;
         
         const gasThermoPhysics& thermo() const
         {

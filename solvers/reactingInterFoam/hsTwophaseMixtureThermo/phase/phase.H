@@ -134,12 +134,6 @@ public:
         {
             return subSpecies_;
         }
-
-        //- Return const-access to phase1 viscosityModel
-        const viscosityModel& nuModel() const
-        {
-            return nuModel_();
-        }
                 
         surfaceScalarField& rhoPhiAlpha()
         {
@@ -231,16 +225,14 @@ public:
             const volScalarField& p,
             const volScalarField& T
         ) const;
+                        
         
-        
-        /*
-        tmp<volScalarField> Dk
-        (
-            const word& specieKName
-        ) const;*/
-                
-        
-        tmp<volVectorField> calculateDs( scalar maskTol, bool allow );
+        tmp<volVectorField> calculateDs
+        ( 
+            scalar maskTol, 
+            bool allowDiffusion, 
+            const compressible::turbulenceModel& turb 
+        );
 
         void solveSubSpecies
         (

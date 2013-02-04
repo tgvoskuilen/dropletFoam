@@ -52,7 +52,8 @@ Foam::diffusionModels::Constant::Constant
 Foam::tmp<Foam::volScalarField> Foam::diffusionModels::Constant::Dij
 (
     const subSpecie& sI,
-    const subSpecie& sJ
+    const subSpecie& sJ,
+    const compressible::turbulenceModel& turb
 ) const
 {
     const fvMesh& mesh = sI.Y().mesh();

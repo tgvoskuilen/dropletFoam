@@ -109,7 +109,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
         )
     );
     
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
         if( specieI().hasNuModel() )
         {
@@ -649,48 +649,14 @@ Foam::tmp<Foam::volScalarField> Foam::phase::k() const
     return 0.5*tk1;
 }
 
-/*
-// Lennerd Jones diffusion coefficient calculation - from Swan
-Foam::tmp<Foam::volScalarField> Foam::phase::Dk
+
+
+tmp<volVectorField> Foam::phase::calculateDs
 (
-    const word& specieKName
-) const
-{
-    // Dij = sum((1-xk)/(xk/Dki) i ne k)
-    tmp<volScalarField> trDk
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "trDij"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("rDij",dimTime/dimArea,SMALL)
-        )
-    );
-    
-    const subSpecie& specieK = *subSpecies_[specieKName];
-    
-    tmp<volScalarField> xk = specieK.Y() / (specieK.W() * Np())
-
-
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        if( specieI().name() != specieKName )
-        {
-            trDk() += specieI().Y() / (specieI().W() * Np()) / Dij( specieI(), specieK );
-        }
-    }
-
-    return (1 - xk()) / trDk;
-}
-*/
-
-
-tmp<volVectorField> Foam::phase::calculateDs(scalar maskTol, bool allow)
+    scalar maskTol,
+    bool allowDiffusion,
+    const compressible::turbulenceModel& turb
+)
 {
     tmp<volVectorField> tUc
     (
@@ -707,7 +673,8 @@ tmp<volVectorField> Foam::phase::calculateDs(scalar maskTol, bool allow)
         )
     );
         
-    // DiM = sum((1-xk)/(xk/Dki) i ne k)  <-- TODO: VERIFY THIS!
+    // DiM = (1-xi)/sum((xj/Dij) j != i)  <-- Harvasinski and Livermore document
+    // may be out of date, Stefan-Maxwell equation may be better.
     const phase& alpha = *this;
     tmp<volScalarField> tYp = Yp();
     
@@ -728,7 +695,7 @@ tmp<volVectorField> Foam::phase::calculateDs(scalar maskTol, bool allow)
             )
         );
         
-        if( allow )
+        if( allowDiffusion )
         {
         
             tmp<volScalarField> xI = specieI().Y() / (specieI().W() * Np());
@@ -737,7 +704,8 @@ tmp<volVectorField> Foam::phase::calculateDs(scalar maskTol, bool allow)
             {
                 if( specieJ().name() != specieI().name() )
                 {
-                    tDen() += specieI().Y() / (specieI().W() * Np()) / specieI().Dij( specieJ() );
+                    tmp<volScalarField> xJ = specieJ().Y() / (specieJ().W() * Np());
+                    tDen() += xJ / specieI().Dij( specieJ(), turb );
                 }
             }
             

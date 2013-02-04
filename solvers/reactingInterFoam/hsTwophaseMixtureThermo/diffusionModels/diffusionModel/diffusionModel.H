@@ -116,7 +116,8 @@ public:
         virtual tmp<volScalarField> Dij
         (
             const subSpecie& sI,
-            const subSpecie& sJ
+            const subSpecie& sJ,
+            const compressible::turbulenceModel& turb
         ) const = 0;
 
 

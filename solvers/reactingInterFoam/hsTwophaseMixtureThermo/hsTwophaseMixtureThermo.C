@@ -90,7 +90,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
 
 
 
-
+// The internally stored "mu_" is used by turbulence and should be correct
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateMu()
 {    
@@ -712,8 +712,19 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     Info<< "Min,max rho = " << Foam::min(rho).value() << ", " 
         << Foam::max(rho).value() << endl;
 
-    tmp<volVectorField> ucL = alphaLiquid_.calculateDs(0.9, mesh_.time().time().value() > phaseRelaxTime_);
-    tmp<volVectorField> ucV = alphaVapor_.calculateDs(0.9, mesh_.time().time().value() > phaseRelaxTime_);
+    tmp<volVectorField> ucL = alphaLiquid_.calculateDs
+    (
+        0.9, 
+        mesh_.time().time().value() > phaseRelaxTime_, 
+        combustionPtr_->turbulence()
+    );
+    
+    tmp<volVectorField> ucV = alphaVapor_.calculateDs
+    (
+        0.9, 
+        mesh_.time().time().value() > phaseRelaxTime_, 
+        combustionPtr_->turbulence()
+    );
     
     Info<< "Max ucL = " << Foam::max(Foam::mag(ucL())).value() << endl;
     Info<< "Max ucV = " << Foam::max(Foam::mag(ucV())).value() << endl;

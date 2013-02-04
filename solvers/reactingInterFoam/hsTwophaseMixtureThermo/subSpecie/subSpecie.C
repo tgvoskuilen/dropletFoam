@@ -105,9 +105,13 @@ Foam::autoPtr<Foam::subSpecie> Foam::subSpecie::clone() const
     return autoPtr<subSpecie>(NULL);
 }
 
-tmp<volScalarField> Foam::subSpecie::Dij(const subSpecie& specieJ) const
+tmp<volScalarField> Foam::subSpecie::Dij
+(
+    const subSpecie& specieJ,
+    const compressible::turbulenceModel& turb
+) const
 {
-    return diffusionModel_().Dij( *this, specieJ );
+    return diffusionModel_().Dij( *this, specieJ, turb );
 }
 
 tmp<volScalarField> Foam::subSpecie::hs
