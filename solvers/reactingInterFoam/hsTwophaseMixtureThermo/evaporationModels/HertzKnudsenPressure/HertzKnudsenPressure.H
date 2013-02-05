@@ -88,7 +88,7 @@ public:
     // Member Functions
         virtual void calculate
         (
-            const volScalarField& evapMask
+            const volScalarField& area
         );
 
 };

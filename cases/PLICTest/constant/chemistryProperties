@@ -9,38 +9,37 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    object      alpha1;
+    class       dictionary;
+    location    "constant";
+    object      chemistryProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 0 0 0 0];
+rhoChemistryModel  ODEChemistryModel<gasThermoPhysics>;
 
-internalField   uniform 0;
+chemistry           off;
 
-boundaryField
+chemistrySolver     ode;
+
+initialChemicalTimeStep 1e-08;
+
+sequentialCoeffs
 {
-    atmosphere
-    {
-        type            inletOutlet;
-        inletValue      uniform 0;
-        value           uniform 0;
-    }
-    
-    frontAndBack
-    {
-        type            empty;
-    }
-    
-    wall
-    {
-        type            zeroGradient;
-    }
-    
-    defaultFaces
-    {
-        type            empty;
-    }
+    cTauChem        0.001;
+}
+
+EulerImplicitCoeffs
+{
+    cTauChem        0.05;
+    equilibriumRateLimiter off;
+}
+
+// Solvers are RK, KRR4, and SIBS
+odeCoeffs
+{
+    solver          SIBS;
+    eps             1e-2;
+    scale           1.0;
 }
 
 // ************************************************************************* //

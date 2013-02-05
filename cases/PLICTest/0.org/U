@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.x                                 |
+|  \\    /   O peration     | Version:  2.1.1                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -27,15 +27,14 @@ boundaryField
         value           uniform (0 0 0);
     }
     
-    wall
-    {
-        type            fixedValue;
-        value           uniform (0 0 0)
-    }
-    
     frontAndBack
     {
-        type            empty;
+        type            symmetryPlane;
+    }
+    
+    defaultFaces
+    {
+        type            symmetryPlane;
     }
 }
 

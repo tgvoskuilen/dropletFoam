@@ -372,7 +372,7 @@ bool Foam::cuttableCell::makePoints
     
     //if point 1 happens to be diagonally opposite to point 0, the area vector
     // will be zero. Just pick the next point then.
-    if (mag(areaVec) < SMALL)
+    if (mag(areaVec) < VSMALL)
     {
         vCj = pointList[2] - origin;
         areaVec = (vCi ^ vCj);
@@ -389,9 +389,10 @@ bool Foam::cuttableCell::makePoints
         centroid += (1.0/3.0)*(3.0*origin + vCi + vCj) * tarea;
     }
     
-    if (mag(area) < SMALL || mag(areaVec) < SMALL)
+    if (mag(area) < VSMALL || mag(areaVec) < VSMALL)
     {
-        Info<< "\n\n--> Bad point list:\n" << pointList << endl;
+        Info<< "\n--> Bad point list:\n" << pointList << endl;
+        Info<< "\n--> Area:" << mag(area) << endl;
         //FatalError << "makePoints encountered zero area" << abort(FatalError);
         return false;
     }

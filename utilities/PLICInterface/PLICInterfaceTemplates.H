@@ -56,7 +56,7 @@ void PLICInterface::transfer
             label own = owner[faceI];
             label nei = neighbor[faceI];
 
-            label sc = (alpha_[own] < alphaMin_.value()) ? own : nei; 
+            label sc = (alphaVapor_[own] < alphaMin_) ? own : nei; 
             label rc = (sc == own) ? nei : own;
 
             dest[rc] += w[faceI]/wtot[sc] * src[sc];
@@ -94,7 +94,7 @@ void PLICInterface::transfer
                 
                 if ( wPf[pFaceI] > 0.0)
                 {
-                    if (alpha_[pfCellI] < alphaMin_.value())
+                    if (alphaVapor_[pfCellI] < alphaMin_)
                     {//I own the small cell
                         dest[pfCellI] = zero;
                     }
@@ -143,7 +143,7 @@ void PLICInterface::setScValue
                 label own = owner[faceI];
                 label nei = neighbor[faceI];
 
-                label sc = (alpha_[own] < alphaMin_.value()) ? own : nei; 
+                label sc = (alphaVapor_[own] < alphaMin_) ? own : nei; 
                 label rc = (sc == own) ? nei : own;
 
                 Su[sc] += w[faceI]/wtot[sc] * src[rc] * diag.value();
@@ -176,7 +176,7 @@ void PLICInterface::setScValue
                     
                     if ( wPf[pFaceI] > 0.0)
                     {                        
-                        if (alpha_[pfCellI] < alphaMin_.value())
+                        if (alphaVapor_[pfCellI] < alphaMin_)
                         {//I own the small cell
                             Su[pfCellI] += wPf[pFaceI]/wtot[pfCellI] 
                                           * srcPNf[pFaceI] * diag.value();

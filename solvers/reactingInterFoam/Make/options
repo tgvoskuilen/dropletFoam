@@ -1,5 +1,7 @@
 EXE_INC = \
     -IhsTwophaseMixtureThermo/lnInclude \
+    -I../../utilities/PLICInterface/lnInclude \
+    -I../../utilities/geometryTools/lnInclude \
     -I$(LIB_SRC)/transportModels \
     -I$(LIB_SRC)/transportModels/incompressible/lnInclude \
     -I$(LIB_SRC)/transportModels/interfaceProperties/lnInclude \
@@ -33,5 +35,7 @@ EXE_LIBS = \
     -lbasicThermophysicalModels \
     -lchemistryModel \
     -lODE \
-    -lcombustionModels 
+    -lcombustionModels \
+    -lPLICInterface \
+    -lgeometryTools
 

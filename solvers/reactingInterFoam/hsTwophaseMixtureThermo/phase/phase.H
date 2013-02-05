@@ -74,7 +74,7 @@ class phase
         //- Phase dictionary (in thermophysicalProperties::phases)
         dictionary phaseDict_;
         
-        //- Volume flux field for this phase
+        //- Mass flux field for this phase
         surfaceScalarField rhoPhiAlpha_;
         
         //- Pointer to the top-level combustion model
@@ -93,7 +93,7 @@ class phase
         scalar Sc_;
         
         //- Mass diffusion coefficient
-        volScalarField D_;
+        surfaceScalarField D_;
 
 
 public:
@@ -200,9 +200,7 @@ public:
         volScalarField& Y(const word& specie);
         
         const volScalarField& Y(const word& specie) const;
-        
-        tmp<volScalarField> sharp(scalar tol) const;
-        
+                
         //- Calculate the surface tension field for this phase
         tmp<volScalarField> sigma
         (
@@ -227,11 +225,11 @@ public:
         ) const;
                         
         
-        tmp<volVectorField> calculateDs
+        tmp<surfaceVectorField> calculateDs
         ( 
-            scalar maskTol, 
             bool allowDiffusion, 
-            const compressible::turbulenceModel& turb 
+            const compressible::turbulenceModel& turb,
+            const surfaceScalarField& alphaf
         );
 
         scalar solveSubSpecies
@@ -241,8 +239,9 @@ public:
             const volScalarField& p,
             const volScalarField& T,
             const phase& alphaLiquid,
-            const volVectorField& uc,
-            const tmp<fv::convectionScheme<scalar> >& mvConvection
+            const surfaceVectorField& uc,
+            const tmp<fv::convectionScheme<scalar> >& mvConvection,
+            const surfaceScalarField& alphaf
         );
 
 };

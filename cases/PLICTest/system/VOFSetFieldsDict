@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.0                                 |
+|  \\    /   O peration     | Version:  2.1.x                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,61 +10,52 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      blockMeshDict;
+    location    "system";
+    object      VOFSetFieldsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-convertToMeters 0.01; //values here are in cm
-
-vertices
+defaultSpecies
 (
-    (-0.001 0   0)
-    (-0.001 0.6 0)
-    ( 0.001 0.6 0)
-    ( 0.001 0   0)
-    (-0.001 0   0.6)
-    (-0.001 0.6 0.6)
-    ( 0.001 0.6 0.6)
-    ( 0.001 0   0.6)
+    N2   1.0
 );
 
-blocks
+droplets
 (
-    hex (0 3 2 1 4 7 6 5) (1 300 300) simpleGrading (1 1 1)
-);
-
-edges
-(
-);
-
-boundary
-(
-    atmosphere
+    DropMMH
     {
-        type patch;
-        faces
+        center   (0 0.003 0.00411);
+        radius   (0 0.001 0.001);
+        delVapor 1e-4;
+        U        (0 0 -1);
+        liquidSpecies
         (
-            (0 1 2 3)
-            (1 5 6 2)
-            (6 5 4 7)
-            (0 3 7 4)
+            CH3NHNH2L  1.0
+        );
+        vaporSpecies
+        (
+            CH3NHNH2   0.05
+        );
+    }
+    
+    DropNTO
+    {
+        center   (0 0.003 0.00189);
+        radius   (0 0.001 0.001);
+        delVapor 1e-4;
+        U        (0 0 1);
+        liquidSpecies
+        (
+            N2O4L  1.0
+        );
+        vaporSpecies
+        (
+            N2O4   0.90
+            NO2    0.09
         );
     }
 
-    frontAndBack
-    {
-      type symmetryPlane;
-      faces
-      (
-       (3 2 6 7)
-       (5 1 0 4)
-      );
-
-    }
 );
 
-mergePatchPairs
-(
-);
 
 // ************************************************************************* //

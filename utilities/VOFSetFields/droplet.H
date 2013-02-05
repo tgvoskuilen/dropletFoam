@@ -44,7 +44,7 @@ SourceFiles
 #include "fvCFD.H"
 #include "dimensionedScalar.H"
 #include "dimensionedScalarFwd.H"
-//#include "geometryTools.H"
+#include "cuttableCell.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -74,8 +74,8 @@ class droplet
         HashTable<scalar> liquidSpecies_;
         HashTable<scalar> vaporSpecies_;
         
-        volScalarField dropMask_;
-        volScalarField vaporMask_;
+        volScalarField dropMask_; //TODO: Change to scalarField
+        volScalarField vaporMask_; //TODO: Change to scalarField
         
 public:
 
@@ -148,16 +148,16 @@ public:
         (
             volScalarField& alphaLiquid,
             volVectorField& U,
-            PtrList<volScalarField>& species,
-            bool relax,
-            scalar DTau
+            PtrList<volScalarField>& species
         );
+        
+        void calcDropMask();
         
         List<word> species() const;
         
         tmp<scalarField> r() const;
 
-        void calculate(bool relax, scalar DTau);
+        void calculate();
 };
 
 

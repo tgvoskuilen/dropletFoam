@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.x                                 |
+|  \\    /   O peration     | Version:  2.1.1                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -9,44 +9,20 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    object      p_rgh;
+    class       dictionary;
+    location    "system";
+    object      decomposeParDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [1 -1 -2 0 0 0 0];
+numberOfSubdomains NUMPROCS;
 
-internalField   uniform 0;
+method          DECOMPOSEPAR_METHOD;
 
-boundaryField
+simpleCoeffs
 {
-    atmosphere
-    {
-        type            totalPressure;
-        p0              uniform 0;
-        U               U;
-        phi             phi;
-        rho             rho;
-        psi             none;
-        gamma           1;
-        value           uniform 0;
-    }
-
-    wall
-    {
-        type            zeroGradient;
-    }
-    
-    
-    frontAndBack
-    {
-        type            empty;
-    }
-
-    defaultFaces
-    {
-        type            empty;
-    }
+    n       ( 1 VALUE1 VALUE2 );
+    delta   0.001;
 }
 
 // ************************************************************************* //

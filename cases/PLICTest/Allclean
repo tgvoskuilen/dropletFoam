@@ -5,7 +5,14 @@ cd ${0%/*} || exit 1    # run from this directory
 . $WM_PROJECT_DIR/bin/tools/CleanFunctions
 
 cleanCase
+
 rm -rf 0
 find . -name '*~' -delete
+rm -f *.foam
+#rm -f constant/reactions
+#rm -f constant/thermo
+#rm -f constant/transportProperties
+rm -f constant/cellDecomposition.gz
+rm -f system/decomposeParDict
 
 # ----------------------------------------------------------------- end-of-file

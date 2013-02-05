@@ -61,6 +61,8 @@ SourceFiles
 #include "multivariateSurfaceInterpolationScheme.H"
 #include "subCycle.H"
 
+#include "PLICInterface.H"
+
 #include "Time.H"
 #include "MULES.H"
 #include "fvcSnGrad.H"
@@ -108,19 +110,10 @@ private:
         
         //- Velocity field
         const volVectorField& U_;
-                
-        //- Sharpened vapor fraction (for calculating curvature)
-        volScalarField alphaVaporSharp_;
-        
-        //- Curvature
-        volScalarField kappaI_;
-        
+                                
         //- Surface tension
         volScalarField sigma_;
-                
-        //- Evaporation mask to stop evaporation at diffuse liquid interfaces
-        volScalarField evap_mask_;
-        
+                        
         //- Sum of all mass fractions
         volScalarField YSum_;
 
@@ -130,6 +123,10 @@ private:
         scalar phaseRelaxTime_;
         
         multivariateSurfaceInterpolationScheme<scalar>::fieldTable fields_;
+        
+        //- PLIC phase interface handling class
+        PLICInterface interface_;
+
 
     // Private methods
 
@@ -315,9 +312,6 @@ public:
             tmp<volScalarField> rCv() const;
             
             void setHs(const volScalarField& T);
-            
-            //- Calculate the sharpened volume fraction for the vapor phase
-            void calculateAlphaVapor();
             
             //- Calculate the surface tension force from the curvature and
             //  surface tension coefficients

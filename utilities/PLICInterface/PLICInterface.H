@@ -64,10 +64,16 @@ class PLICInterface
         //- Parameter dictionary
         IOdictionary plicDict_;
 
-        //- Volume fraction of gas
-        volScalarField& alpha_;
+        //- Volume fraction of Vapor
+        volScalarField& alphaVapor_;
         
-        //- Face area fraction of gas
+        //- Volume fraction of liquid
+        volScalarField& alphaLiquid_;
+        
+        const surfaceScalarField& phi_;
+        const volVectorField& U_;
+        
+        //- Face area fraction of vapor
         surfaceScalarField alphaf_;
         
         //- Volume flux of gas phase
@@ -78,9 +84,6 @@ class PLICInterface
         //- Interface area
         volScalarField iArea_;
         
-        //- Interface regression velocity
-        //volVectorField iU_;
-
         //- Interface normal vector
         volVectorField iNormal_;
         
@@ -93,11 +96,14 @@ class PLICInterface
         //- Centroid of liquid portion of a cell (zero in gas)
         volVectorField liquidC_;
         
+        //- Interface curvature
+        volScalarField kappaI_;
+        
         //- Alpha cutoff for small cell treatment
-        dimensionedScalar alphaMin_;
+        scalar alphaMin_;
         
         //- Alpha interface reconstruction cutoff
-        dimensionedScalar reconstructTol_;
+        scalar reconstructTol_;
 
     // Private member functions        
         //- Calculate the interface normals
@@ -113,7 +119,10 @@ public:
         //- Construct on host mesh
         PLICInterface
         (
-            volScalarField& alpha
+            volScalarField& alphaLiquid,
+            volScalarField& alphaVapor,
+            const surfaceScalarField& phi,
+            const volVectorField& U
         );
 
         //- Return clone
@@ -121,14 +130,24 @@ public:
 
     // Public Member Functions
 
-        const surfaceScalarField& alphaf() const
+        const surfaceScalarField& alphaLiquidf() const
         {
             return alphaf_;
         }
-
-        const volScalarField& alpha() const
+        
+        tmp<surfaceScalarField> alphaVaporf() const
         {
-            return alpha_;
+            return 1.0 - alphaf_;
+        }
+
+        const volScalarField& alphaVapor() const
+        {
+            return alphaVapor_;
+        }
+        
+        const volScalarField& alphaLiquid() const
+        {
+            return alphaLiquid_;
         }
 
         const volScalarField& area() const
@@ -141,15 +160,27 @@ public:
             return iNormal_;
         }
         
+        const surfaceScalarField& phiAlpha() const
+        {
+            return phiAlpha_;
+        }
+        
+        const volScalarField& kappa() const
+        {
+            return kappaI_;
+        }
+        
         //- Get the "used" alpha (zero in small cells)
-        tmp<volScalarField> alphaCorr() const;
+        tmp<volScalarField> alphaVaporCorr() const;
 
         //- Evolve the interface given a solid consumption rate
-        void moveInterface
+        void advect
         (
-            const surfaceScalarField& phi,
-            const volVectorField& U
+            const volScalarField& liquidVolSource
         );
+        
+        //- Update the stored curvature field
+        void updateKappa();
         
         //- Calculate the interface parameters given alpha
         void correct();
@@ -158,14 +189,17 @@ public:
         void update();
         
         //- Get the mesh refinement criteria field
-        tmp<volScalarField> getRefinementField
-        (
-            const volVectorField& U
-        ) const;
+        tmp<volScalarField> getRefinementField() const;
         
         //- Calculate the small cell transfer weights
         tmp<surfaceScalarField> scTransferWeights();
         
+        //- Calculate the surface tension forces given a sigma field
+        tmp<surfaceScalarField> surfaceTensionForce
+        (
+            const volScalarField& sigma
+        ) const;
+
         //- Transfer a field from small cells to neighbour cells
         template<class Type>
         void transfer
@@ -190,10 +224,7 @@ public:
         );
         
         //-
-        tmp<surfaceScalarField> phiAlphaFrac
-        (
-            const volVectorField& U
-        ) const;
+        tmp<surfaceScalarField> phiAlphaFrac() const;
         
         //- Return a mask for small cells
         tmp<volScalarField> smallCells() const;

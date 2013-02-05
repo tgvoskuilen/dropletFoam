@@ -44,6 +44,8 @@ Foam::cuttableFace::cuttableFace(const fvMesh& mesh, label faceI)
 
 
 // * * * * * * * * * * * * * * * * Public Methods  * * * * * * * * * * * * * //
+// Returns the area fraction of a face on the opposite-normal side of a cutting
+// plane
 Foam::scalar Foam::cuttableFace::cut(const plane& p) const
 {
     const face& f = mesh_.faces()[faceID_];
@@ -55,7 +57,7 @@ Foam::scalar Foam::cuttableFace::cut(const plane& p) const
 
     // Classify each point of the face as either
     // -1 (kept side), 0 (coplanar), or 1 (opposite)
-    // Points with a -1 are opposite the plane normal (in the solid)
+    // Points with a -1 are opposite the plane normal
     Foam::labelList pointState(f.size()); 
 
     forAll(f, pointI)
@@ -69,12 +71,12 @@ Foam::scalar Foam::cuttableFace::cut(const plane& p) const
     
     //exit here if face is not cut
     if (min(pointState) > -1) //has only 0's and 1's
-    { //face is completely on the gas side
-        return 1.0; 
+    { //face is completely in front of plane
+        return 0.0; 
     }
     else if (max(pointState) < 1) //has only -1's and 0's
-    { //face is completely solid
-        return 0.0; 
+    { //face is completely behind plane
+        return 1.0; 
     }
     
     // If we're still here, it's a cut face. Find the new face's points.
@@ -124,7 +126,7 @@ Foam::scalar Foam::cuttableFace::cut(const plane& p) const
         area += 0.5*mag(vCi ^ vCj);
     }
     
-    return area/faceArea;
+    return 1.0 - area/faceArea;
 }
 
 

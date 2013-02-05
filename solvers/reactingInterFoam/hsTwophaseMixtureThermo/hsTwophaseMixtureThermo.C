@@ -115,52 +115,31 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculatePsi()
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::calcEvaporation()
 {
-    Foam::Info << "Calculating evaporation zones" << Foam::endl;
-    
-    if( alphaLiquid_.subSpecies().size() > 1 )
-    {
-        tmp<volScalarField> tgradProd
+    Foam::Info << "Calculating evaporation rates" << Foam::endl;
+
+    tmp<volScalarField> tAbyV
+    (
+        new volScalarField
         (
-            new volScalarField
+            IOobject
             (
-                IOobject
-                (
-                    "tgradProd",
-                    mesh_.time().timeName(),
-                    mesh_
-                ),
-                mesh_,
-                dimensionedScalar("tgradProd", dimless, 1.0)
-            )
-        );
-        
-        dimensionedScalar one("one",dimLength,1.0);
+                "tAbyV",
+                mesh_.time().timeName(),
+                mesh_
+            ),
+            mesh_,
+            dimensionedScalar("tAbyV", dimless/dimLength, 0.0)
+        )
+    );
     
-        forAllIter(PtrDictionary<subSpecie>, alphaLiquid_.subSpecies(), specieI)
-        {
-            tgradProd() *= Foam::mag( fvc::grad(specieI().Y())*one );
-        }
-        
-        Info<< "Max grad prod = " << Foam::max(tgradProd()).value() << endl;
-        
-        evap_mask_ = pos(neg(tgradProd() - 100000.0)
-                         + pos(alphaVaporSharp_ - 0.9) - SMALL);
-    }
-    else
-    {
-        evap_mask_ = pos(alphaVaporSharp_+1.0); //no multi-liquid mask
-    }
-    
-    
-    
+    tAbyV().internalField() = interface_.area().internalField() / mesh_.V();
+    tAbyV().correctBoundaryConditions();
+
     forAllIter(PtrDictionary<subSpecie>, alphaLiquid_.subSpecies(), specieI)
     {
         if (specieI().hasEvaporation())
         {
-            specieI().evapModel().calculate
-            (
-                evap_mask_
-            );
+            specieI().evapModel().calculate( tAbyV() );
         }
     }
 }
@@ -209,34 +188,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     ),
     phi_( rhoPhi_.db().lookupObject<surfaceScalarField>("phi") ),
     U_( rhoPhi_.db().lookupObject<volVectorField>("U") ),
-    alphaVaporSharp_
-    (
-        IOobject
-        (
-            "alphaVaporSharp",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("alphaVaporSharp", dimless, 0.0),
-        zeroGradientFvPatchScalarField::typeName
-    ),
-    kappaI_
-    (
-        IOobject
-        (
-            "kappaI",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("kappaI", dimless/dimLength, 0.0),
-        zeroGradientFvPatchScalarField::typeName
-    ),
     sigma_
     (
         IOobject
@@ -249,20 +200,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         ),
         mesh,
         dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0),
-        zeroGradientFvPatchScalarField::typeName
-    ),
-    evap_mask_
-    (
-        IOobject
-        (
-            "evap_mask",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("evap_mask", dimless, 0.0),
         zeroGradientFvPatchScalarField::typeName
     ),
     YSum_
@@ -283,7 +220,14 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         "deltaN",
         1e-8/pow(average(mesh.V()), 1.0/3.0)
     ),
-    phaseRelaxTime_(readScalar(lookup("relaxTime")))
+    phaseRelaxTime_(readScalar(lookup("relaxTime"))),
+    interface_
+    (
+        alphaLiquid_,
+        alphaVapor_,
+        phi_,
+        U_
+    )
 {
 
     // Create convection field table
@@ -514,31 +458,7 @@ template<class MixtureType>
 Foam::tmp<Foam::surfaceScalarField>
 Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
 {
-    tmp<surfaceScalarField> tstf
-    (
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                "surfaceTensionForce",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            dimensionedScalar
-            (
-                "surfaceTensionForce",
-                dimensionSet(1, -2, -2, 0, 0),
-                0.0
-            )
-        )
-    );
-
-    surfaceScalarField& stf = tstf();
-
-    stf = fvc::interpolate(sigma_ * kappaI_) * fvc::snGrad(alphaVaporSharp_);
-
-    return tstf;
+    return interface_.surfaceTensionForce( sigma_ );
 }
 
 
@@ -563,29 +483,7 @@ template<class MixtureType>
 Foam::tmp<Foam::volScalarField>
 Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
 {
-    tmp<volScalarField> tRefinementField
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tRefinementField",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            dimensionedScalar("tRefinementField", dimless, 0.0)
-        )
-    );
-
-    // Normalized Gradient Method
-    //  RF = max( |grad alpha| * V^(1/3) )
-    tRefinementField().internalField() = max
-    (
-        tRefinementField().internalField(), 
-        20.0 * mag(fvc::grad(alphaLiquid_)) * Foam::pow(mesh_.V(),1.0/3.0)
-    );
-
+    tmp<volScalarField> tRefinementField = interface_.getRefinementField();
 
     forAll(this->Y(), i)
     {
@@ -614,40 +512,15 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
     return tRefinementField;
 }
 
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateAlphaVapor()
-{
-    //Sharpen the remaining field
-    scalar Cpc = 0.02;
-    alphaVaporSharp_ = (Foam::min(Foam::max(alphaVapor_, 0.5*Cpc),1.0-0.5*Cpc)
-                         - 0.5*Cpc)/(1.0-Cpc);
-    alphaVaporSharp_.correctBoundaryConditions();
-}
-
-
 
 
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateSurfaceTension()
 {
-    //Calculate interface curvature field
-    // Cell gradient of alpha
-    const volVectorField gradAlpha(fvc::grad(alphaVaporSharp_));
-
-    // Interpolated face-gradient of alpha
-    surfaceVectorField gradAlphaf(fvc::interpolate(gradAlpha));
-
-    // Face unit interface normal
-    surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
-
-    // Simple expression for curvature
-    kappaI_ = -fvc::div(nHatfv & mesh_.Sf());
-
-
     //Calculate the surface tension field
     dimensionedScalar one("one",dimLength,1.0);
-    tmp<volScalarField> mask = pos(Foam::mag(kappaI_)*one - 1e-4)
-                             + neg(alphaVaporSharp_ - 0.5);
+    tmp<volScalarField> mask = pos(Foam::mag(interface_.kappa())*one - 1e-4)
+                             + neg(alphaVapor_ - 0.5);
     sigma_ = alphaLiquid_.sigma(T_, mask());
 }
 
@@ -657,8 +530,6 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     volScalarField& rho
 )
 {
-    calculateAlphaVapor();
-
     //Correct phases (correct liquid viscosity model)
     alphaLiquid_.correct();
 
@@ -669,7 +540,6 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     //Solve for evaporation rates
     Info<< "Solving evaporation" << endl;
     calcEvaporation();
-
 
     //Do solving for phase volume fractions
     const Time& runTime = mesh_.time();
@@ -691,7 +561,16 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
             !(++alphaSubCycle).end();
         )
         {
-            solveAlphas(cAlpha, nAlphaCorr);
+            interface_.advect( alphaLiquid_.Sv_evap() );
+            
+            surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
+            surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
+        
+            //TODO
+            //alphaLiquid_.rhoPhiAlpha() = phiAlphaL * rhoLf;
+            //alphaVapor_.rhoPhiAlpha() = phi_*rhoVf - phiAlphaL * rhoVf;
+            rhoPhi_ = interface_.phiAlpha()*(rhoLf - rhoVf) + phi_*rhoVf;
+            
             rhoPhiSum += (runTime.deltaT()/totalDeltaT)*rhoPhi_;
         }
 
@@ -699,35 +578,54 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     }
     else
     {
-        solveAlphas(cAlpha, nAlphaCorr);
+        interface_.advect( alphaLiquid_.Sv_evap() );
+            
+        surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
+        surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
+    
+        alphaLiquid_.rhoPhiAlpha() = interface_.phiAlpha() * rhoLf;
+        alphaVapor_.rhoPhiAlpha() = phi_*rhoVf - interface_.phiAlpha() * rhoVf;
+        rhoPhi_ = interface_.phiAlpha()*(rhoLf - rhoVf) + phi_*rhoVf;
     }
 
-
-    calculateAlphaVapor();
+    // Update the sigma_ field
     calculateSurfaceTension();
+    
+    // Check continuity (TEMPORARY)
+    /*rho == alphaLiquid_ * alphaLiquid_.rho(p_,T_)
+         + alphaVapor_ * alphaVapor_.rho(p_,T_);
+    rho.correctBoundaryConditions(); 
+     
+    Info<< "Max continuity error = " 
+        << Foam::max(Foam::mag(fvc::ddt(rho) + fvc::div(rhoPhi_))).value() 
+        << endl;*/
+    
+    
+    
 
     // Update density field to satisfy continuity with new mass flux field
     Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     Info<< "Min,max rho = " << Foam::min(rho).value() << ", " 
         << Foam::max(rho).value() << endl;
 
-    tmp<volVectorField> ucL = alphaLiquid_.calculateDs
+
+    tmp<surfaceVectorField> ucL = alphaLiquid_.calculateDs
     (
-        0.95, 
         mesh_.time().time().value() > phaseRelaxTime_, 
-        combustionPtr_->turbulence()
+        combustionPtr_->turbulence(),
+        interface_.alphaLiquidf()
     );
     
-    tmp<volVectorField> ucV = alphaVapor_.calculateDs
+    tmp<surfaceVectorField> ucV = alphaVapor_.calculateDs
     (
-        0.95, 
         mesh_.time().time().value() > phaseRelaxTime_, 
-        combustionPtr_->turbulence()
+        combustionPtr_->turbulence(),
+        interface_.alphaVaporf()
     );
     
     Info<< "Max ucL = " << Foam::max(Foam::mag(ucL())).value() << endl;
     Info<< "Max ucV = " << Foam::max(Foam::mag(ucV())).value() << endl;
-    
+
     // Create convection scheme for species
     tmp<fv::convectionScheme<scalar> > mvConvection
     (
@@ -741,8 +639,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     );
     
     // Solve for subspecie transport within each phase
-    scalar FoLiq = alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
-    scalar FoVap = alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
+    scalar FoLiq = alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection, interface_.alphaLiquidf());
+    scalar FoVap = alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection, interface_.alphaVaporf());
 
     scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     
@@ -762,6 +660,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::S_evap() const
     return alphaLiquid_.S_evap(p_,T_);
 }
 
+/*
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 (
@@ -871,7 +770,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         << ", " << max(alphaLiquid_).value()
         << endl;
 }
-
+*/
 
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::correct()

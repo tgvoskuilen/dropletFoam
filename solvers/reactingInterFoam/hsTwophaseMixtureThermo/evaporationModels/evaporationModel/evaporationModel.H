@@ -67,7 +67,7 @@ class evaporationModel
         word vapor_specie_;
 
         volScalarField m_evap_;
-        volScalarField mask_;
+        //volScalarField mask_;
         
         //- Heat of vaporization (J/kmol)
         //  L = Lb * ((Tc-T)/(Tc-Tb))^La
@@ -160,7 +160,7 @@ public:
         
         virtual void calculate
         (
-            const volScalarField& evapMask
+            const volScalarField& area
         ) = 0;
         
         //- Calculate enthalpy source due to evaporation
@@ -170,7 +170,7 @@ public:
         tmp<volScalarField> L() const;
         
         //- Calculate interface area/volume
-        tmp<volScalarField> area() const;
+        //tmp<volScalarField> area() const;
 
 };
 

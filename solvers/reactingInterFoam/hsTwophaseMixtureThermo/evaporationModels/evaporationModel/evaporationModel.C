@@ -64,19 +64,6 @@ Foam::evaporationModel::evaporationModel
         alphaL.mesh(),
         dimensionedScalar("m_evap",dimDensity/dimTime,0.0)
     ),
-    mask_
-    (
-        IOobject
-        (
-            "mask_" + vapor_specie_,
-            alphaL.mesh().time().timeName(),
-            alphaL.mesh(),
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        alphaL.mesh(),
-        dimensionedScalar("mask",dimless,0.0)
-    ),
     Lb_(evapDict_.lookup("Lb")),
     Tb_(evapDict_.lookup("Tb")),
     La_(0.0),
@@ -122,11 +109,11 @@ tmp<volScalarField> Foam::evaporationModel::Sh() const
     return -L() * m_evap_;
 }
 
-tmp<volScalarField> Foam::evaporationModel::area() const
+/*tmp<volScalarField> Foam::evaporationModel::area() const
 {
     const volScalarField& YL = alphaL_.Y(vapor_specie_+"L");
     return Foam::mag(fvc::grad(YL)) * mask_;
-}
+}*/
 
 
 // ************************************************************************* //

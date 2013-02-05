@@ -113,33 +113,46 @@ Foam::tmp<Foam::scalarField> Foam::droplet::r() const
     return r;
 }
 
+void Foam::droplet::calcDropMask()
+{
+    vector sr = radius_;
+    const volVectorField& cellCenters = mesh_.C();
+    if (sr.x() < SMALL) { sr.x() = GREAT; }
+    if (sr.y() < SMALL) { sr.y() = GREAT; }
+    if (sr.z() < SMALL) { sr.z() = GREAT; }
+    
+    tmp<scalarField> tr = r();
+        
+    forAll(dropMask_, cellI)
+    {
+        vector cp = cellCenters[cellI] - center_;
+
+        //scalar d = Foam::sqrt(1.0/( cp.x()*cp.x()/sr.x()/sr.x() + 
+        //    cp.y()*cp.y()/sr.y()/sr.y() + cp.z()*cp.z()/sr.z()/sr.z() ));
+            
+        scalar d = 1.0/tr()[cellI];
+            
+        point p = center_ + d*cp;
+        
+        vector n(cp.x()/sr.x()/sr.x(),
+                 cp.y()/sr.y()/sr.y(),
+                 cp.z()/sr.z()/sr.z());
+                 
+        n /= mag(n);
+        
+        cuttableCell pc(mesh_, cellI);
+        
+        dropMask_[cellI] = pc.cut( plane(p, n) );
+    }
+
+    dropMask_.correctBoundaryConditions();
+}
 
 
-void Foam::droplet::calculate(bool relax, scalar DTau)
+void Foam::droplet::calculate()
 {
     //calculate drop mask
-    dropMask_.internalField() = neg(r() - 1.0);
-    dropMask_.correctBoundaryConditions();
-    
-    if( relax )
-    {
-        //first relax diffusively
-        dimensionedScalar dTau("dTau",dimArea,DTau);
-        
-        for(label i = 0; i < 5; i++)
-        {
-            dropMask_ += dTau * fvc::laplacian(dropMask_);
-            dropMask_.correctBoundaryConditions();
-        }
-        
-        //then sharpen
-        scalar tol = 0.01;
-        dropMask_ = (Foam::min(Foam::max(dropMask_, tol),1.0-tol)
-                         - tol)/(1.0-2.0*tol);
-    }
-    
-    //re-enforce inner regions
-    
+    calcDropMask();  
     
     //calculate vapor mask
     scalar d_layer = Foam::mag(radius_)/dV_;
@@ -156,15 +169,13 @@ void Foam::droplet::set
 (
     Foam::volScalarField& alphaLiquid,
     Foam::volVectorField& U,
-    PtrList<volScalarField>& species,
-    bool relax,
-    scalar DTau
+    PtrList<volScalarField>& species
 )
 {
-    calculate(relax,DTau);
+    calculate();
     
     alphaLiquid.internalField() += dropMask_;
-    U.internalField() += Uinit_*dropMask_;
+    U.internalField() += Uinit_*pos(dropMask_ - SMALL);
 
     forAll(species, i)
     {

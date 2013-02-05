@@ -29,10 +29,13 @@ License
 
 Foam::PLICInterface::PLICInterface
 (
-    volScalarField& alpha
+    volScalarField& alphaLiquid,
+    volScalarField& alphaVapor,
+    const surfaceScalarField& phi,
+    const volVectorField& U
 )
 :
-    mesh_(alpha.mesh()),
+    mesh_(alphaLiquid.mesh()),
     plicDict_
     (
         IOobject
@@ -44,9 +47,12 @@ Foam::PLICInterface::PLICInterface
             IOobject::NO_WRITE
         )
     ),
-
-    alpha_(alpha),
-
+    
+    alphaVapor_(alphaVapor),
+    alphaLiquid_(alphaLiquid),
+    phi_(phi),
+    U_(U),
+    
     alphaf_
     (
         IOobject
@@ -159,16 +165,30 @@ Foam::PLICInterface::PLICInterface
         dimensionedVector("liquidC", dimless, vector::zero)
     ),
 
-    alphaMin_(plicDict_.lookup("alphaMin")),
-    reconstructTol_(plicDict_.lookup("reconstructTol"))
+    kappaI_
+    (
+        IOobject
+        (
+            "kappaI",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("kappaI", dimless/dimLength, 0.0),
+        zeroGradientFvPatchScalarField::typeName
+    ),
+    
+    alphaMin_(readScalar(plicDict_.lookup("alphaMin"))),
+    reconstructTol_(readScalar(plicDict_.lookup("reconstructTol")))
 
 {
-    Foam::Info << "Created immersed boundary" << Foam::endl;
+    Foam::Info << "Created PLIC interface" << Foam::endl;
 
     // Calculate new interface position and fields
     correct();
     
-    alpha_.oldTime();
     alphaf_.oldTime();
     iNormal_.oldTime();
     iPoint_.oldTime();
@@ -195,17 +215,17 @@ void Foam::PLICInterface::update()
     // When coarsening, this gets more complicated. To alleviate this, we will
     // require the boundary to always be refined to the maximum level. It can
     // only unrefine when the boundary has moved away.
-
-    forAll(alpha_, cellI)
+    
+    forAll(alphaLiquid_, cellI)
     {
         if (mag(iNormal_[cellI]) > SMALL && mag(iPoint_[cellI]) > SMALL)
         {
             cuttableCell cc(mesh_, cellI);
             plane p(iPoint_[cellI],iNormal_[cellI]);
-            alpha_[cellI] = 1.0 - cc.cut(p);
+            alphaLiquid_[cellI] = cc.cut(p);
         }
     }
-    alpha_.correctBoundaryConditions();
+    alphaLiquid_.correctBoundaryConditions();
     
     correct();
 }
@@ -219,7 +239,7 @@ void Foam::PLICInterface::calculateInterfaceNormal
     //Use a smoothing procedure to capture the interface better
         
     // Get gradient
-    iNormal_ = fvc::grad(alpha_)*dimensionedScalar("one",dimLength,1.0);
+    iNormal_ = -fvc::grad(alphaLiquid_)*dimensionedScalar("one",dimLength,1.0);
         
     // Do spatial smoothing operation
     // TODO: Make the weights inputtable in dictionary
@@ -263,13 +283,67 @@ Foam::vector Foam::PLICInterface::outwardNormal
     return norm;
 }
 
+void Foam::PLICInterface::updateKappa()
+{
+    dimensionedScalar deltaN("deltaN", 1e-8/pow(average(mesh_.V()), 1.0/3.0));
+    surfaceVectorField gradAlphaf(fvc::interpolate(-fvc::grad(alphaLiquid_)));
+    surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
+    kappaI_ = -fvc::div(nHatfv & mesh_.Sf());
+}
+
+tmp<surfaceScalarField> Foam::PLICInterface::surfaceTensionForce
+(
+    const volScalarField& sigma
+) const
+{
+    tmp<surfaceScalarField> tstf
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "surfaceTensionForce",
+                mesh_.time().timeName(),
+                mesh_
+            ),
+            mesh_,
+            dimensionedScalar
+            (
+                "surfaceTensionForce",
+                dimensionSet(1, -2, -2, 0, 0),
+                0.0
+            )
+        )
+    );
+
+    surfaceScalarField& stf = tstf();
+
+    stf = -fvc::interpolate(sigma * kappaI_) * fvc::snGrad(alphaLiquid_);
+    
+    return tstf;
+}
 
 // Given alpha, calculate derived interface fields
 void Foam::PLICInterface::correct()
 {
-    // Step 1: Identify intermediate cells based on alpha_ and reconstructTol_
-    volScalarField intermeds = pos(alpha_ - reconstructTol_)
-                               *pos(1.0 - reconstructTol_ - alpha_);
+    //
+    alphaLiquid_ *= pos(alphaLiquid_ - reconstructTol_);
+    forAll(alphaLiquid_, cellI)
+    {
+        if( alphaLiquid_[cellI] > 1.0 - reconstructTol_ )
+        {
+            alphaLiquid_[cellI] = 1.0;
+        }
+    }
+    alphaLiquid_.correctBoundaryConditions();
+    alphaVapor_ = scalar(1.0) - alphaLiquid_;
+    
+    // Step 0: Calculate new curvature field (kappaI_) from alphaLiquid_
+    updateKappa();
+    
+    // Step 1: Identify intermediate cells based on alphaLiquid_ and reconstructTol_
+    volScalarField intermeds = pos(alphaLiquid_ - reconstructTol_)
+                               *pos(1.0 - reconstructTol_ - alphaLiquid_);
 
     // Step 2: Calculate interface normal in intermediate cells
     calculateInterfaceNormal(intermeds);
@@ -281,7 +355,7 @@ void Foam::PLICInterface::correct()
         if (intermeds[cellI] > SMALL)
         {
             cuttableCell cc(mesh_, cellI);
-            plane p = cc.constructInterface(iNormal_[cellI],1.0-alpha_[cellI]);
+            plane p = cc.constructInterface(iNormal_[cellI], alphaLiquid_[cellI]);
             iPoint_[cellI] = p.refPoint();
             iArea_[cellI] = cc.cutArea();
             
@@ -293,15 +367,15 @@ void Foam::PLICInterface::correct()
             if (iArea_[cellI] < SMALL)
             {
                 Info<< "WARNING: Cut area is " << iArea_[cellI]
-                    << " with alphaSolid = " << 1.0-alpha_[cellI] << endl;
+                    << " with alphaLiquid = " << alphaLiquid_[cellI] << endl;
             }
         }
         else
         {
             iArea_[cellI] = 0.0;
             iPoint_[cellI] = vector::zero;
-            if (alpha_[cellI] > 0.5)
-            { //gas cell
+            if (alphaVapor_[cellI] > 0.5)
+            { //vapor cell
                 gasC_[cellI] = mesh_.C()[cellI];
                 liquidC_[cellI] = vector::zero;
             }
@@ -319,11 +393,11 @@ void Foam::PLICInterface::correct()
 
     // Step 4: Calculate alphaf on all faces, valid only in the homogeneous
     //         regions away from the interface
-    alphaf_ = fvc::interpolate(alpha_);
+    alphaf_ = fvc::interpolate(alphaLiquid_);
 
     // Step 5: Use the planes in intermediate cells to correct alphaf 
     //         near the interface. Also catch solid cells that have a partial
-    //         burning face as calculated from an intermediate cell cut plane.
+    //         open face as calculated from an intermediate cell cut plane.
     surfaceScalarField hasIntermeds = fvc::interpolate(intermeds);
     
     const labelUList& owner = mesh_.owner();
@@ -371,17 +445,17 @@ void Foam::PLICInterface::correct()
             //  The value of alphaf (===) for the face is calculated correctly,
             //  but needs to be added to the interface area of the liquid cell
             
-            if (alpha_[own] < reconstructTol_.value()
+            if (alphaLiquid_[own] < reconstructTol_
                 && alphaf_[faceI] > SMALL)
             {
-                //own is solid
+                //own is liquid
                 iArea_[own] += mesh_.magSf()[faceI] * alphaf_[faceI];
                 iNormal_[own] += outwardNormal(faceI, own)*alphaf_[faceI];
             }
-            else if (alpha_[nei] < reconstructTol_.value()
+            else if (alphaLiquid_[nei] < reconstructTol_
                      && alphaf_[faceI] > SMALL)
             {
-                //nei is solid
+                //nei is liquid
                 iArea_[nei] += mesh_.magSf()[faceI] * alphaf_[faceI];
                 iNormal_[nei] += outwardNormal(faceI, nei)*alphaf_[faceI];
             }
@@ -389,12 +463,12 @@ void Foam::PLICInterface::correct()
 
         // Catch sharp face-coincident interfaces. In this case, the liquid cell
         // is the one that will be given the interface area
-        else if (mag(alpha_[own] - alpha_[nei]) > 0.1)
+        else if (mag(alphaLiquid_[own] - alphaLiquid_[nei]) > 0.1)
         {
             alphaf_[faceI] = 0.0;
 
             //set iNormal and a_burn for this case
-            label liquidcell = (alpha_[own] < 0.1) ? own : nei;
+            label liquidcell = (alphaLiquid_[own] > 0.5) ? own : nei;
 
             // Increment iArea since a liquid cell could technically have more
             // than one sharp boundary
@@ -407,7 +481,7 @@ void Foam::PLICInterface::correct()
     
     // Now set alphaf on parallel patches
     const volScalarField::GeometricBoundaryField& alphaBf = 
-        alpha_.boundaryField();
+        alphaLiquid_.boundaryField();
     const volVectorField::GeometricBoundaryField& iPointBf = 
         iPoint_.boundaryField();
     volVectorField::GeometricBoundaryField& iNormalBf = 
@@ -471,7 +545,7 @@ void Foam::PLICInterface::correct()
                     alphafPf[pFaceI] = Foam::min(alphafNei, alphafOwn);
                     
                     // now catch sharp edges
-                    if (alpha_[pfCellI] < reconstructTol_.value()
+                    if (alphaLiquid_[pfCellI] < reconstructTol_
                         && alphafPf[pFaceI] > SMALL)
                     {
                         //own is liquid
@@ -484,12 +558,12 @@ void Foam::PLICInterface::correct()
                     }
                     
                 }
-                else if (mag(alpha_[pfCellI] - alphaPNf[pFaceI]) > 0.1)
+                else if (mag(alphaLiquid_[pfCellI] - alphaPNf[pFaceI]) > 0.1)
                 {
                     alphafPf[pFaceI] = 0.0;
 
                     //set iNormal and iArea for this case
-                    if (alpha_[pfCellI] < 0.1)
+                    if (alphaLiquid_[pfCellI] < 0.1)
                     {
                         // than one sharp boundary
                         iArea_[pfCellI] += meshPf.magSf()[pFaceI];
@@ -517,9 +591,9 @@ void Foam::PLICInterface::correct()
 
 
 // Calculate alpha that excludes small gas cells
-Foam::tmp<Foam::volScalarField> Foam::PLICInterface::alphaCorr() const
+Foam::tmp<Foam::volScalarField> Foam::PLICInterface::alphaVaporCorr() const
 {
-    return alpha_ * pos(alpha_ - alphaMin_);
+    return alphaVapor_ * pos(alphaVapor_ - alphaMin_);
 }
 
 
@@ -542,7 +616,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::PLICInterface::scTransferWeights()
     surfaceScalarField& w = tw();
     
     // If negative, alpha is a small cell
-    volScalarField alphaShift = alpha_ - alphaMin_;
+    volScalarField alphaShift = alphaVapor_ - alphaMin_;
     
     const labelUList& owner = mesh_.owner();
     const labelUList& neighbor = mesh_.neighbour();
@@ -641,43 +715,28 @@ Foam::tmp<Foam::surfaceScalarField> Foam::PLICInterface::scTransferWeights()
 }
 
 
-
-
 Foam::tmp<Foam::volScalarField> 
-Foam::PLICInterface::getRefinementField
-(
-    const volVectorField& U
-) const
+Foam::PLICInterface::getRefinementField() const
 {
     // Force all cells on OR near the interface to refine to the maximum level
-    dimensionedScalar C("C",dimLength,1e6);
-    tmp<volScalarField> tRefinementField = C*mag(fvc::grad(alpha_));
-
-    //Include curl criteria from Popinet (Gerris), scaled by 0.5, to also
-    // refine key fluid flow regions
-    tRefinementField().internalField() = max
-    (
-        tRefinementField().internalField(), 
-        Foam::mag(fvc::curl(U)) * Foam::pow(mesh_.V(),1.0/3.0) * 0.5
-    );
+    dimensionedScalar C("C",dimLength,1e8);
+    tmp<volScalarField> tRefinementField = C*mag(fvc::grad(alphaVapor_));
 
     return tRefinementField;
 }
 
-Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac
-(
-    const volVectorField& U
-) const
+// Find the volume fraction of LIQUID in the flux on each face
+Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
 {
     Info<< "Calculating phiAlphaFrac using reconstructed interfaces" << endl;
 
     //Normal definition applied first, applicable away from interfaces
-    tmp<surfaceScalarField> tphiAlphaFrac = fvc::interpolate(alpha_);
+    tmp<surfaceScalarField> tphiAlphaFrac = fvc::interpolate(alphaLiquid_);
     surfaceScalarField& phiAlphaFrac = tphiAlphaFrac();
 
     //Then adjust at the interface regions
     //  the scheme for this interpolation is set in fvSchemes
-    surfaceVectorField Uf = fvc::interpolate(U);
+    surfaceVectorField Uf = fvc::interpolate(U_);
     
     const labelUList& owner = mesh_.owner();
     const labelUList& neighbor = mesh_.neighbour();
@@ -709,7 +768,7 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac
             && mag(Uf[faceI] & mesh_.Sf()[faceI]) > SMALL)
         {
             // Make a cuttable cell by extruding faceI in the direction of the
-            // upwind cell's inverse velocity (-Uf*dT)
+            // face's inverse velocity (-Uf*dT)
             cuttableCell pf(mesh_, faceI, -Uf[faceI]*dT);
 
             // Then cut the extruded face by the interface plane in the upwind
@@ -718,13 +777,13 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac
         }
 
         else if (mag(Uf[faceI] & mesh_.Sf()[faceI]) <= SMALL)
-        {
+        { //phi is SMALL too
             phiAlphaFrac[faceI] = 0.0;
         }
 
-        else if (mag(alpha_[own] - alpha_[nei]) > 0.1)
-        {
-            phiAlphaFrac[faceI] = alpha_[uwCell];
+        else if (mag(alphaVapor_[own] - alphaVapor_[nei]) > 0.1)
+        { //??
+            phiAlphaFrac[faceI] = alphaLiquid_[uwCell];
         }
     }
 
@@ -732,7 +791,7 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac
     // Assume that the nominal treatment of phiAlpha at boundary patches is ok
     // for now.
 
-    const volScalarField::GeometricBoundaryField& alphaBf = alpha_.boundaryField();
+    const volScalarField::GeometricBoundaryField& alphaBf = alphaLiquid_.boundaryField();
     const volVectorField::GeometricBoundaryField& iPointBf = iPoint_.boundaryField();
     const volVectorField::GeometricBoundaryField& iNormalBf = iNormal_.boundaryField();
 
@@ -824,72 +883,63 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac
 }
 
 
-void Foam::PLICInterface::moveInterface
+void Foam::PLICInterface::advect
 (
-    const surfaceScalarField& phi,
-    const volVectorField& U   
+    const volScalarField& liquidVolSource
 )
 {
-    // Get the volume flux of gas phase (alpha) on faces
-    phiAlpha_ = phiAlphaFrac(U) * phi;
+    // Get the volume flux of liquid phase on faces
+    phiAlpha_ = phiAlphaFrac() * phi_;
 
     MULES::explicitSolve
     (
         geometricOneField(),
-        alpha_, 
-        phi, 
+        alphaLiquid_, 
+        phi_, 
         phiAlpha_, 
         zeroField(), //Sp
-        zeroField(), //Su (include alpha*divU?)
+        liquidVolSource, //Su (include alpha*divU?)
         1,           //alphaMax
         0            //alphaMin
     );
-    alpha_.max(0.0);
-
-    // do this outside? just have this return phiAlpha?
-    //rhoPhi = phiAlpha*(rho1 - rho2) + phi*rho2;
-
-
-    Info<< "Gas phase volume fraction = "
-        << alpha_.weightedAverage(mesh_.Vsc()).value()
-        << "  Min(alpha) = " << min(alpha_).value()
-        << "  Max(alpha) = " << max(alpha_).value()
-        << endl;
-
     
-    
-    //Correct the interface parameters using the new alpha
-    //  This updates iNormal, iPoint, iArea, centroids, ...
+    //Correct the interface parameters using the new alphaLiquid
+    //  This updates iNormal, iPoint, iArea, centroids, alphaVapor, ...
     correct();
+
+    Info<< "Liquid phase volume fraction = "
+        << alphaLiquid_.weightedAverage(mesh_.Vsc()).value()
+        << "  Min(alpha) = " << min(alphaLiquid_).value()
+        << "  Max(alpha) = " << max(alphaLiquid_).value()
+        << endl;
 }
 
 
-        
 Foam::tmp<Foam::volScalarField>
 Foam::PLICInterface::smallAndLiquidCells() const
 {
-    return neg(alpha_ - alphaMin_);
+    return neg(alphaVapor_ - alphaMin_);
 }
         
 Foam::tmp<Foam::volScalarField> Foam::PLICInterface::smallCells() const
 {
-    return neg(alpha_ - alphaMin_)*pos(alpha_ - SMALL);
+    return neg(alphaVapor_ - alphaMin_)*pos(alphaVapor_ - SMALL);
 }
 
 
 Foam::tmp<Foam::volScalarField> Foam::PLICInterface::liquidCells() const
 {
-    return neg(alpha_ - SMALL);
+    return neg(alphaVapor_ - SMALL);
 }
 
 Foam::tmp<Foam::volScalarField> Foam::PLICInterface::gasCells() const
 {
-    return pos(alpha_ - alphaMin_);
+    return pos(alphaVapor_ - alphaMin_);
 }
 
 Foam::tmp<Foam::volScalarField> Foam::PLICInterface::noCells() const
 {
-    return neg(alpha_ + 100.0);
+    return neg(alphaVapor_ + 100.0);
 }
 
 

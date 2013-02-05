@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     // Set drop species and liquid fraction
     forAllIter(PtrDictionary<droplet>, droplets, dropI)
     {
-        dropI().set(alphaLiquid, U, species, relax, DTau);
+        dropI().set(alphaLiquid, U, species);
     }
     
     // Set vapor fraction
@@ -82,6 +82,10 @@ int main(int argc, char *argv[])
         
     }
     
+    forAll(species, j)
+    {
+        species[j].max(0.0);
+    }
 	
 	runTime.writeNow();
 	

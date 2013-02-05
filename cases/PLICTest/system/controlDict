@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.x                                 |
+|  \\    /   O peration     | Version:  2.1.1                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -15,42 +15,43 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     interFoamPLIC;
+application     multiphaseCompRxnFoam;
 
-startFrom       startTime;
+startFrom       latestTime;
 
 startTime       0;
 
 stopAt          endTime;
 
-endTime         0.1;
+endTime         1e-3;
 
-deltaT          5e-5;
+deltaT          1e-8;
 
-writeControl    adjustableRunTime; //timeStep;
+writeControl    adjustableRunTime; //timeStep
 
-writeInterval   5e-4; //20;
+writeInterval   1e-6;
 
 purgeWrite      0;
 
 writeFormat     ascii;
 
-writePrecision  6;
+writePrecision  7;
 
 writeCompression compressed;
 
 timeFormat      general;
 
-timePrecision   6;
+timePrecision   7;
 
 runTimeModifiable yes;
 
 adjustTimeStep  yes;
 
-maxCo           0.1;
-maxAlphaCo      0.1;
+maxCo           0.2;
+maxAlphaCo      0.2;
 
-maxDeltaT       0.1;
+maxDeltaT       1;
 
+volSourceLimit  0.2;
 
 // ************************************************************************* //

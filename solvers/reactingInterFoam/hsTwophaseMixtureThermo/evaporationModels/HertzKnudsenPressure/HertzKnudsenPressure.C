@@ -83,7 +83,7 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 void Foam::evaporationModels::HertzKnudsenPressure::calculate
 (
-    const volScalarField& evapMask
+    const volScalarField& area  //<-- area really A/Vcell
 )
 {
     //Calculate the vapor pressure
@@ -103,19 +103,17 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     p_vap_.min(Pc_);
     
-    //Update the mask
-    mask_ = (pos(0.8 - alphaL_) * evapMask * neg(T_ - Tc_*0.9)
-             + pos(0.8 - alphaL_) * pos(T_ - Tc_*0.9)) 
-             * pos(alphaV_.Yp() - 1e-3);
-                          
-                          
+            
     //Calculate the vapor mol fraction
-    x_ = alphaV_.Y(vapor_specie_) / (W_ * alphaV_.Np()) * mask_;
+    dimensionedScalar sA("sA",dimless/dimLength,SMALL);
+    x_ = alphaV_.Y(vapor_specie_) / (W_ * alphaV_.Np()) * pos(area-sA);
+    
+    const volScalarField& YL = alphaL_.Y(vapor_specie_+"L");
     
     scalar pi = constant::mathematical::pi;
     
-    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_*T_))
-                * (p_vap_ - p_*x_);
+    m_evap_ = area * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_*T_))
+                * (p_vap_ - p_*x_) * pos(YL - SMALL);
                 
     m_evap_.max(0.0);
     
