@@ -688,10 +688,39 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Cv
     return tCv;
 }
 
+// Returns a sharpened version of the phase volume fraction
+Foam::tmp<Foam::volScalarField> Foam::phase::sharp
+(
+    scalar tol
+) const
+{
+    tmp<volScalarField> ts
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tAlphaSharp"+name_,
+                mesh().time().timeName(),
+                mesh()
+            ),
+            *this
+        )
+    );
+
+    volScalarField& s = ts();
+
+    //Sharpen the alpha field
+    scalar Cpc = 2.0*tol;
+    s = (Foam::min(Foam::max(s, 0.5*Cpc),1.0-0.5*Cpc) - 0.5*Cpc)/(1.0-Cpc);
+
+    return ts;
+}
+
         
 // Solve the mass fraction governing equation (YEqn) for each subspecie of
 // this phase.
-void Foam::phase::solveSubSpecies
+scalar Foam::phase::solveSubSpecies
 (
     const volScalarField& rhoTotal,
     const surfaceScalarField& rhoPhi,
@@ -704,27 +733,30 @@ void Foam::phase::solveSubSpecies
 {   
     word divScheme("div(rho*phi*alpha,Yi)");
     word divSchemeCorr("div(uc*Yi)");
+    scalar MaxFo = Foam::max(D_.internalField()/rhoTotal.internalField()/Foam::pow(mesh().V(),2.0/3.0))*mesh().time().deltaTValue();
     
+    Info<< "Max D = " << Foam::max(D_).value() << endl;
+    Info<< "Max Fo = " << MaxFo << endl;
+        
     Info<< "Solving "<<subSpecies_.size()
         <<" subspecie(s) for phase: " 
         << name_ << endl;
         
     // Save Yp so it is constant throughout subspecie solving
-    tmp<volScalarField> Yp0 = Yp();
+    tmp<volScalarField> Yp0 = Yp()+SMALL;
     
     // Loop through phase's subspecies
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
         volScalarField& Yi = specieI().Y();
         
-        Info<< "Max D = " << Foam::max(D_).value() << endl;
-        
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoTotal, Yi)
           + mvConvection->fvmDiv(rhoPhi, Yi)
-          - fvm::laplacian(D_/(Yp0()+SMALL), Yi) //need to relax alpha field before this can work stably
-          + fvc::div(uc*Yi/(Yp0()+SMALL), divSchemeCorr) //Harvazinski PhD thesis mass conservation correction term
+          - fvm::laplacian(D_/Yp0(), Yi)
+          + fvm::div((fvc::interpolate(uc/Yp0()) & mesh().Sf()), Yi, divSchemeCorr) //Harvazinski PhD thesis mass conservation correction term
+          + fvc::laplacian(D_*Yi/Yp0()/Yp0(), Yp0())
          ==
             combustionPtr_->R(Yi)
           + Su_Yi_evap( alphaLiquid, specieI() )
@@ -741,6 +773,28 @@ void Foam::phase::solveSubSpecies
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
     }
     
+    Yp0 = Yp() + SMALL;
+    tmp<volScalarField> YpMax = rho(p,T)/rhoTotal*sharp(0.0001);
+    tmp<volScalarField> factor = YpMax / Yp0;
+    
+    Info<< "  Max f = " << Foam::max(factor()).value() << endl;
+    
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        volScalarField& Yi = specieI().Y();
+
+        Yi *= factor();
+
+        Yi.max(0.0);
+        Yi.min(1.0);
+        
+        Info<< "  " << Yi.name() << " min,max,avg = " 
+            << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
+            << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
+	  	
+    }
+    
+    return MaxFo;
 }
 
 

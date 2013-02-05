@@ -34,7 +34,7 @@ boundaryField
     heatedWall
     {
         type            fixedValue;
-        value           uniform 363;
+        value           uniform 413;
     }
     
     defaultFaces

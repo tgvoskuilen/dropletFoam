@@ -276,7 +276,7 @@ public:
             }
 
             //- Solve reaction chemistry, evaporation, and phase transport       
-            void solve(volScalarField& rho);
+            scalar solve(volScalarField& rho);
 
             //- Update the density (rho_) based on current alphas, p, and T
             void calculateRho();

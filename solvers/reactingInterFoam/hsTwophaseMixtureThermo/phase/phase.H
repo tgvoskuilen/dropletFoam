@@ -201,7 +201,8 @@ public:
         
         const volScalarField& Y(const word& specie) const;
         
-
+        tmp<volScalarField> sharp(scalar tol) const;
+        
         //- Calculate the surface tension field for this phase
         tmp<volScalarField> sigma
         (
@@ -233,7 +234,7 @@ public:
             const compressible::turbulenceModel& turb 
         );
 
-        void solveSubSpecies
+        scalar solveSubSpecies
         (
             const volScalarField& rhoTotal,
             const surfaceScalarField& rhoPhi,

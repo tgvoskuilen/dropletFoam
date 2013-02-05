@@ -28,7 +28,7 @@ droplets
     WaterFilm
     {
         center   (-10 0.0005 0.0005);
-        radius   (10.004 10.004 10.004);
+        radius   (10.001 10.001 10.001);
         delVapor 1e-3;
         U        (0 0 0);
         liquidSpecies

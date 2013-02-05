@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
     #include "readTimeControls.H"
 
     scalar maxVolSource = 0.0;
+    scalar MaxFo = 0.0;
     scalar volSourceLimit =
         runTime.controlDict().lookupOrDefault<scalar>("volSourceLimit", 1e-2);
 
@@ -77,24 +78,33 @@ int main(int argc, char *argv[])
         //Limit deltaT based on maxVolSource
         if (adjustTimeStep)
         {
-            scalar maxVolDeltaT = maxDeltaT;
+            //scalar maxVolDeltaT = maxDeltaT;
 
-            if( mag(maxVolSource) > SMALL )
-                maxVolDeltaT = volSourceLimit / (mag(maxVolSource));
+            //if( mag(maxVolSource) > SMALL )
+            //    maxVolDeltaT = volSourceLimit / (mag(maxVolSource));
 
-            Info<< "Source*dT = " << mag(maxVolSource)*runTime.deltaTValue() 
-                << endl;
 
-            runTime.setDeltaT
+            if( MaxFo > 0.4 )
+            {
+                runTime.setDeltaT
+                (
+                    runTime.deltaTValue() * 0.4 / MaxFo
+                );
+            }
+                
+            //Info<< "Source*dT = " << mag(maxVolSource)*runTime.deltaTValue() 
+            //    << endl;
+
+            /*runTime.setDeltaT
             (
                 min
                 (
                     runTime.deltaTValue(),
                     maxVolDeltaT
                 )
-            );
+            );*/
 
-            Info<< "Source-limited deltaT = " << runTime.deltaTValue() << endl;
+            Info<< "Fo-limited deltaT = " << runTime.deltaTValue() << endl;
         }
 
         runTime++;
@@ -137,7 +147,7 @@ int main(int argc, char *argv[])
         {
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
             Info<<"Solving alpha transport equations"<<endl;
-            mixture.solve( rho );
+            MaxFo = mixture.solve( rho );
 
             dQ = combustion->dQ();
 

@@ -652,7 +652,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateSurfaceTension()
 }
 
 template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
+scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 (
     volScalarField& rho
 )
@@ -741,15 +741,18 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     );
     
     // Solve for subspecie transport within each phase
-    alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
-    alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
+    scalar FoLiq = alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
+    scalar FoVap = alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
 
+    scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
+    
     // Calculate Ysum
     YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
     
     Foam::Info << "Min,Max Ysum = " << Foam::min(YSum_).value() 
                << ", " << Foam::max(YSum_).value() << Foam::endl;
                
+    return MaxFo;
 }
 
 template<class MixtureType>
