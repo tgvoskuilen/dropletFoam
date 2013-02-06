@@ -890,7 +890,26 @@ void Foam::PLICInterface::advect
 {
     // Get the volume flux of liquid phase on faces
     phiAlpha_ = phiAlphaFrac() * phi_;
+    
+    volScalarField divU(fvc::div(phi_));
+    
+    Info<< "Max divergence = " << Foam::max(divU).value() << endl;
 
+    volScalarField::DimensionedInternalField Su
+    (
+        IOobject
+        (
+            "Su",
+            mesh_.time().timeName(),
+            mesh_
+        ),
+        // Divergence term is handled explicitly to be
+        // consistent with the explicit transport solution
+        divU*min(alphaLiquid_, scalar(1)) + liquidVolSource
+        //divU*pos(alphaLiquid_-0.5) + liquidVolSource // Weymouth 2010
+        //liquidVolSource
+    );  
+        
     MULES::explicitSolve
     (
         geometricOneField(),
@@ -898,16 +917,20 @@ void Foam::PLICInterface::advect
         phi_, 
         phiAlpha_, 
         zeroField(), //Sp
-        liquidVolSource, //Su (include alpha*divU?)
+        Su, //Su
         1,           //alphaMax
         0            //alphaMin
     );
-    
+    Info<< "Liquid phase volume fraction pre-correct = "
+        << "  Min(alpha) = " << min(alphaLiquid_).value()
+        << "  Max(alpha) = " << max(alphaLiquid_).value()
+        << endl;
+        
     //Correct the interface parameters using the new alphaLiquid
     //  This updates iNormal, iPoint, iArea, centroids, alphaVapor, ...
     correct();
 
-    Info<< "Liquid phase volume fraction = "
+    Info<< "Liquid phase volume fraction post-correct = "
         << alphaLiquid_.weightedAverage(mesh_.Vsc()).value()
         << "  Min(alpha) = " << min(alphaLiquid_).value()
         << "  Max(alpha) = " << max(alphaLiquid_).value()

@@ -175,7 +175,7 @@ void Foam::droplet::set
     calculate();
     
     alphaLiquid.internalField() += dropMask_;
-    U.internalField() += Uinit_*pos(dropMask_ - SMALL);
+    U.internalField() += Uinit_*pos(dropMask_+vaporMask_ - SMALL);
 
     forAll(species, i)
     {

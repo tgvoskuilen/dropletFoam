@@ -728,7 +728,8 @@ scalar Foam::phase::solveSubSpecies
         (
             fvm::ddt(rhoTotal, Yi)
         //+ mvConvection->fvmDiv(rhoPhiAlpha_, Yi)
-          + fvm::div(rhoPhiAlpha_*alphaf, Yi, divScheme)
+        //  + fvm::div(rhoPhiAlpha_*alphaf, Yi, divScheme)
+          + mvConvection->fvmDiv(rhoPhi, Yi)
          ==
           //  fvm::laplacian(D_/Yp0f(), Yi)
           //- fvm::div((uc/Yp0f()) & mesh().Sf(), Yi, divSchemeCorr)
