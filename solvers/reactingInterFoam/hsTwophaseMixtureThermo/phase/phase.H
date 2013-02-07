@@ -50,6 +50,8 @@ SourceFiles
 #include "dimensionedScalar.H"
 #include "dimensionedScalarFwd.H"
 
+#include "PLICInterface.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -75,7 +77,22 @@ class phase
         dictionary phaseDict_;
         
         //- Mass flux field for this phase
-        surfaceScalarField rhoPhiAlpha_;
+        surfaceScalarField phi_;
+        
+        //- Density field for this phase
+        volScalarField rho_;
+        
+        //- Velocity field for this phase
+        volVectorField U_;
+        
+        //- Pressure field for this phase
+        volScalarField p_;
+        
+        //- Temperature field for this phase
+        volScalarField T_;   
+        
+        //- Phase viscosity field
+        volScalarField mu_;
         
         //- Pointer to the top-level combustion model
         const combustionModels::rhoChemistryCombustionModel* combustionPtr_;
@@ -141,17 +158,52 @@ public:
             return subSpecies_;
         }
                 
-        surfaceScalarField& rhoPhiAlpha()
+        surfaceScalarField& phi()
         {
-            return rhoPhiAlpha_;
+            return phi_;
         }
         
-        const surfaceScalarField& rhoPhiAlpha() const
+        const surfaceScalarField& phi() const
         {
-            return rhoPhiAlpha_;
+            return phi_;
         }
-
+        
+        const volScalarField& mu() const
+        {
+            return mu_;
+        }
+        
+        const volVectorField& U() const
+        {
+            return U_;
+        }
+        
+        volVectorField& U()
+        {
+            return U_;
+        }
+        
+        const volScalarField& p() const
+        {
+            return p_;
+        }
+        
+        volScalarField& p()
+        {
+            return p_;
+        }
+        
         //- Return the phase density
+        const volScalarField& rho() const
+        {
+            return rho_;
+        }
+        
+        volScalarField& rho()
+        {
+            return rho_;
+        }
+                
         tmp<volScalarField> rho
         (
             const volScalarField& p, 
@@ -168,10 +220,7 @@ public:
         tmp<volScalarField> Sv_evap() const;
                        
         //- Return the phase compressibility
-        tmp<volScalarField> psi
-        (
-            const volScalarField& T
-        ) const;
+        tmp<volScalarField> psi() const;
                 
 
         tmp<volScalarField> Yp() const;
@@ -244,6 +293,34 @@ public:
             const surfaceScalarField& alphaf
         );
 
+        dimensionedScalar rhoFarField() const;
+        
+        void setPhi(const surfaceScalarField& alphaf);
+        void updateRho(const PLICInterface& i);
+        tmp<volScalarField> alphaCorr(const PLICInterface& i) const;
+        tmp<volScalarField> U_Sp(const PLICInterface& i) const;
+        tmp<volVectorField> U_Su
+        (
+            const PLICInterface& i,
+            const volVectorField& U_opp,
+            const volScalarField& mu_opp
+        ) const;
+        
+        tmp<volScalarField> rho_Sp(const PLICInterface& i) const;
+        tmp<volScalarField> rho_Su(const PLICInterface& i) const;
+        
+        tmp<volScalarField> p_Sp
+        (
+            const PLICInterface& i,
+            const volScalarField& rhorAU
+        ) const;
+        
+        tmp<volScalarField> p_Su
+        (
+            const PLICInterface& i,
+            const volScalarField& p_opp,
+            const volScalarField& rhorAU
+        ) const;
 };
 
 

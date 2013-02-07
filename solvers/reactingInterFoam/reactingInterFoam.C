@@ -141,13 +141,14 @@ int main(int argc, char *argv[])
         // END MESH ADAPTATION
 
 
-        solve( fvm::ddt(rho) + fvc::div(mixture.rhoPhi()) );
+        //solve( fvm::ddt(rho) + fvc::div(phi) );
  
         while (pimple.loop())
         {
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
             Info<<"Solving alpha transport equations"<<endl;
-            MaxFo = mixture.solve( rho );
+            mixture.solve( phi );
+
 
             dQ = combustion->dQ();
 

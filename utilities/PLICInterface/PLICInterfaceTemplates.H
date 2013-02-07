@@ -36,6 +36,80 @@ SourceFiles
 #define PLICInterfaceTemplates_H
 
 template<class Type>
+tmp<GeometricField<Type, fvPatchField, volMesh> > PLICInterface::scAverage
+(
+    word region,
+    const GeometricField<Type, fvPatchField, volMesh>& src
+) const
+{
+    tmp<GeometricField<Type, fvPatchField, volMesh> > tavg = src*0.0;
+    GeometricField<Type, fvPatchField, volMesh>& avg = tavg();
+    
+    const surfaceScalarField& w = (region=="Vapor") ? wV_ : wL_;
+    const volScalarField& alpha = (region=="Vapor") ? alphaVapor_ : alphaLiquid_;
+    
+    volScalarField wtot = fvc::surfaceSum(w);
+    
+    const labelUList& owner = mesh_.owner();
+    const labelUList& neighbor = mesh_.neighbour();
+    
+    forAll(w, faceI)
+    {
+        if (w[faceI] > 0.0)
+        {
+            label own = owner[faceI];
+            label nei = neighbor[faceI];
+
+            label sc = (alpha[own] < alphaMin_) ? own : nei; 
+            label nbc = (sc == own) ? nei : own;
+
+            avg[sc] += w[faceI]/wtot[sc] * src[nbc];
+        }
+    }
+    
+    
+    // Now do averaging across parallel patches
+    const typename GeometricField<Type, fvPatchField, volMesh>::GeometricBoundaryField&
+        srcBf = src.boundaryField();
+                         
+    const surfaceScalarField::GeometricBoundaryField& 
+        wBf = w.boundaryField();
+    
+    forAll(srcBf, patchI)
+    {
+        const fvPatchField<Type>& srcPf = srcBf[patchI];
+        const scalarField& wPf = wBf[patchI];
+        
+        const labelList& pFaceCells = mesh_.boundary()[patchI].faceCells();
+    
+        if (srcPf.coupled())
+        {
+            // Get values across parallel patch
+            const Field<Type> srcPNf(srcPf.patchNeighbourField());
+
+            forAll(srcPf, pFaceI)
+            {
+                label pfCellI = pFaceCells[pFaceI];
+                
+                if ( wPf[pFaceI] > 0.0)
+                {
+                    if (alpha[pfCellI] < alphaMin_)
+                    {//I own the small cell (pfCellI is the small cell)
+                        avg[pfCellI] += wPf[pFaceI]/wtot[pfCellI]
+                                          * srcPNf[pFaceI];
+                    }
+                }
+            }
+        }
+    }
+
+
+    return tavg;
+}
+
+
+
+template<class Type>
 void PLICInterface::transfer
 (
     const surfaceScalarField& w,
@@ -109,7 +183,7 @@ void PLICInterface::transfer
     }
 }
 
-
+/*
 template<class Type>
 void PLICInterface::setScValue
 (
@@ -196,7 +270,7 @@ void PLICInterface::setScValue
             << exit(FatalError);
     }
 }
-
+*/
 
 template<class Type>
 tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >

@@ -31,7 +31,6 @@ Foam::PLICInterface::PLICInterface
 (
     volScalarField& alphaLiquid,
     volScalarField& alphaVapor,
-    const surfaceScalarField& phi,
     const volVectorField& U
 )
 :
@@ -50,7 +49,6 @@ Foam::PLICInterface::PLICInterface
     
     alphaVapor_(alphaVapor),
     alphaLiquid_(alphaLiquid),
-    phi_(phi),
     U_(U),
     
     alphaf_
@@ -163,6 +161,62 @@ Foam::PLICInterface::PLICInterface
         ),
         mesh_,
         dimensionedVector("liquidC", dimless, vector::zero)
+    ),
+    
+    deltaV_
+    (
+        IOobject
+        (
+            "deltaV",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("deltaV", dimless, 0.0)
+    ),
+    
+    deltaL_
+    (
+        IOobject
+        (
+            "deltaL",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("deltaL", dimless, 0.0)
+    ),
+    
+    wL_
+    (
+        IOobject
+        (
+            "wL",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("wL", dimless, 0.0)
+    ),
+    
+    wV_
+    (
+        IOobject
+        (
+            "wV",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("wV", dimless, 0.0)
     ),
 
     kappaI_
@@ -283,50 +337,56 @@ Foam::vector Foam::PLICInterface::outwardNormal
     return norm;
 }
 
-void Foam::PLICInterface::updateKappa()
+Foam::tmp<Foam::volScalarField> Foam::PLICInterface::AbydeltaL() const
 {
-    dimensionedScalar deltaN("deltaN", 1e-8/pow(average(mesh_.V()), 1.0/3.0));
-    surfaceVectorField gradAlphaf(fvc::interpolate(-fvc::grad(alphaLiquid_)));
-    surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
-    kappaI_ = -fvc::div(nHatfv & mesh_.Sf());
+    return iArea_ / deltaL_;
 }
 
-tmp<surfaceScalarField> Foam::PLICInterface::surfaceTensionForce
+Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
 (
-    const volScalarField& sigma
+    word region, 
+    const volVectorField& uL, 
+    const volVectorField& uV,
+    const volScalarField& muL,
+    const volScalarField& muV
 ) const
 {
-    tmp<surfaceScalarField> tstf
-    (
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                "surfaceTensionForce",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            dimensionedScalar
-            (
-                "surfaceTensionForce",
-                dimensionSet(1, -2, -2, 0, 0),
-                0.0
-            )
-        )
-    );
-
-    surfaceScalarField& stf = tstf();
-
-    stf = -fvc::interpolate(sigma * kappaI_) * fvc::snGrad(alphaLiquid_);
+    // shear vec is (ut - uit)*Ai/delta
     
-    return tstf;
+    tmp<volVectorField> utL = uL - (uL & iNormal_) * iNormal_;
+    tmp<volVectorField> utV = uV - (uV & iNormal_) * iNormal_;
+    
+    tmp<volScalarField> wV = muV/deltaV_;
+    tmp<volScalarField> wL = muL/deltaL_;
+    
+    tmp<volVectorField> uti = (wV()*utV() + wL()*utL())/(wV()+wL()+SMALL);
+    
+    if( region == "Vapor" )
+    {
+        return muV*iArea_/deltaV_*(utV - uti);
+    }
+    else
+    {
+        return muL*iArea_/deltaL_*(utL - uti);
+    }
 }
+        
+
+void Foam::PLICInterface::updateKappa()
+{
+    /*dimensionedScalar deltaN("deltaN", 1e-8/pow(average(mesh_.V()), 1.0/3.0));
+    surfaceVectorField gradAlphaf(fvc::interpolate(-fvc::grad(alphaLiquid_)));
+    surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
+    kappaI_ = -fvc::div(nHatfv & mesh_.Sf());*/
+    
+    kappaI_ = fvc::div( fvc::interpolate(iNormal_) & mesh_.Sf() );
+}
+
 
 // Given alpha, calculate derived interface fields
 void Foam::PLICInterface::correct()
 {
-    //
+    // Clip un-reconstructed alpha portions
     alphaLiquid_ *= pos(alphaLiquid_ - reconstructTol_);
     forAll(alphaLiquid_, cellI)
     {
@@ -363,6 +423,9 @@ void Foam::PLICInterface::correct()
             gasC_[cellI] = cc.lostCentroid();
             liquidC_[cellI] = cc.cutCentroid();
             
+            deltaL_[cellI] = (liquidC_[cellI]-iPoint_[cellI]) & iNormal_[cellI];
+            deltaV_[cellI] = (gasC_[cellI]-iPoint_[cellI]) & iNormal_[cellI];
+            
             // DEBUGGING PURPOSES
             if (iArea_[cellI] < SMALL)
             {
@@ -374,6 +437,8 @@ void Foam::PLICInterface::correct()
         {
             iArea_[cellI] = 0.0;
             iPoint_[cellI] = vector::zero;
+            deltaL_[cellI] = 0.5*Foam::pow(mesh_.V()[cellI], 1.0/3.0);
+            deltaV_[cellI] = 0.5*Foam::pow(mesh_.V()[cellI], 1.0/3.0);
             if (alphaVapor_[cellI] > 0.5)
             { //vapor cell
                 gasC_[cellI] = mesh_.C()[cellI];
@@ -445,14 +510,14 @@ void Foam::PLICInterface::correct()
             //  The value of alphaf (===) for the face is calculated correctly,
             //  but needs to be added to the interface area of the liquid cell
             
-            if (alphaLiquid_[own] < reconstructTol_
+            if (alphaVapor_[own] < reconstructTol_
                 && alphaf_[faceI] > SMALL)
             {
                 //own is liquid
                 iArea_[own] += mesh_.magSf()[faceI] * alphaf_[faceI];
                 iNormal_[own] += outwardNormal(faceI, own)*alphaf_[faceI];
             }
-            else if (alphaLiquid_[nei] < reconstructTol_
+            else if (alphaVapor_[nei] < reconstructTol_
                      && alphaf_[faceI] > SMALL)
             {
                 //nei is liquid
@@ -476,6 +541,8 @@ void Foam::PLICInterface::correct()
                         
             // Increment iNormal_
             iNormal_[liquidcell] += outwardNormal(faceI, liquidcell);
+            
+            //TODO: Set iPoint_ to face centroid?
         }
     }
     
@@ -545,7 +612,7 @@ void Foam::PLICInterface::correct()
                     alphafPf[pFaceI] = Foam::min(alphafNei, alphafOwn);
                     
                     // now catch sharp edges
-                    if (alphaLiquid_[pfCellI] < reconstructTol_
+                    if (alphaVapor_[pfCellI] < reconstructTol_
                         && alphafPf[pFaceI] > SMALL)
                     {
                         //own is liquid
@@ -586,6 +653,9 @@ void Foam::PLICInterface::correct()
     iNormal_.correctBoundaryConditions();
     gasC_.correctBoundaryConditions();
     liquidC_.correctBoundaryConditions();
+    
+    // Calculate transfer weights on small cells
+    calcTransferWeights();
 }
 
 
@@ -594,6 +664,118 @@ void Foam::PLICInterface::correct()
 Foam::tmp<Foam::volScalarField> Foam::PLICInterface::alphaVaporCorr() const
 {
     return alphaVapor_ * pos(alphaVapor_ - alphaMin_);
+}
+
+void Foam::PLICInterface::calcTransferWeights()
+{
+    // If negative, alpha is a small cell
+    volScalarField alphaShiftV = alphaVapor_ - alphaMin_;
+    volScalarField alphaShiftL = alphaLiquid_ - alphaMin_;
+    
+    const labelUList& owner = mesh_.owner();
+    const labelUList& neighbor = mesh_.neighbour();
+
+    // Calculate transfer weights
+    forAll(wL_, faceI)
+    {
+        label own = owner[faceI];
+        label nei = neighbor[faceI];
+
+        if (alphaShiftL[own] * alphaShiftL[nei] * alphaf_[faceI] < 0.0)
+        { //one is small, one is not, and they share a gas boundary
+
+            label sc = (alphaShiftL[own] < 0.0) ? own : nei;
+
+            wL_[faceI] = mag
+            (
+                iNormal_[sc] & mesh_.Sf()[faceI]
+            ) * alphaf_[faceI];
+        }
+        
+        if (alphaShiftV[own] * alphaShiftV[nei] * (1.0 - alphaf_[faceI]) < 0.0)
+        { //one is small, one is not, and they share a gas boundary
+
+            label sc = (alphaShiftV[own] < 0.0) ? own : nei;
+
+            wV_[faceI] = mag
+            (
+                iNormal_[sc] & mesh_.Sf()[faceI]
+            ) * (1.0 - alphaf_[faceI]);
+        }
+    }
+    
+    // Now set weights on parallel patches
+    const volScalarField::GeometricBoundaryField& alphaShiftLBf = 
+        alphaShiftL.boundaryField();
+    const volScalarField::GeometricBoundaryField& alphaShiftVBf = 
+        alphaShiftV.boundaryField();
+    const volVectorField::GeometricBoundaryField& iNormalBf = 
+        iNormal_.boundaryField();
+        
+    surfaceScalarField::GeometricBoundaryField& wLBf =
+        wL_.boundaryField();
+    surfaceScalarField::GeometricBoundaryField& wVBf =
+        wV_.boundaryField();
+    surfaceScalarField::GeometricBoundaryField& alphafBf =
+        alphaf_.boundaryField();
+    
+    forAll(alphafBf, patchI)
+    {
+        const fvPatchScalarField& alphaShiftLPf = alphaShiftLBf[patchI];
+        const fvPatchScalarField& alphaShiftVPf = alphaShiftVBf[patchI];
+        const fvPatchVectorField& iNormalPf = iNormalBf[patchI];
+        
+        scalarField& alphafPf = alphafBf[patchI];
+        scalarField& wLPf = wLBf[patchI];
+        scalarField& wVPf = wVBf[patchI];
+        
+        const labelList& pFaceCells = mesh_.boundary()[patchI].faceCells();
+    
+        if (alphaShiftLPf.coupled())
+        {
+            // Get values across parallel patch
+            const scalarField alphaShiftLPNf(alphaShiftLPf.patchNeighbourField());
+            const scalarField alphaShiftVPNf(alphaShiftVPf.patchNeighbourField());
+            const vectorField iNormalPNf(iNormalPf.patchNeighbourField());
+            
+            const fvPatch& meshPf = mesh_.boundary()[patchI];
+            
+            forAll(alphafPf, pFaceI)
+            {
+                label pfCellI = pFaceCells[pFaceI];
+                
+                //Calculate weight on small-large cell faces and close
+                // small cell faces
+                if ( alphaShiftL[pfCellI] * alphaShiftLPNf[pFaceI]
+                     * alphafPf[pFaceI] < 0.0)
+                {
+                
+                    vector scNorm = (alphaShiftL[pfCellI] < 0.0)
+                                    ? iNormal_[pfCellI]
+                                    : iNormalPNf[pFaceI];
+
+                    wLPf[pFaceI] = mag
+                    (
+                        scNorm & meshPf.Sf()[pFaceI]
+                    ) * alphafPf[pFaceI];
+                }
+                
+                if ( alphaShiftV[pfCellI] * alphaShiftVPNf[pFaceI]
+                     * (1.0 - alphafPf[pFaceI]) < 0.0)
+                {
+                
+                    vector scNorm = (alphaShiftV[pfCellI] < 0.0)
+                                    ? iNormal_[pfCellI]
+                                    : iNormalPNf[pFaceI];
+
+                    wVPf[pFaceI] = mag
+                    (
+                        scNorm & meshPf.Sf()[pFaceI]
+                    ) * (1.0 - alphafPf[pFaceI]);
+                }
+            }
+        }
+    }
 }
 
 
@@ -889,9 +1071,12 @@ void Foam::PLICInterface::advect
 )
 {
     // Get the volume flux of liquid phase on faces
-    phiAlpha_ = phiAlphaFrac() * phi_;
+    tmp<surfaceScalarField> tphi = fvc::interpolate(U_) & mesh_.Sf();
+    const surfaceScalarField& phi = tphi();
     
-    volScalarField divU(fvc::div(phi_));
+    phiAlpha_ = phiAlphaFrac() * phi;
+    
+    volScalarField divU(fvc::div(phi));
     
     Info<< "Max divergence = " << Foam::max(divU).value() << endl;
 
@@ -914,13 +1099,14 @@ void Foam::PLICInterface::advect
     (
         geometricOneField(),
         alphaLiquid_, 
-        phi_, 
+        phi, 
         phiAlpha_, 
         zeroField(), //Sp
         Su, //Su
         1,           //alphaMax
         0            //alphaMin
     );
+        
     Info<< "Liquid phase volume fraction pre-correct = "
         << "  Min(alpha) = " << min(alphaLiquid_).value()
         << "  Max(alpha) = " << max(alphaLiquid_).value()
@@ -938,25 +1124,39 @@ void Foam::PLICInterface::advect
 }
 
 
-Foam::tmp<Foam::volScalarField>
-Foam::PLICInterface::smallAndLiquidCells() const
+Foam::tmp<Foam::volScalarField> Foam::PLICInterface::noLiquidCells() const
 {
-    return neg(alphaVapor_ - alphaMin_);
+    // alphaL = 0
+    return neg(alphaLiquid_ - SMALL);
 }
-        
-Foam::tmp<Foam::volScalarField> Foam::PLICInterface::smallCells() const
+
+Foam::tmp<Foam::volScalarField> Foam::PLICInterface::noGasCells() const
 {
+    // alphaV = 0
+    return neg(alphaVapor_ - SMALL);
+}
+
+Foam::tmp<Foam::volScalarField> Foam::PLICInterface::smallLiquidCells() const
+{
+    // 0 < alphaL < min
+    return neg(alphaLiquid_ - alphaMin_)*pos(alphaLiquid_ - SMALL);
+}
+
+Foam::tmp<Foam::volScalarField> Foam::PLICInterface::smallGasCells() const
+{
+    // 0 < alphaV < min
     return neg(alphaVapor_ - alphaMin_)*pos(alphaVapor_ - SMALL);
 }
-
-
+        
 Foam::tmp<Foam::volScalarField> Foam::PLICInterface::liquidCells() const
 {
-    return neg(alphaVapor_ - SMALL);
+    // alphaL > min
+    return pos(alphaLiquid_ - alphaMin_);
 }
 
 Foam::tmp<Foam::volScalarField> Foam::PLICInterface::gasCells() const
 {
+    // alphaV > min
     return pos(alphaVapor_ - alphaMin_);
 }
 

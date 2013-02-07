@@ -52,18 +52,78 @@ Foam::phase::phase
     ),
     name_(name),
     phaseDict_(phaseDict),
-    rhoPhiAlpha_
+    phi_
     (
         IOobject
         (
-            "rhoPhiAlpha"+name,
+            "phi"+name,
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
         mesh,
-        dimensionedScalar("rhoPhiAlpha"+name, dimMass/dimTime, 0.0)
+        dimensionedScalar("phi"+name, dimMass/dimTime, 0.0)
+    ),
+    rho_
+    (
+        IOobject
+        (
+            "rho"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh.lookupObject<volScalarField>("rho")
+    ),
+    U_
+    (
+        IOobject
+        (
+            "U"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh.lookupObject<volVectorField>("U")
+    ),
+    p_
+    (
+        IOobject
+        (
+            "p"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh.lookupObject<volScalarField>("p")
+    ),
+    T_
+    (
+        IOobject
+        (
+            "T"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh.lookupObject<volScalarField>("T")
+    ),
+    mu_
+    (
+        IOobject
+        (
+            "mu"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh.lookupObject<volScalarField>("mu")
     ),
     combustionPtr_(NULL),
     species_(species),
@@ -104,6 +164,157 @@ Foam::autoPtr<Foam::phase> Foam::phase::clone() const
     notImplemented("phase::clone() const");
     return autoPtr<phase>(NULL);
 }
+
+Foam::tmp<Foam::volScalarField> Foam::phase::U_Sp
+(
+    const PLICInterface& i
+) const
+{
+    if( name_ == "Vapor" )
+    {
+        return i.smallGasCells() + i.noGasCells();
+    }
+    else
+    {
+        return i.smallLiquidCells() + i.noLiquidCells();
+    }
+}
+
+Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
+(
+    const PLICInterface& i,
+    const volVectorField& U_opp,
+    const volScalarField& mu_opp
+) const
+{
+    if( name_ == "Vapor" )
+    {
+        return (i.smallGasCells() + i.noGasCells()) * U_opp
+             + i.gasCells()*i.shearVec(name_, U_opp, U_, mu_opp, mu_);
+    }
+    else
+    {
+        return i.noLiquidCells() * U_opp
+             + i.smallLiquidCells()*i.scAverage<vector>(name_,U_)
+             + i.liquidCells()*i.shearVec(name_, U_, U_opp, mu_, mu_opp);
+    }
+}
+
+
+
+void Foam::phase::setPhi( const surfaceScalarField& alphaf )
+{
+    //TODO: Correct interpolation near interface
+    phi_ = (fvc::interpolate(rho_ * U_) * alphaf) & mesh().Sf();
+}
+
+Foam::tmp<Foam::volScalarField> Foam::phase::alphaCorr
+(
+    const PLICInterface& i
+) const
+{
+    const volScalarField& alpha = *this;
+    return alpha * pos(alpha - i.alphaMin());
+}
+
+
+void Foam::phase::updateRho
+(
+    const PLICInterface& interface
+)
+{
+    Foam::solve
+    (
+        fvm::ddt(alphaCorr(interface), rho_)
+      + fvc::div(phi_)
+      - rho_Su(interface)
+      + fvm::Sp( rho_Sp(interface), rho_ )
+    );
+}
+
+Foam::tmp<Foam::volScalarField> Foam::phase::rho_Sp
+(
+    const PLICInterface& i
+) const
+{
+    if( name_ == "Vapor" )
+    {
+        return i.smallGasCells() + i.noGasCells();
+    }
+    else
+    {
+        return i.smallLiquidCells() + i.noLiquidCells();
+    }
+}
+
+
+Foam::dimensionedScalar Foam::phase::rhoFarField() const
+{
+    return rho_.weightedAverage(*this);
+}
+
+
+Foam::tmp<Foam::volScalarField> Foam::phase::rho_Su
+(
+    const PLICInterface& i
+) const
+{
+    if( name_ == "Vapor" )
+    {
+        return i.noGasCells() * rhoFarField()
+             + i.smallGasCells()*i.scAverage<scalar>(name_,rho_); //Add m_evap
+    }
+    else
+    {
+        return i.noLiquidCells() * rhoFarField()
+             + i.smallLiquidCells()*i.scAverage<scalar>(name_,rho_); //Add m_evap
+    }
+}
+
+
+
+
+Foam::tmp<Foam::volScalarField> Foam::phase::p_Sp
+(
+    const PLICInterface& i,
+    const volScalarField& rhorAU
+) const
+{
+    if( name_ == "Vapor" )
+    {
+        return i.smallGasCells() + i.noGasCells();
+    }
+    else
+    {
+        return i.smallLiquidCells() + i.noLiquidCells()
+             + i.liquidCells()*rhorAU*i.AbydeltaL();
+    }
+}
+
+
+Foam::tmp<Foam::volScalarField> Foam::phase::p_Su
+(
+    const PLICInterface& i,
+    const volScalarField& p_opp,
+    const volScalarField& rhorAU
+) const
+{
+    if( name_ == "Vapor" )
+    {
+        return i.noGasCells()*p_opp
+             + i.smallGasCells()*i.scAverage<scalar>(name_,p_); //Add m_evap
+    }
+    else
+    {
+        //TODO: TEMPORARY CONSTANT
+        dimensionedScalar sigmaT("sigma",dimPressure*dimLength,0.07);
+        
+        return i.noLiquidCells()*p_opp
+             + i.smallLiquidCells()*(p_opp + sigmaT*i.kappa())
+             + i.liquidCells()*rhorAU*i.AbydeltaL()*(p_opp + sigmaT*i.kappa()); //Add m_evap
+    }
+}
+
 
 // Only applicable for liquid phase. Vapor phase will return 0 here.
 Foam::tmp<Foam::volScalarField> Foam::phase::mu
@@ -448,7 +659,7 @@ Foam::tmp<volScalarField> Foam::phase::rho
     
     if (name_ == "Vapor")
     {
-        return psi(T) * p;
+        return psi() * p;
     }
     else
     {
@@ -480,10 +691,7 @@ Foam::tmp<volScalarField> Foam::phase::rho
 // Construct the compressibility field of the phase
 // for Vapors, psi = W/(R*T)
 // for liquids, psi = 0
-Foam::tmp<volScalarField> Foam::phase::psi
-(
-    const volScalarField& T
-) const
+Foam::tmp<volScalarField> Foam::phase::psi() const
 {
     tmp<volScalarField> tpsi
     (
@@ -507,7 +715,7 @@ Foam::tmp<volScalarField> Foam::phase::psi
 
     if (name_ == "Vapor")
     {
-        tpsi() = W()/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
+        tpsi() = W()/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T_);
     }
 
     return tpsi;
@@ -624,7 +832,7 @@ tmp<surfaceVectorField> Foam::phase::calculateDs
     );
         
 
-    const phase& alpha = *this;
+    //const phase& alpha = *this;
     tmp<volScalarField> tYp = Yp();
     
     D_ = Sc_ * fvc::interpolate(turb.muEff()) * alphaf;

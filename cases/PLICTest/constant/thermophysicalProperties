@@ -35,28 +35,7 @@ Vapor
        CH3NHNH2 {}
        N2O4     {}
        NO2      {}
-       H2       {}
-       CH3NNH2  {}
-       CH3NNH   {}
-       HONO     {}
-       CH3NN    {}
        N2       {}
-       O2       {}
-       H        {}
-       H2O      {}
-       CO2      {}
-       CO       {}
-       NO       {}
-       OH       {}
-       O        {}
-       HO2      {}
-       CH3O     {}
-       CH3      {}
-       CH2O     {}
-       CH3OH    {}
-       HCO      {}
-       HNO      {}
-       HNO3     {}
    );
 }
 
@@ -88,7 +67,7 @@ Liquid
                Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
                Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
                La              0.38;
-               betaM           0.03;
+               betaM           0.0;
 
                Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
                Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
@@ -116,25 +95,12 @@ Liquid
                  Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
                  Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
                  La              0.38;
-                 betaM           0.03;
+                 betaM           0.0;
 
                  Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
                  Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
                  PvCoeffs        (16.1 5400.115 -194831.8);
             }
-         }
-         
-         MMHNTOL //averaged properties of MMH and NTO
-         {
-            transportModel  Newtonian;
-            nu              nu [ 0 2 -1 0 0 0 0 ] 6e-07;
-            
-            rho0      rho0  [ 1 -3  0  0 0 0 0] 1160.0;
-            Tc        Tc    [ 0  0  0  1 0 0 0] 510;
-            kappa     kappa [ 1  1 -3 -1 0 0 0] 0.19; 
-              
-            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
-            sigmaa          0.8;
          }
    );
 }

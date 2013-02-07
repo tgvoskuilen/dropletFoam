@@ -80,8 +80,11 @@ class subSpecie
         //- Viscosity model for this phase
         autoPtr<viscosityModel> nuModel_;
         
-        //- Mass fraction of this subspecie
-        volScalarField& Y_;
+        //- Reference to global mass fraction of this subspecie
+        volScalarField& Yglobal_;
+        
+        //- Phase-local mass fraction of this subspecie
+        volScalarField Y_;
         
         //- Thermo properties of this subspecie
         const gasThermoPhysics& thermo_;

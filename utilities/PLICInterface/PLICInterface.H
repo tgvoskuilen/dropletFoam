@@ -70,7 +70,6 @@ class PLICInterface
         //- Volume fraction of liquid
         volScalarField& alphaLiquid_;
         
-        const surfaceScalarField& phi_;
         const volVectorField& U_;
         
         //- Face area fraction of vapor
@@ -95,6 +94,11 @@ class PLICInterface
         
         //- Centroid of liquid portion of a cell (zero in gas)
         volVectorField liquidC_;
+        
+        volScalarField deltaV_;
+        volScalarField deltaL_;
+        surfaceScalarField wL_;
+        surfaceScalarField wV_;
         
         //- Interface curvature
         volScalarField kappaI_;
@@ -121,7 +125,6 @@ public:
         (
             volScalarField& alphaLiquid,
             volScalarField& alphaVapor,
-            const surfaceScalarField& phi,
             const volVectorField& U
         );
 
@@ -130,6 +133,11 @@ public:
 
     // Public Member Functions
 
+        scalar alphaMin() const
+        {
+            return alphaMin_;
+        }
+        
         const surfaceScalarField& alphaLiquidf() const
         {
             return alphaf_;
@@ -170,6 +178,19 @@ public:
             return kappaI_;
         }
         
+        tmp<volScalarField> AbydeltaL() const;
+      
+       // tmp<volScalarField> AbydeltaV() const;
+        
+        tmp<volVectorField> shearVec
+        (
+            word region, 
+            const volVectorField& uL, 
+            const volVectorField& uV,
+            const volScalarField& muL,
+            const volScalarField& muV
+        ) const;
+        
         //- Get the "used" alpha (zero in small cells)
         tmp<volScalarField> alphaVaporCorr() const;
 
@@ -188,16 +209,21 @@ public:
         //- Update the interface after a mesh update
         void update();
         
+        void calcTransferWeights();
+        
         //- Get the mesh refinement criteria field
         tmp<volScalarField> getRefinementField() const;
         
         //- Calculate the small cell transfer weights
         tmp<surfaceScalarField> scTransferWeights();
         
-        //- Calculate the surface tension forces given a sigma field
-        tmp<surfaceScalarField> surfaceTensionForce
+        
+        template<class Type>
+        tmp<GeometricField<Type, fvPatchField, volMesh> >
+        scAverage
         (
-            const volScalarField& sigma
+            word region,
+            const GeometricField<Type, fvPatchField, volMesh>& src
         ) const;
 
         //- Transfer a field from small cells to neighbour cells
@@ -211,7 +237,7 @@ public:
         );
         
         //- Set source terms in small cells to set values in governing eqns
-        template<class Type>
+        /*template<class Type>
         void setScValue
         (
             const surfaceScalarField& w,
@@ -221,16 +247,23 @@ public:
             const dimensioned<Type>& solidValue,
             const dimensionedScalar& diag,
             const word& mode
-        );
+        );*/
         
         //-
         tmp<surfaceScalarField> phiAlphaFrac() const;
         
+        
+        //- Return a mask for cells with no gas
+        tmp<volScalarField> noGasCells() const;
+        
+        //- Return a mask for cells with no liquid
+        tmp<volScalarField> noLiquidCells() const;
+        
         //- Return a mask for small cells
-        tmp<volScalarField> smallCells() const;
+        tmp<volScalarField> smallGasCells() const;
         
         //- Return a mask for small and liquid cells
-        tmp<volScalarField> smallAndLiquidCells() const;
+        tmp<volScalarField> smallLiquidCells() const;
         
         //- Return a mask for liquid cells
         tmp<volScalarField> liquidCells() const;

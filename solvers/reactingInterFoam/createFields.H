@@ -1,5 +1,5 @@
 
-    // First create U and phi (volume flux) since thermo looks them up from mesh
+    // First create U and phi (mass flux) since thermo looks them up from mesh
     Info<< "Reading field U\n" << endl;
     volVectorField U
     (
@@ -14,9 +14,34 @@
         mesh
     );
     U.oldTime();
-
-    #include "createPhi.H"
     
+    volScalarField rho
+    (
+        IOobject
+        (
+            "rho",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("rho",dimDensity,1.0)
+    );
+    
+    surfaceScalarField phi
+    (
+        IOobject
+        (
+            "phi",
+            runTime.timeName(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        linearInterpolate(rho*U) & mesh.Sf()
+    );
+
     
     Info<< "Creating combustion model\n" << endl;
     autoPtr<combustionModels::rhoChemistryCombustionModel> combustion
@@ -39,8 +64,6 @@
     Info<< "Setting mixture pointers" << endl;
 	mixture.setPtrs( combustion.operator->() );
 
-    //volScalarField& rho = mixture.rho();
-    
     volScalarField refinementField
     (
         IOobject
@@ -55,27 +78,20 @@
         dimensionedScalar("refinementField",dimless,0)
     );
     
-    volScalarField rho
-    (
-        IOobject
-        (
-            "rho",
-            runTime.timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mixture.rho()
-    );
+    
+    rho = mixture.rho();
+    
+    
     
     // Construct turbulence model
+    //   The liquid phase is assumed laminar
     autoPtr<compressible::turbulenceModel> turbulence
     (
         compressible::turbulenceModel::New
         (
-            rho,
-            U, 
-            mixture.rhoPhi(), 
+            mixture.vapor().rho(),
+            mixture.vapor().U(), 
+            mixture.vapor().phi(),
             mixture
         )
     );

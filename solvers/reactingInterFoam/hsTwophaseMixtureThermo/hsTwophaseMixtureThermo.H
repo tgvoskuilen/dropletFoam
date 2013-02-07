@@ -97,15 +97,12 @@ private:
         combustionModels::rhoChemistryCombustionModel* combustionPtr_;
 
         //- Vapor phase
-        phase alphaVapor_;
+        phase vapor_;
         
         //- Liquid phase
-        phase alphaLiquid_;
+        phase liquid_;
         
         //- Total mass flux
-        surfaceScalarField rhoPhi_;
-                
-        //- Total volume flux
         const surfaceScalarField& phi_;
         
         //- Velocity field
@@ -141,9 +138,6 @@ private:
 
         //- Update the compressibility (psi_) based on current alphas, p, and T
         void calculatePsi();
-
-        //- Solve the alpha transport equations
-        void solveAlphas(const scalar cAlpha, const label nAlphaCorr);
 
         //- Update the stored viscosity (mu_)
         void calculateMu();
@@ -249,14 +243,29 @@ public:
         
         
         // Multiphase specific methods
+            const PLICInterface& interface() const
+            {
+                return interface_;
+            }
+            
             const volScalarField& alphaLiquid() const
             {
-                return alphaLiquid_;
+                return liquid_;
             }
             
             const volScalarField& alphaVapor() const
             {
-                return alphaVapor_;
+                return vapor_;
+            }
+            
+            phase& liquid()
+            {
+                return liquid_;
+            }
+            
+            phase& vapor()
+            {
+                return vapor_;
             }
                         
                         
@@ -266,20 +275,12 @@ public:
                 return W()/(R*T_);
             }
             
-            //- Get mass flux field
-            const surfaceScalarField& rhoPhi() const
-            {
-                return rhoPhi_;
-            }
-
             //- Solve reaction chemistry, evaporation, and phase transport       
-            scalar solve(volScalarField& rho);
+            void solve(surfaceScalarField& phi);
 
             //- Update the density (rho_) based on current alphas, p, and T
             void calculateRho();
             
-            //- Calculate the surface tension force field
-            tmp<surfaceScalarField> surfaceTensionForce();
             
             tmp<volScalarField> W() const;
             

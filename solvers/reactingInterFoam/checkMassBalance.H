@@ -9,7 +9,6 @@
     //Boundary mass net outflux
     word patchName = "atmosphere";
     label patchID = mesh.boundaryMesh().findPatchID(patchName);
-    const surfaceScalarField& rhoPhi = mixture.rhoPhi();
     scalar netOutFlux = 0.0;
 
     //patchID = -1 if patch cannot be found
@@ -17,7 +16,7 @@
     {
         netOutFlux = Foam::sum
         (
-            rhoPhi.boundaryField()[patchID]
+            phi.boundaryField()[patchID]
         )*mesh.time().deltaT().value();
     }
 

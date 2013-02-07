@@ -1,31 +1,84 @@
 
-    Info<< "Building UEqn" << endl;
+    //Load field references
+    const PLICInterface& interface = mixture.interface();
     
-    fvVectorMatrix UEqn
+    phase& vapor = mixture.vapor();
+    const volScalarField& alphav = mixture.alphaVapor();
+    surfaceScalarField& phiv = vapor.phi();
+    volVectorField& Uv = vapor.U();
+    tmp<surfaceScalarField> talphafv = interface.alphaVaporf();
+    const surfaceScalarField& alphafv = talphafv();
+    const volScalarField& rhov = vapor.rho();
+    volScalarField& pv = vapor.p();
+    const volScalarField& muv = vapor.mu();
+    
+    phase& liquid = mixture.liquid();
+    const volScalarField& alphaL = mixture.alphaLiquid();
+    surfaceScalarField& phiL = liquid.phi();
+    volVectorField& UL = liquid.U();
+    const surfaceScalarField& alphafL = interface.alphaLiquidf();
+    const volScalarField& rhoL = liquid.rho();
+    volScalarField& pL = liquid.p();
+    const volScalarField& muL = liquid.mu();
+    
+    
+    // Make U equations
+    Info<< "Building UEqns" << endl;
+    
+    fvVectorMatrix UEqnL
     (
-        fvm::ddt(rho, U)
-      + fvm::div(mixture.rhoPhi(), U)
-      + turbulence->divDevRhoReff(U)
+        fvm::ddt(rhoL*liquid.alphaCorr(interface), UL)
+      + fvm::div(phiL, UL)
+      - fvm::laplacian(fvc::interpolate(muL)*alphafL, UL)
+      //- fvc::div(muL*dev2(T(fvc::grad(UL)))) //TODO: Fix near interface?
+      - liquid.U_Su(interface, Uv, muv)
+      + fvm::Sp( liquid.U_Sp(interface), UL )
+      - rhoL*alphaL*g
     );
 
-    UEqn.relax();
-
+    fvVectorMatrix UEqnV
+    (
+        fvm::ddt(rhov*vapor.alphaCorr(interface), Uv)
+      + fvm::div(phiv, Uv)
+      + turbulence->divDevRhoReff(Uv)
+      - vapor.U_Su(interface, UL, muL)
+      + fvm::Sp( vapor.U_Sp(interface), Uv )
+      - rhov*alphav*g
+    );
+    
+    UEqnL.relax();
+    UEqnV.relax();
+    
     if (pimple.momentumPredictor())
     {
         Info<< "Doing momentum predictor step" << endl;
         
-        solve
+        /*Foam::solve
         (
-            UEqn
+            UEqnL
          ==
             fvc::reconstruct
             (
                 (
-                    mixture.surfaceTensionForce()
-                  - ghf*fvc::snGrad(rho)
-                  - fvc::snGrad(p)
-                ) * mesh.magSf()
+                  - fvc::snGrad(pL)
+                ) * mesh.magSf() * alphaf
+                
+                //- grad p from interface
             )
-        );
+        );*/
+        
+        /*Foam::solve
+        (
+            UEqnV
+         ==
+            fvc::reconstruct
+            (
+                (
+                  - fvc::snGrad(pV)
+                ) * mesh.magSf() * alphaf
+                
+                //- grad p from interface
+            )
+        );*/
     }
-
+    
