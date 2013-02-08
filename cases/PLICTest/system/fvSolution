@@ -78,38 +78,17 @@ solvers
 
     p
     {
-        solver          GAMG;
+        solver          PCG;
+        preconditioner  DIC;
         tolerance       1e-08;
         relTol          0.001;
-        smoother        GaussSeidel;
-        nPreSweeps      0;
-        nPostSweeps     2;
-        nFinestSweeps   2;
-        cacheAgglomeration false;
-        nCellsInCoarsestLevel 10;
-        agglomerator    faceAreaPair;
-        mergeLevels     1;
+        maxIter         100;
     }
 
     pFinal
     {
         solver          PCG;
-        preconditioner
-        {
-            preconditioner  GAMG;
-            tolerance       1e-08;
-            relTol          0;
-            nVcycles        2;
-            smoother        GaussSeidel;
-            nPreSweeps      0;
-            nPostSweeps     2;
-            nFinestSweeps   2;
-            cacheAgglomeration false;
-            nCellsInCoarsestLevel 10;
-            agglomerator    faceAreaPair;
-            mergeLevels     1;
-        }
-
+        preconditioner  DIC;
         tolerance       1e-08;
         relTol          0;
         maxIter         20;
@@ -176,7 +155,7 @@ solvers
 PIMPLE
 {
     momentumPredictor no;
-    nCorrectors     1;
+    nCorrectors     2;
     nOuterCorrectors 1;
     nNonOrthogonalCorrectors 2;
     nAlphaSubCycles  1;

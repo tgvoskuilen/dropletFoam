@@ -42,12 +42,13 @@
     (
         fvm::ddt(rhov*vapor.alphaCorr(interface), Uv)
       + fvm::div(phiv, Uv, divScheme)
-      + turbulence->divDevRhoReff(Uv)
+      //+ turbulence->divDevRhoReff(Uv) //causes crash, UEqnV.H -> 1e300
       - vapor.U_Su(interface, UL, muL)
       + fvm::Sp( vapor.U_Sp(interface), Uv )
       - rhov*alphav*g
     );
     
+
     UEqnL.relax();
     UEqnV.relax();
     

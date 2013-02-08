@@ -211,7 +211,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     (
         liquid_,
         vapor_,
-        U_
+        liquid_.U()
     )
 {
 

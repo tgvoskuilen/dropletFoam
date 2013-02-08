@@ -146,13 +146,52 @@ Foam::phase::phase
         ),
         mesh,
         dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
+    ),
+    p_Sp_
+    (
+        IOobject
+        (
+            "pSp_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("pSp_"+name, dimDensity/dimTime/dimPressure, 0.0)
+    ),
+    p_Su_
+    (
+        IOobject
+        (
+            "pSu_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("pSu_"+name, dimDensity/dimTime, 0.0)
     )
-{
+{    
+    if( name_ == "Liquid" )
+    {
+        dimensionedScalar dpi("dpi",dimPressure,140);
+        p_ += dpi;
+    }
+
+    rho_ = rho(p_,T_);
+    rho_.oldTime();
+    
+    p_.oldTime();
+    T_.oldTime();
+    U_.oldTime();
+    
     if( phaseDict_.found("SchmidtNo") )
     {
         Sc_ = readScalar(phaseDict_.lookup("SchmidtNo"));
     }
-    
+        
     Foam::Info<< "Created phase " << name << Foam::endl;
 }
 
@@ -208,7 +247,8 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
             1.0/mesh().time().deltaTValue()
         );
         
-        return (i.smallGasCells() + i.noGasCells()) * U_opp * rhorDT
+        return (i.smallGasCells()*i.scAverage<vector>(name_,U_)
+             + i.noGasCells()*UFarField(i)) * rhorDT
              + i.gasCells()*i.shearVec(name_, U_opp, U_, mu_opp, mu_);
     }
     else
@@ -220,7 +260,7 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
             1000.0/mesh().time().deltaTValue()
         );
         
-        return (i.noLiquidCells() * U_opp
+        return (i.noLiquidCells() * UFarField(i)
              + i.smallLiquidCells()*i.scAverage<vector>(name_,U_)) * rhorDT
              + i.liquidCells()*i.shearVec(name_, U_, U_opp, mu_, mu_opp);
     }
@@ -244,6 +284,63 @@ Foam::tmp<Foam::volScalarField> Foam::phase::alphaCorr
 }
 
 
+
+label Foam::phase::numSmallAndEmptyCells
+(
+    const PLICInterface& i
+) const
+{
+    tmp<volScalarField> mask;
+    if( name_ == "Vapor" )
+    {
+        mask = i.smallGasCells() + i.noGasCells();
+    }
+    else
+    {
+        mask = i.smallLiquidCells() + i.noLiquidCells();
+    }
+    
+    return label(Foam::sum(mask()).value());
+}
+
+
+
+void Foam::phase::calcFixedRhoValues
+(
+    labelList& cells,
+    scalarList& values,
+    const PLICInterface& i
+) const
+{
+    tmp<volScalarField> rhovalue;
+    tmp<volScalarField> mask;
+    if( name_ == "Vapor" )
+    {
+        mask = i.smallGasCells() + i.noGasCells();
+        rhovalue = i.noGasCells()*rhoFarField(i)
+                 + i.smallGasCells()*i.scAverage<scalar>(name_,rho_);
+    }
+    else
+    {
+        mask = i.smallLiquidCells() + i.noLiquidCells();
+        rhovalue = i.noLiquidCells()*rhoFarField(i)
+                 + i.smallLiquidCells()*i.scAverage<scalar>(name_,rho_);
+    }
+        
+    label idx = 0;
+    forAll(mask(), cellI)
+    {
+        if( mask()[cellI] > 0.5 )
+        {
+            cells[idx] = cellI;
+            values[idx] = rhovalue()[cellI];
+            ++idx;
+        }
+    }
+}
+
+
+
 void Foam::phase::updateRho
 (
     const PLICInterface& interface
@@ -251,7 +348,7 @@ void Foam::phase::updateRho
 {
     Info<< "Min, max rho" << name_ << "= " << Foam::gMin(rho_) << ", "
         << Foam::gMax(rho_) << endl;
-        
+    
     Foam::solve
     (
         fvm::ddt(alphaCorr(interface), rho_)
@@ -283,14 +380,21 @@ Foam::tmp<Foam::volScalarField> Foam::phase::rho_Sp
 }
 
 
-Foam::dimensionedScalar Foam::phase::rhoFarField() const
+Foam::dimensionedScalar Foam::phase::rhoFarField(const PLICInterface& i) const
 {
-    dimensionedScalar rhoFF = rho_.weightedAverage(*this);
-    Info<< "rhoFF"<<name_<<" = " << rhoFF << endl;
-    
-    return rhoFF;
-    //return rho_.weightedAverage(*this);
+    return rho_.weightedAverage(i.area());
 }
+
+Foam::dimensionedVector Foam::phase::UFarField(const PLICInterface& i) const
+{
+    return U_.weightedAverage(i.area());
+}
+
+Foam::dimensionedScalar Foam::phase::pFarField(const PLICInterface& i) const
+{
+    return p_.weightedAverage(i.area());
+}
+
 
 
 Foam::tmp<Foam::volScalarField> Foam::phase::rho_Su
@@ -302,12 +406,12 @@ Foam::tmp<Foam::volScalarField> Foam::phase::rho_Su
     
     if( name_ == "Vapor" )
     {
-        return (i.noGasCells() * rhoFarField()
+        return (i.noGasCells() * rhoFarField(i)
              + i.smallGasCells()*i.scAverage<scalar>(name_,rho_))*rDT; //Add m_evap
     }
     else
     {
-        return (i.noLiquidCells() * rhoFarField()
+        return (i.noLiquidCells() * rhoFarField(i)
              + i.smallLiquidCells()*i.scAverage<scalar>(name_,rho_))*rDT; //Add m_evap
     }
 }
@@ -319,7 +423,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Sp
 (
     const PLICInterface& i,
     const volScalarField& rhorAU
-) const
+)
 {
     
     if( name_ == "Vapor" )
@@ -330,6 +434,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Sp
             dimTime/dimArea,
             1e-5/mesh().time().deltaTValue()
         );
+        p_Sp_ = (i.smallGasCells() + i.noGasCells())*psirDT;
         return (i.smallGasCells() + i.noGasCells())*psirDT;
     }
     else
@@ -340,7 +445,13 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Sp
             dimTime/dimArea,
             1.0/mesh().time().deltaTValue()
         );
-        return (i.smallLiquidCells() + i.noLiquidCells())*psirDT
+        
+        p_Sp_ = i.noLiquidCells()*psirDT
+             + i.smallLiquidCells()*psirDT
+             + i.liquidCells()*rhorAU*i.AbydeltaLV();
+             
+        return i.noLiquidCells()*psirDT
+             + i.smallLiquidCells()*psirDT
              + i.liquidCells()*rhorAU*i.AbydeltaLV();
     }
 }
@@ -351,7 +462,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Su
     const PLICInterface& i,
     const volScalarField& p_opp,
     const volScalarField& rhorAU
-) const
+)
 {
     if( name_ == "Vapor" )
     {
@@ -361,7 +472,12 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Su
             dimTime/dimArea,
             1e-5/mesh().time().deltaTValue()
         );
-        return (i.noGasCells()*p_opp
+        dimensionedScalar p0("p0",dimPressure,1e5);
+        
+        p_Su_ = (i.noGasCells()*pFarField(i)
+             + i.smallGasCells()*i.scAverage<scalar>(name_,p_))*psirDT; //Add m_evap
+             
+        return (i.noGasCells()*pFarField(i)
              + i.smallGasCells()*i.scAverage<scalar>(name_,p_))*psirDT; //Add m_evap
     }
     else
@@ -376,8 +492,12 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Su
             1.0/mesh().time().deltaTValue()
         );
         
-        return (i.noLiquidCells()*p_opp
-             + i.smallLiquidCells()*(p_opp + sigmaT*i.kappa()))*psirDT
+        p_Su_ = i.noLiquidCells()*pFarField(i)*psirDT
+             + i.smallLiquidCells()*(p_opp + sigmaT*i.kappa())*psirDT
+             + i.liquidCells()*rhorAU*i.AbydeltaLV()*(p_opp + sigmaT*i.kappa()); //Add m_evap
+             
+        return i.noLiquidCells()*pFarField(i)*psirDT
+             + i.smallLiquidCells()*(p_opp + sigmaT*i.kappa())*psirDT
              + i.liquidCells()*rhorAU*i.AbydeltaLV()*(p_opp + sigmaT*i.kappa()); //Add m_evap
     }
 }
@@ -728,10 +848,16 @@ Foam::tmp<volScalarField> Foam::phase::rho
     
     if (name_ == "Vapor")
     {
-        return psi() * p;
+        trho() = dimensionedScalar("rhoV",dimDensity,1.2);
+        return trho;
+        
+        //return psi() * p;
     }
     else
     {
+        trho() = dimensionedScalar("rhoL",dimDensity,1000.0);
+        return trho;
+    /*
         tmp<volScalarField> den
         (
             new volScalarField
@@ -753,6 +879,8 @@ Foam::tmp<volScalarField> Foam::phase::rho
         }
         
         return Yp() / den;
+        
+        */
     }
 }
 
@@ -782,10 +910,10 @@ Foam::tmp<volScalarField> Foam::phase::psi() const
         )
     );
 
-    if (name_ == "Vapor")
+    /*if (name_ == "Vapor")
     {
         tpsi() = W()/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T_);
-    }
+    }*/
 
     return tpsi;
 }

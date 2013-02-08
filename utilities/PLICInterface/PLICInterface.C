@@ -218,6 +218,104 @@ Foam::PLICInterface::PLICInterface
         mesh_,
         dimensionedScalar("wV", dimless, 0.0)
     ),
+    
+    intermeds_
+    (
+        IOobject
+        (
+            "intermeds",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("intermeds", dimless, 0.0)
+    ),
+    
+    liquidCells_
+    (
+        IOobject
+        (
+            "liquidCells",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("liquidCells", dimless, 0.0)
+    ),
+    
+    smallLiquidCells_
+    (
+        IOobject
+        (
+            "smallLiquidCells",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("smallLiquidCells", dimless, 0.0)
+    ),
+    
+    noLiquidCells_
+    (
+        IOobject
+        (
+            "noLiquidCells",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("noLiquidCells", dimless, 0.0)
+    ),
+    
+    gasCells_
+    (
+        IOobject
+        (
+            "gasCells",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("gasCells", dimless, 0.0)
+    ),
+    
+    smallGasCells_
+    (
+        IOobject
+        (
+            "smallGasCells",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("smallGasCells", dimless, 0.0)
+    ),
+    
+    noGasCells_
+    (
+        IOobject
+        (
+            "noGasCells",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("noGasCells", dimless, 0.0)
+    ),
 
     kappaI_
     (
@@ -231,6 +329,20 @@ Foam::PLICInterface::PLICInterface
         ),
         mesh_,
         dimensionedScalar("kappaI", dimless/dimLength, 0.0),
+        zeroGradientFvPatchScalarField::typeName
+    ),
+    kappaTest_
+    (
+        IOobject
+        (
+            "kappaTest",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("kappaTest", dimless/dimLength, 0.0),
         zeroGradientFvPatchScalarField::typeName
     ),
     
@@ -300,7 +412,7 @@ void Foam::PLICInterface::calculateInterfaceNormal
     surfaceVectorField iNormalf = interpolate(iNormal_);
     iNormal_ = 0.7*fvc::average(iNormalf) + 0.3*iNormal_;
     
-    for (label i = 0; i < 1; ++i)
+    for (label i = 0; i < 3; ++i)
     {
         iNormalf = interpolate(iNormal_);
         iNormal_ = 0.7*fvc::average(iNormalf) + 0.3*iNormal_;
@@ -344,7 +456,7 @@ Foam::tmp<Foam::volScalarField> Foam::PLICInterface::AbydeltaLV() const
     
     tmp<volScalarField> val = iArea_ / (deltaL_+s)*rV;
     val().internalField() /= mesh_.V();
-    
+
     return val;
 }
 
@@ -384,6 +496,66 @@ Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
     }
 }
         
+void Foam::PLICInterface::updateKappaTest()
+{
+    tmp<surfaceScalarField> kap
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "kap",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar("kap", dimless/dimLength, 0.0)
+        )
+    );
+    
+    const labelUList& owner = mesh_.owner();
+    const labelUList& neighbor = mesh_.neighbour();
+    
+    forAll(kap(), faceI)
+    {
+        label own = owner[faceI];
+        label nei = neighbor[faceI];
+        
+        if( mag(iNormal_[own]) > SMALL && mag(iNormal_[nei]) > SMALL )
+        {
+            kap()[faceI] = calcCurvature
+            (
+                iNormal_[own],
+                liquidC_[own] + deltaL_[own]*iNormal_[own],
+                iNormal_[nei],
+                liquidC_[nei] + deltaL_[nei]*iNormal_[nei]
+            );
+        }
+    }
+
+    //TODO: Do Parallel patches Here
+
+
+    kappaTest_ = fvc::surfaceSum(kap() * mesh_.magSf()) / fvc::average(mesh_.magSf());
+        
+}
+
+
+scalar Foam::PLICInterface::calcCurvature
+(
+    const vector& n1,
+    const point& p1,
+    const vector& n2,
+    const point& p2
+) const
+{
+    scalar theta = acos(n1 & n2);
+    scalar s = mag(p1 - p2);
+    return 1000./(theta / s); //R in mm
+}
+
 
 void Foam::PLICInterface::updateKappa()
 {
@@ -392,7 +564,9 @@ void Foam::PLICInterface::updateKappa()
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
     kappaI_ = -fvc::div(nHatfv & mesh_.Sf());*/
     
-    kappaI_ = fvc::div( fvc::interpolate(iNormal_) & mesh_.Sf() );
+    updateKappaTest();
+    
+    kappaI_ = dimensionedScalar("k",dimless/dimLength,2.0/0.00101) * pos(mag(iNormal_)-SMALL);
 }
 
 
@@ -415,17 +589,17 @@ void Foam::PLICInterface::correct()
     updateKappa();
     
     // Step 1: Identify intermediate cells based on alphaLiquid_ and reconstructTol_
-    volScalarField intermeds = pos(alphaLiquid_ - reconstructTol_)
+    intermeds_ = pos(alphaLiquid_ - reconstructTol_)
                                *pos(1.0 - reconstructTol_ - alphaLiquid_);
 
     // Step 2: Calculate interface normal in intermediate cells
-    calculateInterfaceNormal(intermeds);
+    calculateInterfaceNormal(intermeds_);
 
     // Step 3: Calculate the cut plane and cut area in intermediate cells
     //         setting a_burn to zero in all non-intermediate cells
     forAll(iNormal_, cellI)
     {
-        if (intermeds[cellI] > SMALL)
+        if (intermeds_[cellI] > SMALL)
         {
             cuttableCell cc(mesh_, cellI);
             plane p = cc.constructInterface(iNormal_[cellI], alphaLiquid_[cellI]);
@@ -436,8 +610,8 @@ void Foam::PLICInterface::correct()
             gasC_[cellI] = cc.lostCentroid();
             liquidC_[cellI] = cc.cutCentroid();
             
-            deltaL_[cellI] = (liquidC_[cellI]-iPoint_[cellI]) & iNormal_[cellI];
-            deltaV_[cellI] = (gasC_[cellI]-iPoint_[cellI]) & iNormal_[cellI];
+            deltaL_[cellI] = mag((liquidC_[cellI]-iPoint_[cellI]) & iNormal_[cellI]);
+            deltaV_[cellI] = mag((gasC_[cellI]-iPoint_[cellI]) & iNormal_[cellI]);
             
             // DEBUGGING PURPOSES
             if (iArea_[cellI] < SMALL)
@@ -476,7 +650,7 @@ void Foam::PLICInterface::correct()
     // Step 5: Use the planes in intermediate cells to correct alphaf 
     //         near the interface. Also catch solid cells that have a partial
     //         open face as calculated from an intermediate cell cut plane.
-    surfaceScalarField hasIntermeds = fvc::interpolate(intermeds);
+    surfaceScalarField hasIntermeds = fvc::interpolate(intermeds_);
     
     const labelUList& owner = mesh_.owner();
     const labelUList& neighbor = mesh_.neighbour();
@@ -494,13 +668,16 @@ void Foam::PLICInterface::correct()
             scalar alphafNei = 1.0;
             scalar alphafOwn = 1.0;
 
-            if (mag(iNormal_[nei]) > SMALL)
+            // If we just use iNormal as a criteria, it can break, since
+            //  iNormal can be incremented for cells with coincident boundaries
+            //  while iPoint is left at its default (0,0,0)
+            if (mag(iNormal_[nei]) > SMALL && mag(iPoint_[nei]) > SMALL)
             {
                 Foam::plane p(iPoint_[nei], iNormal_[nei]);
                 alphafNei = cf.cut(p);
             }
 
-            if (mag(iNormal_[own]) > SMALL)
+            if (mag(iNormal_[own]) > SMALL && mag(iPoint_[own]) > SMALL)
             {
                 Foam::plane p(iPoint_[own], iNormal_[own]);
                 alphafOwn = cf.cut(p);
@@ -523,19 +700,19 @@ void Foam::PLICInterface::correct()
             //  The value of alphaf (===) for the face is calculated correctly,
             //  but needs to be added to the interface area of the liquid cell
             
-            if (alphaVapor_[own] < reconstructTol_
-                && alphaf_[faceI] > SMALL)
-            {
+            if (alphaVapor_[own] < reconstructTol_   //own is pure liquid and didn't get a point and normal created for it
+                && (1.0 - alphaf_[faceI]) > SMALL)
+            {                        
                 //own is liquid
-                iArea_[own] += mesh_.magSf()[faceI] * alphaf_[faceI];
-                iNormal_[own] += outwardNormal(faceI, own)*alphaf_[faceI];
+                iArea_[own] += mesh_.magSf()[faceI] * (1.0-alphaf_[faceI]);
+                iNormal_[own] += outwardNormal(faceI,own)*(1.0-alphaf_[faceI]);
             }
             else if (alphaVapor_[nei] < reconstructTol_
-                     && alphaf_[faceI] > SMALL)
+                     && (1.0 - alphaf_[faceI]) > SMALL)
             {
                 //nei is liquid
-                iArea_[nei] += mesh_.magSf()[faceI] * alphaf_[faceI];
-                iNormal_[nei] += outwardNormal(faceI, nei)*alphaf_[faceI];
+                iArea_[nei] += mesh_.magSf()[faceI] * (1.0-alphaf_[faceI]);
+                iNormal_[nei] += outwardNormal(faceI,nei)*(1.0-alphaf_[faceI]);
             }
         }
 
@@ -544,10 +721,10 @@ void Foam::PLICInterface::correct()
         else if (mag(alphaLiquid_[own] - alphaLiquid_[nei]) > 0.1)
         {
             alphaf_[faceI] = 0.0;
-
-            //set iNormal and a_burn for this case
+            
+            //set iNormal and area
             label liquidcell = (alphaLiquid_[own] > 0.5) ? own : nei;
-
+             
             // Increment iArea since a liquid cell could technically have more
             // than one sharp boundary
             iArea_[liquidcell] += mesh_.magSf()[faceI];
@@ -560,7 +737,7 @@ void Foam::PLICInterface::correct()
     }
     
     // Now set alphaf on parallel patches
-    const volScalarField::GeometricBoundaryField& alphaBf = 
+    const volScalarField::GeometricBoundaryField& alphaLBf = 
         alphaLiquid_.boundaryField();
     const volVectorField::GeometricBoundaryField& iPointBf = 
         iPoint_.boundaryField();
@@ -576,7 +753,7 @@ void Foam::PLICInterface::correct()
     
     forAll(alphafBf, patchI)
     {
-        const fvPatchScalarField& alphaPf = alphaBf[patchI];
+        const fvPatchScalarField& alphaLPf = alphaLBf[patchI];
         const fvPatchVectorField& iPointPf = iPointBf[patchI];
         
         fvPatchVectorField& iNormalPf = iNormalBf[patchI];
@@ -587,16 +764,16 @@ void Foam::PLICInterface::correct()
 
         const labelList& pFaceCells = mesh_.boundary()[patchI].faceCells();
     
-        if (alphaPf.coupled()) //returns true for parallel and cyclic patches
+        if (alphaLPf.coupled()) //returns true for parallel and cyclic patches
         {
             // Get values across parallel patch
             const vectorField iPointPNf(iPointPf.patchNeighbourField());
             const vectorField iNormalPNf(iNormalPf.patchNeighbourField());
-            const scalarField alphaPNf(alphaPf.patchNeighbourField());
+            const scalarField alphaLPNf(alphaLPf.patchNeighbourField());
             const scalarField iAreaPNf(iAreaPf.patchNeighbourField());
             
             //patch face starting IDs in mesh.faces()
-            label patchFs = alphaPf.patch().start();
+            label patchFs = alphaLPf.patch().start();
             const fvPatch& meshPf = mesh_.boundary()[patchI];
             
             forAll(alphafPf, pFaceI)
@@ -626,24 +803,24 @@ void Foam::PLICInterface::correct()
                     
                     // now catch sharp edges
                     if (alphaVapor_[pfCellI] < reconstructTol_
-                        && alphafPf[pFaceI] > SMALL)
+                        && (1.0-alphafPf[pFaceI]) > SMALL)
                     {
                         //own is liquid
                         iArea_[pfCellI] += meshPf.magSf()[pFaceI]
-                                           *alphafPf[pFaceI];
+                                           *(1.0-alphafPf[pFaceI]);
 
                         iNormal_[pfCellI] += 
                                 outwardNormal(patchFs+pFaceI, pfCellI)
-                                *alphafPf[pFaceI];
+                                *(1.0-alphafPf[pFaceI]);
                     }
                     
                 }
-                else if (mag(alphaLiquid_[pfCellI] - alphaPNf[pFaceI]) > 0.1)
+                else if (mag(alphaLiquid_[pfCellI] - alphaLPNf[pFaceI]) > 0.1)
                 {
                     alphafPf[pFaceI] = 0.0;
 
                     //set iNormal and iArea for this case
-                    if (alphaLiquid_[pfCellI] < 0.1)
+                    if (alphaLiquid_[pfCellI] > 0.1)
                     {
                         // than one sharp boundary
                         iArea_[pfCellI] += meshPf.magSf()[pFaceI];
@@ -657,6 +834,8 @@ void Foam::PLICInterface::correct()
         }
     }
     
+    Info<< "Max iArea = " << Foam::max(iArea_) << endl;
+    
     //Re-normalize iNormal (only needed for the cases when it is incremented)
     iNormal_ /= (mag(iNormal_) + VSMALL);
     
@@ -669,6 +848,13 @@ void Foam::PLICInterface::correct()
     
     // Calculate transfer weights on small cells
     calcTransferWeights();
+    
+    liquidCells_ = liquidCells();
+    smallLiquidCells_ = smallLiquidCells();
+    noLiquidCells_ = noLiquidCells();
+    gasCells_ = gasCells();
+    smallGasCells_ = smallGasCells();
+    noGasCells_ = noGasCells();
 }
 
 
@@ -681,6 +867,8 @@ Foam::tmp<Foam::volScalarField> Foam::PLICInterface::alphaVaporCorr() const
 
 void Foam::PLICInterface::calcTransferWeights()
 {
+    Info<< "Calculating small cell face linking weights" << endl;
+    
     // If negative, alpha is a small cell
     volScalarField alphaShiftV = alphaVapor_ - alphaMin_;
     volScalarField alphaShiftL = alphaLiquid_ - alphaMin_;
@@ -693,6 +881,14 @@ void Foam::PLICInterface::calcTransferWeights()
     {
         label own = owner[faceI];
         label nei = neighbor[faceI];
+        
+        /*if( own == 76057 || nei == 76057 )
+        {
+            Info<< "Calculating weight at face " << faceI << " of cell 76057" << endl;
+            Info<< "  alphaShiftV["<<own<<"] = " << alphaShiftV[own] << endl;
+            Info<< "  alphaShiftV["<<nei<<"] = " << alphaShiftV[nei] << endl;
+            Info<< "  alphaf[faceI] = " << alphaf_[faceI] << endl;
+        }*/
 
         if (alphaShiftL[own] * alphaShiftL[nei] * alphaf_[faceI] < 0.0)
         { //one is small, one is not, and they share a gas boundary
@@ -703,10 +899,12 @@ void Foam::PLICInterface::calcTransferWeights()
             (
                 iNormal_[sc] & mesh_.Sf()[faceI]
             ) * alphaf_[faceI];
+            
+            alphaf_[faceI] = 0.0;
         }
         
         if (alphaShiftV[own] * alphaShiftV[nei] * (1.0 - alphaf_[faceI]) < 0.0)
-        { //one is small, one is not, and they share a gas boundary
+        { //one is small, one is not, and they share a liquid boundary
 
             label sc = (alphaShiftV[own] < 0.0) ? own : nei;
 
@@ -714,6 +912,25 @@ void Foam::PLICInterface::calcTransferWeights()
             (
                 iNormal_[sc] & mesh_.Sf()[faceI]
             ) * (1.0 - alphaf_[faceI]);
+            
+            /*if( sc == 76057 )
+            {
+                Info<< "at cell 76057 face "<<faceI<<", wV = " << wV_[faceI] << endl;
+            }*/
+            
+            alphaf_[faceI] = 1.0;
+        }
+        
+        // if both cells are small, zero out alphaf between then
+        if (alphaShiftL[own] < 0.0 && alphaShiftL[nei] < 0.0)
+        {
+            alphaf_[faceI] = 0.0;
+        }
+        
+        // if both cells are small, zero out alphaf between then
+        if (alphaShiftV[own] < 0.0 && alphaShiftV[nei] < 0.0)
+        {
+            alphaf_[faceI] = 1.0;
         }
     }
     
@@ -771,6 +988,8 @@ void Foam::PLICInterface::calcTransferWeights()
                     (
                         scNorm & meshPf.Sf()[pFaceI]
                     ) * alphafPf[pFaceI];
+                    
+                    alphafPf[pFaceI] = 0.0;
                 }
                 
                 if ( alphaShiftV[pfCellI] * alphaShiftVPNf[pFaceI]
@@ -785,6 +1004,20 @@ void Foam::PLICInterface::calcTransferWeights()
                     (
                         scNorm & meshPf.Sf()[pFaceI]
                     ) * (1.0 - alphafPf[pFaceI]);
+                    
+                    alphafPf[pFaceI] = 1.0;
+                }
+                
+                //Close faces between small liquid cells
+                if (alphaShiftL[pfCellI] < 0.0 && alphaShiftLPNf[pFaceI] < 0.0)
+                {
+                    alphafPf[pFaceI] = 0.0;
+                }
+                
+                //Close faces between small gas cells
+                if (alphaShiftV[pfCellI] < 0.0 && alphaShiftVPNf[pFaceI] < 0.0)
+                {
+                    alphafPf[pFaceI] = 1.0;
                 }
             }
         }
@@ -959,7 +1192,7 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
         }
 
 
-        if (   iNormal_[uwCell] != vector::zero 
+        if (   iNormal_[uwCell] != vector::zero && iPoint_[uwCell] != vector::zero
             && mag(Uf[faceI] & mesh_.Sf()[faceI]) > SMALL)
         {
             // Make a cuttable cell by extruding faceI in the direction of the
@@ -972,12 +1205,12 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
         }
 
         else if (mag(Uf[faceI] & mesh_.Sf()[faceI]) <= SMALL)
-        { //phi is SMALL too
+        { //phi is SMALL too, no flow through face
             phiAlphaFrac[faceI] = 0.0;
         }
 
         else if (mag(alphaVapor_[own] - alphaVapor_[nei]) > 0.1)
-        { //??
+        { //interface coincident with cell boundary
             phiAlphaFrac[faceI] = alphaLiquid_[uwCell];
         }
     }
@@ -1028,14 +1261,14 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
                     scalar cutSum = 0.0;
                     label nCuts = 0;
 
-                    if (iNormal_[pfCellI] != vector::zero)
+                    if (iNormal_[pfCellI] != vector::zero && iPoint_[pfCellI] != vector::zero)
                     {
                         // Cut the polyhedron by the reconstructed interface plane in cell on this proc
                         cutSum += pf.cut( plane(iPoint_[pfCellI], iNormal_[pfCellI]) );
                         nCuts++;
                     }
 
-                    if (iNormalPNf[pFaceI] != vector::zero)
+                    if (iNormalPNf[pFaceI] != vector::zero && iPointPNf[pFaceI] != vector::zero)
                     {
                         // Cut the polyhedron by the reconstructed interface plane in cell on neighbour proc
                         cutSum += pf.cut( plane(iPointPNf[pFaceI], iNormalPNf[pFaceI]) );
@@ -1103,9 +1336,9 @@ void Foam::PLICInterface::advect
         ),
         // Divergence term is handled explicitly to be
         // consistent with the explicit transport solution
-        divU*min(alphaLiquid_, scalar(1)) + liquidVolSource
+        //divU*min(alphaLiquid_, scalar(1)) + liquidVolSource
         //divU*pos(alphaLiquid_-0.5) + liquidVolSource // Weymouth 2010
-        //liquidVolSource
+        liquidVolSource
     );  
         
     MULES::explicitSolve

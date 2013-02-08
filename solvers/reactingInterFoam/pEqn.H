@@ -13,7 +13,7 @@
 
     // Set Uv = Uv_est
     Uv = rAUv*UEqnV.H();
-    
+
     // Set phiv = phivEst
     phiv = 
     (
@@ -54,6 +54,12 @@
           + fvm::Sp( vapor.p_Sp(interface, rAUv), pv )   //<- rAUv not used
         );
         
+        solve
+        (
+            pEqnv,
+            mesh.solver(p.select(pimple.finalInnerIter()))
+        );
+        
         fvScalarMatrix pEqnL
         (
             fvc::div(phiL) // <- Really phiLEst
@@ -61,23 +67,13 @@
           - liquid.p_Su(interface, pv, rhorAUL)
           + fvm::Sp( liquid.p_Sp(interface, rhorAUL), pL )
         );
-
-        solve
-        (
-            pEqnv,
-            mesh.solver(p.select(pimple.finalInnerIter()))
-        );
-        
-        Info<< "min,max pv = " << gMin(pv)/1e5 << ", " << gMax(pv)/1e5 << " bar" << endl;
-        
+          
         solve
         (
             pEqnL,
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
-        Info<< "min,max pL = " << gMin(pL)/1e5 << ", " << gMax(pL)/1e5 << " bar" << endl;
-
         if (pimple.finalNonOrthogonalIter())
         {
             phiv += pEqnv.flux();
@@ -95,9 +91,9 @@
     pv.max(dimensionedScalar("pMin",pv.dimensions(),10000.0));
     pL.max(dimensionedScalar("pMin",pL.dimensions(),10000.0));
     
-    Info<< "min,max pv = " << gMin(pv)/1e5 << ", " << gMax(pv)/1e5 << " bar" << endl;
     Info<< "min,max Uv = " << min(mag(Uv)).value() << ", " << max(mag(Uv)).value() << endl;
-    
-    Info<< "min,max pL = " << gMin(pL)/1e5 << ", " << gMax(pL)/1e5 << " bar" << endl;
     Info<< "min,max UL = " << min(mag(UL)).value() << ", " << max(mag(UL)).value() << endl;
+    
+    Info<< "min,max pv = " << min((pv)).value() << ", " << max((pv)).value() << endl;
+    Info<< "min,max pL = " << min((pL)).value() << ", " << max((pL)).value() << endl;
 }

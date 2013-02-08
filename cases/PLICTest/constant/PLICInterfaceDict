@@ -19,6 +19,6 @@ FoamFile
 alphaMin  0.1;
 
 // Minimum alpha to use planar reconstruction algorithm on
-reconstructTol  1e-6;
+reconstructTol  1e-4;
 
 // ************************************************************************* //

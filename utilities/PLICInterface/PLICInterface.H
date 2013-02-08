@@ -100,9 +100,20 @@ class PLICInterface
         surfaceScalarField wL_;
         surfaceScalarField wV_;
         
+        volScalarField intermeds_;
+
+        
+        //TEMPORARY
+        volScalarField liquidCells_;
+        volScalarField smallLiquidCells_;
+        volScalarField noLiquidCells_;
+        volScalarField gasCells_;
+        volScalarField smallGasCells_;
+        volScalarField noGasCells_;
+        
         //- Interface curvature
         volScalarField kappaI_;
-        
+        volScalarField kappaTest_;
         //- Alpha cutoff for small cell treatment
         scalar alphaMin_;
         
@@ -157,6 +168,16 @@ public:
         {
             return alphaLiquid_;
         }
+        
+        const surfaceScalarField& wL() const
+        {
+            return wL_;
+        }
+        
+        const surfaceScalarField& wV() const
+        {
+            return wV_;
+        }
 
         const volScalarField& area() const
         {
@@ -191,6 +212,14 @@ public:
             const volScalarField& muV
         ) const;
         
+        scalar calcCurvature
+        (
+            const vector& n1,
+            const point& p1,
+            const vector& n2,
+            const point& p2
+        ) const;
+        
         //- Get the "used" alpha (zero in small cells)
         tmp<volScalarField> alphaVaporCorr() const;
 
@@ -202,6 +231,7 @@ public:
         
         //- Update the stored curvature field
         void updateKappa();
+        void updateKappaTest();
         
         //- Calculate the interface parameters given alpha
         void correct();

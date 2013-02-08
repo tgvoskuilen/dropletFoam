@@ -39,7 +39,7 @@ SourceFiles
 Foam::cuttableCell::cuttableCell(const Foam::fvMesh& mesh, label cellI)
  : points_(mesh.cellPoints()[cellI].size()),
    faces_(mesh.cells()[cellI].size()),
-   pointEqualTol_(1e-6),
+   pointEqualTol_(1e-4),
    baseVol_(mesh.V()[cellI]),
    centroid_(mesh.C()[cellI]),
    cutArea_(0.0)
@@ -100,7 +100,7 @@ Foam::cuttableCell::cuttableCell(const Foam::fvMesh& mesh, label cellI)
 Foam::cuttableCell::cuttableCell(const Foam::fvMesh& mesh, label faceI, Foam::vector d)
  : points_(mesh.faces()[faceI].size()*2),
    faces_(mesh.faces()[faceI].size()+2),
-   pointEqualTol_(1e-6),
+   pointEqualTol_(1e-4),
    baseVol_(Foam::mag(mesh.faces()[faceI].normal(mesh.points()) & d)),
    centroid_(Foam::vector::zero),
    cutArea_(0.0)

@@ -111,7 +111,9 @@ class phase
         
         //- Mass diffusion coefficient
         surfaceScalarField D_;
-
+        
+        volScalarField p_Sp_;
+        volScalarField p_Su_;
 
 public:
 
@@ -293,7 +295,9 @@ public:
             const surfaceScalarField& alphaf
         );
 
-        dimensionedScalar rhoFarField() const;
+        dimensionedScalar rhoFarField(const PLICInterface& i) const;
+        dimensionedVector UFarField(const PLICInterface& i) const;
+        dimensionedScalar pFarField(const PLICInterface& i) const;
         
         void setPhi(const surfaceScalarField& alphaf);
         void updateRho(const PLICInterface& i);
@@ -313,16 +317,19 @@ public:
         (
             const PLICInterface& i,
             const volScalarField& rhorAU
-        ) const;
+        );
         
         tmp<volScalarField> p_Su
         (
             const PLICInterface& i,
             const volScalarField& p_opp,
             const volScalarField& rhorAU
-        ) const;
-};
+        );
+        
+        label numSmallAndEmptyCells(const PLICInterface& i) const;
+        void calcFixedRhoValues(labelList& cells, scalarList& values, const PLICInterface& i) const;
 
+};
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
