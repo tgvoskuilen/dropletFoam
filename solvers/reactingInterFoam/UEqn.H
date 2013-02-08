@@ -25,10 +25,12 @@
     // Make U equations
     Info<< "Building UEqns" << endl;
     
+    word divScheme("div(phi,U)");
+    
     fvVectorMatrix UEqnL
     (
         fvm::ddt(rhoL*liquid.alphaCorr(interface), UL)
-      + fvm::div(phiL, UL)
+      + fvm::div(phiL, UL, divScheme)
       - fvm::laplacian(fvc::interpolate(muL)*alphafL, UL)
       //- fvc::div(muL*dev2(T(fvc::grad(UL)))) //TODO: Fix near interface?
       - liquid.U_Su(interface, Uv, muv)
@@ -39,7 +41,7 @@
     fvVectorMatrix UEqnV
     (
         fvm::ddt(rhov*vapor.alphaCorr(interface), Uv)
-      + fvm::div(phiv, Uv)
+      + fvm::div(phiv, Uv, divScheme)
       + turbulence->divDevRhoReff(Uv)
       - vapor.U_Su(interface, UL, muL)
       + fvm::Sp( vapor.U_Sp(interface), Uv )

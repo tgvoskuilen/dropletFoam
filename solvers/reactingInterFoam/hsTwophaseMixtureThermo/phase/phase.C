@@ -172,11 +172,23 @@ Foam::tmp<Foam::volScalarField> Foam::phase::U_Sp
 {
     if( name_ == "Vapor" )
     {
-        return i.smallGasCells() + i.noGasCells();
+        dimensionedScalar rhorDT
+        (
+            "rhorDT",
+            dimDensity/dimTime,
+            1.0/mesh().time().deltaTValue()
+        );
+        return (i.smallGasCells() + i.noGasCells())*rhorDT;
     }
     else
     {
-        return i.smallLiquidCells() + i.noLiquidCells();
+        dimensionedScalar rhorDT
+        (
+            "rhorDT",
+            dimDensity/dimTime,
+            1000./mesh().time().deltaTValue()
+        );
+        return (i.smallLiquidCells() + i.noLiquidCells())*rhorDT;
     }
 }
 
@@ -189,13 +201,27 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
 {
     if( name_ == "Vapor" )
     {
-        return (i.smallGasCells() + i.noGasCells()) * U_opp
+        dimensionedScalar rhorDT
+        (
+            "rhorDT",
+            dimDensity/dimTime,
+            1.0/mesh().time().deltaTValue()
+        );
+        
+        return (i.smallGasCells() + i.noGasCells()) * U_opp * rhorDT
              + i.gasCells()*i.shearVec(name_, U_opp, U_, mu_opp, mu_);
     }
     else
     {
-        return i.noLiquidCells() * U_opp
-             + i.smallLiquidCells()*i.scAverage<vector>(name_,U_)
+        dimensionedScalar rhorDT
+        (
+            "rhorDT",
+            dimDensity/dimTime,
+            1000.0/mesh().time().deltaTValue()
+        );
+        
+        return (i.noLiquidCells() * U_opp
+             + i.smallLiquidCells()*i.scAverage<vector>(name_,U_)) * rhorDT
              + i.liquidCells()*i.shearVec(name_, U_, U_opp, mu_, mu_opp);
     }
 }
@@ -223,13 +249,20 @@ void Foam::phase::updateRho
     const PLICInterface& interface
 )
 {
+    Info<< "Min, max rho" << name_ << "= " << Foam::gMin(rho_) << ", "
+        << Foam::gMax(rho_) << endl;
+        
     Foam::solve
     (
         fvm::ddt(alphaCorr(interface), rho_)
       + fvc::div(phi_)
       - rho_Su(interface)
-      + fvm::Sp( rho_Sp(interface), rho_ )
+      + fvm::Sp( rho_Sp(interface), rho_ ),
+      mesh().solverDict("rho")
     );
+    
+    Info<< "Min, max rho" << name_ << "= " << Foam::gMin(rho_) << ", "
+        << Foam::gMax(rho_) << endl;
 }
 
 Foam::tmp<Foam::volScalarField> Foam::phase::rho_Sp
@@ -237,20 +270,26 @@ Foam::tmp<Foam::volScalarField> Foam::phase::rho_Sp
     const PLICInterface& i
 ) const
 {
+    dimensionedScalar rDT = 1.0 / mesh().time().deltaT();
+    
     if( name_ == "Vapor" )
     {
-        return i.smallGasCells() + i.noGasCells();
+        return (i.smallGasCells() + i.noGasCells())*rDT;
     }
     else
     {
-        return i.smallLiquidCells() + i.noLiquidCells();
+        return (i.smallLiquidCells() + i.noLiquidCells())*rDT;
     }
 }
 
 
 Foam::dimensionedScalar Foam::phase::rhoFarField() const
 {
-    return rho_.weightedAverage(*this);
+    dimensionedScalar rhoFF = rho_.weightedAverage(*this);
+    Info<< "rhoFF"<<name_<<" = " << rhoFF << endl;
+    
+    return rhoFF;
+    //return rho_.weightedAverage(*this);
 }
 
 
@@ -259,15 +298,17 @@ Foam::tmp<Foam::volScalarField> Foam::phase::rho_Su
     const PLICInterface& i
 ) const
 {
+    dimensionedScalar rDT = 1.0 / mesh().time().deltaT();
+    
     if( name_ == "Vapor" )
     {
-        return i.noGasCells() * rhoFarField()
-             + i.smallGasCells()*i.scAverage<scalar>(name_,rho_); //Add m_evap
+        return (i.noGasCells() * rhoFarField()
+             + i.smallGasCells()*i.scAverage<scalar>(name_,rho_))*rDT; //Add m_evap
     }
     else
     {
-        return i.noLiquidCells() * rhoFarField()
-             + i.smallLiquidCells()*i.scAverage<scalar>(name_,rho_); //Add m_evap
+        return (i.noLiquidCells() * rhoFarField()
+             + i.smallLiquidCells()*i.scAverage<scalar>(name_,rho_))*rDT; //Add m_evap
     }
 }
 
@@ -280,14 +321,27 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Sp
     const volScalarField& rhorAU
 ) const
 {
+    
     if( name_ == "Vapor" )
     {
-        return i.smallGasCells() + i.noGasCells();
+        dimensionedScalar psirDT
+        (
+            "psirDT",
+            dimTime/dimArea,
+            1e-5/mesh().time().deltaTValue()
+        );
+        return (i.smallGasCells() + i.noGasCells())*psirDT;
     }
     else
     {
-        return i.smallLiquidCells() + i.noLiquidCells()
-             + i.liquidCells()*rhorAU*i.AbydeltaL();
+        dimensionedScalar psirDT
+        (
+            "psirDT",
+            dimTime/dimArea,
+            1.0/mesh().time().deltaTValue()
+        );
+        return (i.smallLiquidCells() + i.noLiquidCells())*psirDT
+             + i.liquidCells()*rhorAU*i.AbydeltaLV();
     }
 }
 
@@ -301,17 +355,30 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Su
 {
     if( name_ == "Vapor" )
     {
-        return i.noGasCells()*p_opp
-             + i.smallGasCells()*i.scAverage<scalar>(name_,p_); //Add m_evap
+        dimensionedScalar psirDT
+        (
+            "psirDT",
+            dimTime/dimArea,
+            1e-5/mesh().time().deltaTValue()
+        );
+        return (i.noGasCells()*p_opp
+             + i.smallGasCells()*i.scAverage<scalar>(name_,p_))*psirDT; //Add m_evap
     }
     else
     {
         //TODO: TEMPORARY CONSTANT
         dimensionedScalar sigmaT("sigma",dimPressure*dimLength,0.07);
         
-        return i.noLiquidCells()*p_opp
-             + i.smallLiquidCells()*(p_opp + sigmaT*i.kappa())
-             + i.liquidCells()*rhorAU*i.AbydeltaL()*(p_opp + sigmaT*i.kappa()); //Add m_evap
+        dimensionedScalar psirDT
+        (
+            "psirDT",
+            dimTime/dimArea,
+            1.0/mesh().time().deltaTValue()
+        );
+        
+        return (i.noLiquidCells()*p_opp
+             + i.smallLiquidCells()*(p_opp + sigmaT*i.kappa()))*psirDT
+             + i.liquidCells()*rhorAU*i.AbydeltaLV()*(p_opp + sigmaT*i.kappa()); //Add m_evap
     }
 }
 
@@ -373,6 +440,8 @@ void Foam::phase::setCombustionPtr
 
 void Foam::phase::correct()
 {
+    rho_ = rho(p_,T_);
+
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
         specieI().correct();

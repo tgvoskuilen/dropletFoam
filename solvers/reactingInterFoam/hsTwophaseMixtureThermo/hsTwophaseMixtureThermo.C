@@ -35,7 +35,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     const scalarField& hsCells = hs_.internalField();
 
     scalarField& TCells = T_.internalField();
-    scalarField& alphaCells = alpha_.internalField();
+    //scalarField& alphaCells = alpha_.internalField();
     
     Info << "Calculating mixture temperature from hs" << endl;
 
@@ -46,14 +46,14 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
             this->cellMixture(celli);
 
         TCells[celli] = mixture.THs(hsCells[celli], TCells[celli]);
-        alphaCells[celli] = mixture.alpha(TCells[celli]);
+        //alphaCells[celli] = mixture.alpha(TCells[celli]);
     }
 
     forAll(T_.boundaryField(), patchi)
     {
         fvPatchScalarField& pT = T_.boundaryField()[patchi];
         fvPatchScalarField& phs = hs_.boundaryField()[patchi];
-        fvPatchScalarField& palpha = alpha_.boundaryField()[patchi];
+        //fvPatchScalarField& palpha = alpha_.boundaryField()[patchi];
 
         if (pT.fixesValue())
         {
@@ -64,7 +64,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
 
                 phs[facei] = mixture.Hs(pT[facei]);
 
-                palpha[facei] = mixture.alpha(pT[facei]);
+                //palpha[facei] = mixture.alpha(pT[facei]);
             }
         }
         else
@@ -76,7 +76,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
 
                 pT[facei] = mixture.THs(phs[facei], pT[facei]);
 
-                palpha[facei] = mixture.alpha(pT[facei]);
+                //palpha[facei] = mixture.alpha(pT[facei]);
             }
         }
     }
@@ -97,9 +97,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateMu()
     vapor_.correct();
     liquid_.correct();
     
-    mu_ = vapor_ * muV() + 
-            liquid_ * liquid_.mu(p_, T_);
-    
+    mu_ = vapor_ * vapor_.mu() + liquid_ * liquid_.mu();
+    mu_.correctBoundaryConditions();
 }
 
 
@@ -217,10 +216,10 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
 {
 
     // Create convection field table
-    forAll(this->Y(), i)
+    /*forAll(this->Y(), i)
     {
         fields_.add(this->Y()[i]);
-    }
+    }*/
 
     //Set evaporation models
     Info<< "Setting evaporation models" << endl;
@@ -262,20 +261,14 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::~hsTwophaseMixtureThermo()
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateRho()
 {
-    rho_ = liquid_*liquid_.rho(p_,T_) + 
-            vapor_*vapor_.rho(p_,T_);
+    liquid_.correct();
+    vapor_.correct();
+    
+    rho_ = liquid_*liquid_.rho() + vapor_*vapor_.rho();
     rho_.correctBoundaryConditions();
     
     if( Foam::min(rho_).value() < SMALL )
     {
-        Foam::Info<< "Min rho = " << Foam::min(rho_) << Foam::endl;
-        Foam::Info<< "Min rho.if = " << Foam::min(rho_.internalField()) << Foam::endl;
-        Foam::Info<< "Min p = " << Foam::min(p_) << Foam::endl;
-        
-        tmp<volScalarField> trhoV = vapor_.rho(p_,T_);
-        Foam::Info<< "Min rhoV = " << Foam::min(trhoV()) << Foam::endl;
-        Foam::Info<< "Min rhoV.if = " << Foam::min(trhoV().internalField()) << Foam::endl;
-        
         FatalErrorIn
         (
             "multiphaseReactingMixture::calculateRho()"
@@ -284,8 +277,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateRho()
             << "\n    and that a nonzero alpha is specified on each boundary."
             << exit(FatalError);
     }
-
-    rho_.correctBoundaryConditions();
 }
 
 

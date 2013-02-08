@@ -176,16 +176,11 @@ solvers
 PIMPLE
 {
     momentumPredictor no;
-    nHsSubCycles    3;
-    nCorrectors     3;
+    nCorrectors     1;
     nOuterCorrectors 1;
     nNonOrthogonalCorrectors 2;
-    nAlphaCorr      3;
-    nAlphaSubCycles 1;
-    cAlpha          1;
+    nAlphaSubCycles  1;
 
-//    pRefPoint      (0.51 0.51 0.51);
-//    pRefValue      0;
 }
 
 // ************************************************************************* //

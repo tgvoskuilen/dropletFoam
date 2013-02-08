@@ -174,7 +174,7 @@ Foam::PLICInterface::PLICInterface
             IOobject::NO_WRITE
         ),
         mesh_,
-        dimensionedScalar("deltaV", dimless, 0.0)
+        dimensionedScalar("deltaV", dimLength, 0.0)
     ),
     
     deltaL_
@@ -188,7 +188,7 @@ Foam::PLICInterface::PLICInterface
             IOobject::NO_WRITE
         ),
         mesh_,
-        dimensionedScalar("deltaL", dimless, 0.0)
+        dimensionedScalar("deltaL", dimLength, 0.0)
     ),
     
     wL_
@@ -337,9 +337,15 @@ Foam::vector Foam::PLICInterface::outwardNormal
     return norm;
 }
 
-Foam::tmp<Foam::volScalarField> Foam::PLICInterface::AbydeltaL() const
+Foam::tmp<Foam::volScalarField> Foam::PLICInterface::AbydeltaLV() const
 {
-    return iArea_ / deltaL_;
+    dimensionedScalar rV("rV",dimless/dimVolume,1.0);
+    dimensionedScalar s("s",dimLength,SMALL);
+    
+    tmp<volScalarField> val = iArea_ / (deltaL_+s)*rV;
+    val().internalField() /= mesh_.V();
+    
+    return val;
 }
 
 Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
@@ -356,18 +362,25 @@ Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
     tmp<volVectorField> utL = uL - (uL & iNormal_) * iNormal_;
     tmp<volVectorField> utV = uV - (uV & iNormal_) * iNormal_;
     
-    tmp<volScalarField> wV = muV/deltaV_;
-    tmp<volScalarField> wL = muL/deltaL_;
+    dimensionedScalar s("s",dimLength,SMALL);
+    tmp<volScalarField> wV = muV/(deltaV_+s);
+    tmp<volScalarField> wL = muL/(deltaL_+s);
     
-    tmp<volVectorField> uti = (wV()*utV() + wL()*utL())/(wV()+wL()+SMALL);
+    dimensionedScalar s2("s2",dimMass/dimArea/dimTime,SMALL);
+    tmp<volVectorField> uti = (wV()*utV() + wL()*utL())/(wV()+wL()+s2);
     
+    dimensionedScalar rV("rV",dimless/dimVolume,1.0);
     if( region == "Vapor" )
     {
-        return muV*iArea_/deltaV_*(utV - uti);
+        tmp<volVectorField> tau = muV*iArea_/(deltaV_+s)*(utV - uti)*rV;
+        tau().internalField() /= mesh_.V();
+        return tau;
     }
     else
     {
-        return muL*iArea_/deltaL_*(utL - uti);
+        tmp<volVectorField> tau = muL*iArea_/(deltaL_+s)*(utL - uti)*rV;
+        tau().internalField() /= mesh_.V();
+        return tau;
     }
 }
         

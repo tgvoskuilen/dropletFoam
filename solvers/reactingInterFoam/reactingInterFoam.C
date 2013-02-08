@@ -58,9 +58,9 @@ int main(int argc, char *argv[])
         runTime.controlDict().lookupOrDefault<scalar>("volSourceLimit", 1e-2);
 
     pimpleControl pimple(mesh);
-    volScalarField divU(fvc::div(phi));
+    //volScalarField divU(fvc::div(phi));
 
-    #include "correctPhi.H"
+    //#include "correctPhi.H"
     #include "CourantNo.H"
     #include "setInitialDeltaT.H"
 
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
         {
             // Store divU from the previous mesh for correctPhi.H
-            divU = fvc::div(phi);
+            //divU = fvc::div(phi);
 
             //Identify regions near ANY interface or reaction zone
             refinementField = mixture.getRefinementField();
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
         if (mesh.changing() && correctPhi)
         {
-            #include "correctPhi.H"
+            //#include "correctPhi.H"
         }
 
         if (mesh.changing() && checkMeshCourantNo)

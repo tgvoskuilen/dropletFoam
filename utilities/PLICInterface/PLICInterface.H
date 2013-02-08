@@ -178,7 +178,7 @@ public:
             return kappaI_;
         }
         
-        tmp<volScalarField> AbydeltaL() const;
+        tmp<volScalarField> AbydeltaLV() const;
       
        // tmp<volScalarField> AbydeltaV() const;
         

@@ -2,7 +2,8 @@
 
     
 // -- VAPOR SETUP -------
-
+    Info<< "Setting up vapor fields for pEqn" << endl;
+    
     // Load/create fields
     tmp<volScalarField> tpsiv = vapor.psi();
     const volScalarField& psiv = tpsiv();
@@ -16,13 +17,14 @@
     // Set phiv = phivEst
     phiv = 
     (
-        (fvc::interpolate(Uv) & mesh.Sf())*alphafv
+        (fvc::interpolate(Uv*rhov) & mesh.Sf())*alphafv
       //+ fvc::ddtPhiCorr(rAU, rho, U, phi) //TODO: Fix near interface
     );
     
     
 // -- LIQUID SETUP -------
-
+    Info<< "Setting up liquid fields for pEqn" << endl;
+    
     // Create fields    
     volScalarField rAUL(1.0/UEqnL.A());
     volScalarField rhorAUL(rhoL * rAUL);
@@ -34,12 +36,13 @@
     // Set phiL = phiLEst
     phiL = 
     (
-        (fvc::interpolate(UL) & mesh.Sf())*alphafL
+        (fvc::interpolate(UL*rhoL) & mesh.Sf())*alphafL
       //+ fvc::ddtPhiCorr(rAU, rho, U, phi) //TODO: Fix near interface
     );
     
     
 // -- SOLUTION LOOP ------
+    Info<< "Starting pressure solution loop" << endl;
     while (pimple.correctNonOrthogonal())
     {
         fvScalarMatrix pEqnv
@@ -65,11 +68,15 @@
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
+        Info<< "min,max pv = " << gMin(pv)/1e5 << ", " << gMax(pv)/1e5 << " bar" << endl;
+        
         solve
         (
             pEqnL,
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
+        
+        Info<< "min,max pL = " << gMin(pL)/1e5 << ", " << gMax(pL)/1e5 << " bar" << endl;
 
         if (pimple.finalNonOrthogonalIter())
         {
