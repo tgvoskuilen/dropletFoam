@@ -114,6 +114,8 @@ class phase
         
         volScalarField p_Sp_;
         volScalarField p_Su_;
+        volScalarField U_Sp_;
+        volVectorField U_Su_;
 
 public:
 
@@ -302,13 +304,13 @@ public:
         void setPhi(const surfaceScalarField& alphaf);
         void updateRho(const PLICInterface& i);
         tmp<volScalarField> alphaCorr(const PLICInterface& i) const;
-        tmp<volScalarField> U_Sp(const PLICInterface& i) const;
+        tmp<volScalarField> U_Sp(const PLICInterface& i);
         tmp<volVectorField> U_Su
         (
             const PLICInterface& i,
             const volVectorField& U_opp,
             const volScalarField& mu_opp
-        ) const;
+        );
         
         tmp<volScalarField> rho_Sp(const PLICInterface& i) const;
         tmp<volScalarField> rho_Su(const PLICInterface& i) const;

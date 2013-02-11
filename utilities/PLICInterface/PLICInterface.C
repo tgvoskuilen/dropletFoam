@@ -397,10 +397,7 @@ void Foam::PLICInterface::update()
 }
 
 
-void Foam::PLICInterface::calculateInterfaceNormal
-(
-    const volScalarField& intermeds
-)
+void Foam::PLICInterface::calculateInterfaceNormal()
 {    
     //Use a smoothing procedure to capture the interface better
         
@@ -419,7 +416,7 @@ void Foam::PLICInterface::calculateInterfaceNormal
     }
         
     // Normalize and limit iNormal only to intermediate cells
-    iNormal_ *= intermeds / (mag(iNormal_) + SMALL);
+    iNormal_ *= intermeds_ / (mag(iNormal_) + SMALL);
     iNormal_.correctBoundaryConditions();
 }
 
@@ -484,20 +481,72 @@ Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
     dimensionedScalar rV("rV",dimless/dimVolume,1.0);
     if( region == "Vapor" )
     {
-        tmp<volVectorField> tau = muV*iArea_/(deltaV_+s)*(utV - uti)*rV;
+        tmp<volVectorField> tau = -muV*iArea_/(deltaV_+s)*(utV - uti)*rV;
         tau().internalField() /= mesh_.V();
         return tau;
     }
     else
     {
-        tmp<volVectorField> tau = muL*iArea_/(deltaL_+s)*(utL - uti)*rV;
+        tmp<volVectorField> tau = -muL*iArea_/(deltaL_+s)*(utL - uti)*rV;
         tau().internalField() /= mesh_.V();
         return tau;
     }
 }
-        
-void Foam::PLICInterface::updateKappaTest()
+
+
+
+void Foam::PLICInterface::updateKappaTest(bool changeNormals)
 {
+/*
+    tmp<surfaceVectorField> nf
+    (
+        new surfaceVectorField
+        (
+            IOobject
+            (
+                "nf",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedVector("nf", dimless, vector::zero)
+        )
+    );
+    
+
+    const labelUList& owner = mesh_.owner();
+    const labelUList& neighbor = mesh_.neighbour();
+    
+    forAll(nf(), faceI)
+    {
+        label own = owner[faceI];
+        label nei = neighbor[faceI];
+        
+
+        if( mag(iNormal_[own]) > SMALL && mag(iNormal_[nei]) > SMALL )
+        {
+            point po = liquidC_[own] + deltaL_[own]*iNormal_[own];
+            point pn = liquidC_[nei] + deltaL_[nei]*iNormal_[nei];
+            point pf = mesh_.Cf()[faceI];
+            vector Af = mesh_.Sf()[faceI];
+            
+            scalar l1 = ((pf-po) & Af) / mag(Af);
+            scalar ltot = ((pn-po) & Af) / mag(Af);
+            
+            scalar f1 = l1 / ltot;
+            
+            nf()[faceI] = f1*iNormal_[nei] + (1.0-f1)*iNormal_[own];
+        }
+    }
+
+    //TODO: Do Parallel patches Here
+
+    kappaTest_ = fvc::div(nf() & mesh_.Sf());
+*/
+
+/*
     tmp<surfaceScalarField> kap
     (
         new surfaceScalarField
@@ -539,7 +588,358 @@ void Foam::PLICInterface::updateKappaTest()
 
 
     kappaTest_ = fvc::surfaceSum(kap() * mesh_.magSf()) / fvc::average(mesh_.magSf());
+*/
+
+/*
+    surfaceScalarField nfDotAf(fvc::interpolate(iNormal_) & mesh_.Sf());
+    
+    kappaTest_ = fvc::div(nfDotAf) * pos(mag(iNormal_)-SMALL);
+*/
+
+
+    //3D or 2D selection required
+    label dims = 2;
+
+    label nb = (dims==3) ? 6 : 3;
+    label nA = (nb*(nb+1))/2;
+
+    scalarList A(nA,0.0);
+    scalarList b(nb,0.0);
+    scalarList x(nb,0.0);
+    
+    CPCCellToCellStencil wideStencil(mesh_);
+
+    forAll(mesh_.C(), lcellI)
+    {
+        if( mag(iNormal_[lcellI]) > SMALL )
+        {
+            const labelList& cell27Stencil = wideStencil[lcellI];
+            
+            label npts = 0;
+            
+            scalar dx = Foam::pow(mesh_.V()[lcellI],1.0/3.0);
+            
+            vector p0 = liquidC_[lcellI] - 2.0*dx*iNormal_[lcellI];
+            
+            A = 0.0;
+            b = 0.0;
+            
+            vector xdir = vector::zero;
+            vector ydir = vector::zero;
+            const vector& zdir = iNormal_[lcellI];
+            
+            //get coordinate system
+            forAll(cell27Stencil, cellI)
+            {
+                if( cell27Stencil[cellI] < mesh_.nCells() && cellI > 0 )
+                {
+                    label cellJ = cell27Stencil[cellI];
+                    if( mag(iNormal_[cellJ]) > SMALL )
+                    {   
+                        vector r = liquidC_[cellJ]+deltaL_[cellJ]*iNormal_[cellJ]-p0;
+                        if( mag( (r/mag(r)) ^ zdir ) > SMALL )
+                        {
+                            ydir = zdir ^ (r/mag(r));
+                            ydir /= mag(ydir);
+                            xdir = ydir ^ zdir;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if( mag(xdir) < SMALL )
+            {
+                Info<< "ERROR: no directions set" << endl;
+            }
+            
+            //make coordinate system transformation tensor
+            Tensor<scalar> T(xdir, ydir, zdir);
+            Tensor<scalar> Ti = inv(T);
+            
+            forAll(cell27Stencil, cellI)
+            {
+                if( cell27Stencil[cellI] < mesh_.nCells()  )
+                {
+                    label cellJ = cell27Stencil[cellI];
+                    if( mag(iNormal_[cellJ]) > SMALL )
+                    {
+                        addPoint
+                        (
+                            liquidC_[cellJ]+deltaL_[cellJ]*iNormal_[cellJ]-p0,
+                            T,
+                            A,
+                            b,
+                            1.0, //alphaLiquid_[cellJ]*(1.0-alphaLiquid_[cellJ]),
+                            dims
+                        );
+                        ++npts;
+                    }
+                }
+            }
+            
+            //solve Ax = b and get kappaTest_[lcellI] if npts is high enough
+            // right now just warn/crash if it's not high enough
+            if( npts >= nb )
+            {
+                if( dims == 3 )
+                {
+                    solveCholesky(A,b,x);
+                    kappaTest_[lcellI] = -(x[0]+x[1]); //wrong!
+                }
+                else
+                {
+                    solveCholesky(A,b,x);
+                    kappaTest_[lcellI] = -2.0*x[0]/Foam::pow(1+x[1]*x[1],1.5);
+
+                    
+                    /*if( kappaTest_[lcellI] < 500 || kappaTest_[lcellI] > 1500)
+                    {
+                        Info<< "norm error at "<<lcellI<< " = " << x[1] << " with k = " << kappaTest_[lcellI] << endl;
+                        forAll(cell27Stencil, cellI)
+                        {
+                            if( cell27Stencil[cellI] < mesh_.nCells()  )
+                            {
+                                label cellJ = cell27Stencil[cellI];
+                                if( mag(iNormal_[cellJ]) > SMALL )
+                                {
+                                    Info<< "   p = " << liquidC_[cellJ]+deltaL_[cellJ]*iNormal_[cellJ]
+                                        << ", n = " << iNormal_[cellJ] 
+                                        << ", c = " << mesh_.C()[cellJ]
+                                        << "alpha = " << alphaLiquid_[cellJ]
+                                        << endl;
+                                }
+                            }
+                        } 
+                    }*/
+                    
+                    if( mag(x[1]) > 0.01 && changeNormals )
+                    {
+                        vector nn(x[1],0.0,1.0);
+                        nn /= mag(nn);
+                        vector newn = Ti & nn;
+                        iNormal_[lcellI] = newn;
+                    }
+                }
+            }
+            else
+            {
+                Info<< "WARNING: not enough points (found " << npts << ")" << endl;
+                kappaTest_[lcellI] = 985.0;
+            }
+        }
+        else
+        { //cell is not an interface cell
+            kappaTest_[lcellI] = 0.0;
+        }
+    }
+    
+    //TODO: Get cells through parallel patches
+    Info<< "max kappaTest before smoothing = " << Foam::max(kappaTest_) << endl;
+    
+    //smooth kappa along interface
+    tmp<surfaceScalarField> kapf
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "kapf",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar("kapf", dimless/dimLength, 0.0)
+        )
+    );
+    tmp<volScalarField> nfaces
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "nfaces",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar("nfaces", dimless, 0.0)
+        )
+    );
+    
+
+    const labelUList& owner = mesh_.owner();
+    const labelUList& neighbor = mesh_.neighbour();
+    
+    
+    for(label i = 0; i < 5; i++)
+    {
+        kapf() = dimensionedScalar("kapf", dimless/dimLength, 0.0);
+        nfaces() = 0;
         
+        forAll(kapf(), faceI)
+        {
+            label own = owner[faceI];
+            label nei = neighbor[faceI];
+            
+            if( mag(kappaTest_[own]) > SMALL && mag(kappaTest_[nei]) > SMALL )
+            {
+                kapf()[faceI] = 0.5*(kappaTest_[own]+kappaTest_[nei]);
+                nfaces()[nei] += 1.0;
+                nfaces()[own] += 1.0;
+            }
+        }
+        
+        kappaTest_ = fvc::surfaceSum(kapf()) / (nfaces()+SMALL);
+        
+        Info<< "max kappaTest after iter "<<i<<" = " << Foam::max(kappaTest_) << endl;
+    }
+    
+}
+
+
+void Foam::PLICInterface::solveCholesky
+(
+    scalarList& A,
+    scalarList& b,
+    scalarList& x
+) const
+{
+    label n = x.size();
+    label nA = A.size();
+    scalarList L(nA,0.0);
+    scalarList y(n,0.0);
+    
+    //Create L matrix
+    label p = 0;
+    for(label c = 0; c < n-1; ++c) //iterate matrix columns
+    {
+        //set diagonal value of L(k,k) = sqrt(A(k,k))
+        label pd = p;
+        L[p] = sqrt(A[p]); ++p;
+
+        //Fill remainder of column
+        for(label r = c+1; r<n; ++r)
+        {
+            L[p] = A[p]/L[pd]; ++p;
+        }
+
+        //Adjust A values accordingly, this destroys A
+        for(label cc = c+1; cc<n; ++cc)
+        {
+            label dicc = cc*n-((cc-1)*cc)/2;
+
+            for(label r = dicc; r < dicc + n - cc; ++r)
+            {
+                A[r] -= L[pd+cc-c] * L[pd+cc-c+r-dicc];
+            }
+        }
+    }
+    L[p] = Foam::sqrt(A[p]);
+
+    //Forward substitute to get y from Ly = b
+    y[0] = b[0] / L[0];
+    for(label r=1; r<n; ++r)
+    {
+        label di = r*n - (r*(r-1))/2;
+        
+        y[r] = b[r] / L[di];
+        
+        for(label c=0; c<r; ++c)
+        {
+            label dic = c*n - (c*(c-1))/2;
+            y[r] -= L[dic+r-c] * y[c] / L[di];
+        }
+    }
+
+    //Backward substitute to get x from L^T x = y
+    x[n-1] = y[n-1] / L[nA-1];
+    
+    for(label c=n-2; c>=0; --c)
+    {
+        label di = c*n - (c*(c-1))/2;
+        
+        x[c] = y[c] / L[di];
+        
+        for(label r=n-1; r>c; --r)
+        {
+            x[c] -= L[di+r-c] * x[r] / L[di];
+        }
+    }
+}
+
+void Foam::PLICInterface::addPoint
+(
+    const vector& r,
+    const Tensor<scalar>& T,
+    scalarList& A,
+    scalarList& b,
+    scalar w,
+    label dims
+) const
+{
+   
+    //coordinate transformation
+    vector d = (T & r);
+    scalar wSqr = w*w;
+    //Info<< " adding point " << d << " w = " << w << endl;
+    
+    if( dims == 3 )
+    {
+        //fit z = ax^2 + by^2 + cxy + dx + ey + f
+        
+        //TODO
+        /*
+        A[0] +=
+        A[1] +=
+        A[2] +=
+        A[3] +=
+        A[4] +=
+        A[5] +=
+        A[6] +=
+        A[7] +=
+        A[8] +=
+        A[9] +=
+        A[10] +=
+        A[11] +=
+        A[12] +=
+        A[13] +=
+        A[14] +=
+        A[15] +=
+        A[16] +=
+        A[17] +=
+        A[18] +=
+        A[19] +=
+        A[20] +=
+        
+        b[0] +=
+        b[1] +=
+        b[2] +=
+        b[3] +=
+        b[4] +=
+        b[5] +=
+        */
+        
+    }
+    else
+    {
+        //fit z = ax^2 + bx + c
+        
+        A[0] += d.x()*d.x()*d.x()*d.x()*wSqr;
+        A[1] += d.x()*d.x()*d.x()*wSqr;
+        A[2] += d.x()*d.x()*wSqr;
+        A[3] += d.x()*d.x()*wSqr;
+        A[4] += d.x()*wSqr;
+        A[5] += wSqr;
+        
+        b[0] += d.z()*d.x()*d.x()*wSqr;
+        b[1] += d.z()*d.x()*wSqr;
+        b[2] += d.z()*wSqr;
+    }
 }
 
 
@@ -553,96 +953,28 @@ scalar Foam::PLICInterface::calcCurvature
 {
     scalar theta = acos(n1 & n2);
     scalar s = mag(p1 - p2);
-    return 1000./(theta / s); //R in mm
+    return theta / s;
 }
 
 
-void Foam::PLICInterface::updateKappa()
+void Foam::PLICInterface::updateKappa(bool changeNormals)
 {
     /*dimensionedScalar deltaN("deltaN", 1e-8/pow(average(mesh_.V()), 1.0/3.0));
     surfaceVectorField gradAlphaf(fvc::interpolate(-fvc::grad(alphaLiquid_)));
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
     kappaI_ = -fvc::div(nHatfv & mesh_.Sf());*/
     
-    updateKappaTest();
+    //updateKappaTest(changeNormals);
     
-    kappaI_ = dimensionedScalar("k",dimless/dimLength,2.0/0.00101) * pos(mag(iNormal_)-SMALL);
+    
+    
+    kappaI_ = dimensionedScalar("k",dimless/dimLength,1.0/0.00101) * pos(mag(iNormal_)-SMALL);
+    //kappaI_ = kappaTest_;
 }
 
 
-// Given alpha, calculate derived interface fields
-void Foam::PLICInterface::correct()
+void Foam::PLICInterface::calcAlphaf()
 {
-    // Clip un-reconstructed alpha portions
-    alphaLiquid_ *= pos(alphaLiquid_ - reconstructTol_);
-    forAll(alphaLiquid_, cellI)
-    {
-        if( alphaLiquid_[cellI] > 1.0 - reconstructTol_ )
-        {
-            alphaLiquid_[cellI] = 1.0;
-        }
-    }
-    alphaLiquid_.correctBoundaryConditions();
-    alphaVapor_ = scalar(1.0) - alphaLiquid_;
-    
-    // Step 0: Calculate new curvature field (kappaI_) from alphaLiquid_
-    updateKappa();
-    
-    // Step 1: Identify intermediate cells based on alphaLiquid_ and reconstructTol_
-    intermeds_ = pos(alphaLiquid_ - reconstructTol_)
-                               *pos(1.0 - reconstructTol_ - alphaLiquid_);
-
-    // Step 2: Calculate interface normal in intermediate cells
-    calculateInterfaceNormal(intermeds_);
-
-    // Step 3: Calculate the cut plane and cut area in intermediate cells
-    //         setting a_burn to zero in all non-intermediate cells
-    forAll(iNormal_, cellI)
-    {
-        if (intermeds_[cellI] > SMALL)
-        {
-            cuttableCell cc(mesh_, cellI);
-            plane p = cc.constructInterface(iNormal_[cellI], alphaLiquid_[cellI]);
-            iPoint_[cellI] = p.refPoint();
-            iArea_[cellI] = cc.cutArea();
-            
-            // Save gas and solid portion centroids
-            gasC_[cellI] = cc.lostCentroid();
-            liquidC_[cellI] = cc.cutCentroid();
-            
-            deltaL_[cellI] = mag((liquidC_[cellI]-iPoint_[cellI]) & iNormal_[cellI]);
-            deltaV_[cellI] = mag((gasC_[cellI]-iPoint_[cellI]) & iNormal_[cellI]);
-            
-            // DEBUGGING PURPOSES
-            if (iArea_[cellI] < SMALL)
-            {
-                Info<< "WARNING: Cut area is " << iArea_[cellI]
-                    << " with alphaLiquid = " << alphaLiquid_[cellI] << endl;
-            }
-        }
-        else
-        {
-            iArea_[cellI] = 0.0;
-            iPoint_[cellI] = vector::zero;
-            deltaL_[cellI] = 0.5*Foam::pow(mesh_.V()[cellI], 1.0/3.0);
-            deltaV_[cellI] = 0.5*Foam::pow(mesh_.V()[cellI], 1.0/3.0);
-            if (alphaVapor_[cellI] > 0.5)
-            { //vapor cell
-                gasC_[cellI] = mesh_.C()[cellI];
-                liquidC_[cellI] = vector::zero;
-            }
-            else
-            { //liquid cell
-                gasC_[cellI] = vector::zero;
-                liquidC_[cellI] = mesh_.C()[cellI];
-            }
-        }
-    }
-    
-    iPoint_.correctBoundaryConditions();
-    iNormal_.correctBoundaryConditions();
-
-
     // Step 4: Calculate alphaf on all faces, valid only in the homogeneous
     //         regions away from the interface
     alphaf_ = fvc::interpolate(alphaLiquid_);
@@ -704,6 +1036,12 @@ void Foam::PLICInterface::correct()
                 && (1.0 - alphaf_[faceI]) > SMALL)
             {                        
                 //own is liquid
+                
+                if( mag(iNormal_[own]) > SMALL )
+                {
+                    Info<<"warn 1"<<endl;
+                }
+                
                 iArea_[own] += mesh_.magSf()[faceI] * (1.0-alphaf_[faceI]);
                 iNormal_[own] += outwardNormal(faceI,own)*(1.0-alphaf_[faceI]);
             }
@@ -711,6 +1049,11 @@ void Foam::PLICInterface::correct()
                      && (1.0 - alphaf_[faceI]) > SMALL)
             {
                 //nei is liquid
+                if( mag(iNormal_[nei]) > SMALL )
+                {
+                    Info<<"warn 2"<<endl;
+                }
+                
                 iArea_[nei] += mesh_.magSf()[faceI] * (1.0-alphaf_[faceI]);
                 iNormal_[nei] += outwardNormal(faceI,nei)*(1.0-alphaf_[faceI]);
             }
@@ -720,11 +1063,17 @@ void Foam::PLICInterface::correct()
         // is the one that will be given the interface area
         else if (mag(alphaLiquid_[own] - alphaLiquid_[nei]) > 0.1)
         {
+
             alphaf_[faceI] = 0.0;
             
             //set iNormal and area
             label liquidcell = (alphaLiquid_[own] > 0.5) ? own : nei;
-             
+            
+            if( mag(iNormal_[liquidcell]) > SMALL )
+            {
+                Info<<"warn 3"<<endl;
+            }
+            
             // Increment iArea since a liquid cell could technically have more
             // than one sharp boundary
             iArea_[liquidcell] += mesh_.magSf()[faceI];
@@ -774,7 +1123,7 @@ void Foam::PLICInterface::correct()
             
             //patch face starting IDs in mesh.faces()
             label patchFs = alphaLPf.patch().start();
-            const fvPatch& meshPf = mesh_.boundary()[patchI];
+            //const fvPatch& meshPf = mesh_.boundary()[patchI];
             
             forAll(alphafPf, pFaceI)
             {
@@ -806,21 +1155,23 @@ void Foam::PLICInterface::correct()
                         && (1.0-alphafPf[pFaceI]) > SMALL)
                     {
                         //own is liquid
-                        iArea_[pfCellI] += meshPf.magSf()[pFaceI]
+                        Info<<"warn 4"<<endl;
+                        /*iArea_[pfCellI] += meshPf.magSf()[pFaceI]
                                            *(1.0-alphafPf[pFaceI]);
 
                         iNormal_[pfCellI] += 
                                 outwardNormal(patchFs+pFaceI, pfCellI)
-                                *(1.0-alphafPf[pFaceI]);
+                                *(1.0-alphafPf[pFaceI]);*/
                     }
                     
                 }
                 else if (mag(alphaLiquid_[pfCellI] - alphaLPNf[pFaceI]) > 0.1)
                 {
+                    Info<<"warn 5"<<endl;
                     alphafPf[pFaceI] = 0.0;
 
                     //set iNormal and iArea for this case
-                    if (alphaLiquid_[pfCellI] > 0.1)
+                    /*if (alphaLiquid_[pfCellI] > 0.1)
                     {
                         // than one sharp boundary
                         iArea_[pfCellI] += meshPf.magSf()[pFaceI];
@@ -828,23 +1179,108 @@ void Foam::PLICInterface::correct()
                         // Increment iNormal_
                         iNormal_[pfCellI] += 
                             outwardNormal(patchFs+pFaceI, pfCellI);
-                    }
+                    }*/
                 }
             }
         }
     }
     
-    Info<< "Max iArea = " << Foam::max(iArea_) << endl;
-    
-    //Re-normalize iNormal (only needed for the cases when it is incremented)
-    iNormal_ /= (mag(iNormal_) + VSMALL);
-    
     sumalphaf_ = fvc::surfaceSum(alphaf_);
-    
-    iArea_.correctBoundaryConditions();
+    iNormal_ /= (mag(iNormal_)+SMALL);
     iNormal_.correctBoundaryConditions();
+    iArea_.correctBoundaryConditions();
+}
+
+
+void Foam::PLICInterface::calcInterfacePlanes()
+{
+    // Calculate the cut plane and cut area in any cell that has a
+    // normal vector defined.
+    forAll(iNormal_, cellI)
+    {
+        if (mag(iNormal_[cellI]) > SMALL)
+        {
+            cuttableCell cc(mesh_, cellI);
+            plane p = cc.constructInterface(iNormal_[cellI], alphaLiquid_[cellI]);
+            iPoint_[cellI] = p.refPoint();
+            iArea_[cellI] = cc.cutArea();
+            
+            // Save gas and solid portion centroids
+            gasC_[cellI] = cc.lostCentroid();
+            liquidC_[cellI] = cc.cutCentroid();
+            
+            deltaL_[cellI] = mag((liquidC_[cellI]-iPoint_[cellI]) & iNormal_[cellI]);
+            deltaV_[cellI] = mag((gasC_[cellI]-iPoint_[cellI]) & iNormal_[cellI]);
+            
+            // DEBUGGING PURPOSES
+            if (iArea_[cellI] < SMALL)
+            {
+                Info<< "WARNING: Cut area is " << iArea_[cellI]
+                    << " with alphaLiquid = " << alphaLiquid_[cellI] << endl;
+            }
+        }
+        else
+        {
+            iArea_[cellI] = 0.0;
+            iPoint_[cellI] = vector::zero;
+            deltaL_[cellI] = 0.5*Foam::pow(mesh_.V()[cellI], 1.0/3.0);
+            deltaV_[cellI] = 0.5*Foam::pow(mesh_.V()[cellI], 1.0/3.0);
+            if (alphaVapor_[cellI] > 0.5)
+            { //vapor cell
+                gasC_[cellI] = mesh_.C()[cellI];
+                liquidC_[cellI] = vector::zero;
+            }
+            else
+            { //liquid cell
+                gasC_[cellI] = vector::zero;
+                liquidC_[cellI] = mesh_.C()[cellI];
+            }
+        }
+    }
+    
+    iPoint_.correctBoundaryConditions();
+    iArea_.correctBoundaryConditions();
     gasC_.correctBoundaryConditions();
     liquidC_.correctBoundaryConditions();
+}
+
+// Given alpha, calculate derived interface fields
+void Foam::PLICInterface::correct()
+{
+    // Clip un-reconstructed alpha portions
+    alphaLiquid_ *= pos(alphaLiquid_ - reconstructTol_);
+    forAll(alphaLiquid_, cellI)
+    {
+        if( alphaLiquid_[cellI] > 1.0 - reconstructTol_ )
+        {
+            alphaLiquid_[cellI] = 1.0;
+        }
+    }
+    alphaLiquid_.correctBoundaryConditions();
+    alphaVapor_ = scalar(1.0) - alphaLiquid_;
+    
+
+    
+    // Step 1: Identify intermediate cells based on alphaLiquid_ and reconstructTol_
+    intermeds_ = pos(alphaLiquid_ - reconstructTol_)
+                               *pos(1.0 - reconstructTol_ - alphaLiquid_);
+
+    // Step 2: Calculate interface normal in intermediate cells
+    calculateInterfaceNormal();
+
+    calcInterfacePlanes();
+    
+    // Step 0: Calculate new curvature field (kappaI_) from alphaLiquid_
+    updateKappa(false);
+    
+    //calcInterfacePlanes();
+    
+    //updateKappa(false);
+    
+    //calculate alphaf
+    calcAlphaf();
+
+
     
     // Calculate transfer weights on small cells
     calcTransferWeights();
@@ -1164,7 +1600,7 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
 
     //Then adjust at the interface regions
     //  the scheme for this interpolation is set in fvSchemes
-    surfaceVectorField Uf = fvc::interpolate(U_);
+    surfaceVectorField Uf = liquidUf(); //fvc::interpolate(U_);
     
     const labelUList& owner = mesh_.owner();
     const labelUList& neighbor = mesh_.neighbour();
@@ -1310,6 +1746,34 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
     return tphiAlphaFrac;
 }
 
+tmp<surfaceVectorField> Foam::PLICInterface::liquidUf() const
+{
+
+    tmp<surfaceVectorField> tUf = fvc::interpolate(U_);
+    surfaceVectorField& Uf = tUf();
+    
+    const labelUList& owner = mesh_.owner();
+    const labelUList& neighbor = mesh_.neighbour();
+
+    
+    //Loop through internal faces (internal to this processor)
+    forAll(Uf, faceI)
+    {
+        label own = owner[faceI];
+        label nei = neighbor[faceI];
+        
+        if( alphaLiquid_[own] < reconstructTol_ && alphaLiquid_[nei] > reconstructTol_ )
+        {
+            Uf[faceI] = U_[nei];
+        }
+        else if( alphaLiquid_[nei] < reconstructTol_ && alphaLiquid_[own] > reconstructTol_ )
+        {
+            Uf[faceI] = U_[own];
+        }
+    }
+    
+    return tUf;
+}
 
 void Foam::PLICInterface::advect
 (
@@ -1317,7 +1781,7 @@ void Foam::PLICInterface::advect
 )
 {
     // Get the volume flux of liquid phase on faces
-    tmp<surfaceScalarField> tphi = fvc::interpolate(U_) & mesh_.Sf();
+    tmp<surfaceScalarField> tphi = liquidUf() & mesh_.Sf();
     const surfaceScalarField& phi = tphi();
     
     phiAlpha_ = phiAlphaFrac() * phi;
@@ -1336,9 +1800,9 @@ void Foam::PLICInterface::advect
         ),
         // Divergence term is handled explicitly to be
         // consistent with the explicit transport solution
-        //divU*min(alphaLiquid_, scalar(1)) + liquidVolSource
+        divU*min(alphaLiquid_, scalar(1)) + liquidVolSource
         //divU*pos(alphaLiquid_-0.5) + liquidVolSource // Weymouth 2010
-        liquidVolSource
+        //liquidVolSource
     );  
         
     MULES::explicitSolve

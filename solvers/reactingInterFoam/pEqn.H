@@ -13,7 +13,7 @@
 
     // Set Uv = Uv_est
     Uv = rAUv*UEqnV.H();
-
+    Info<< "min,max Uvest = " << min(mag(Uv)).value() << ", " << max(mag(Uv)).value() << endl;
     // Set phiv = phivEst
     phiv = 
     (
@@ -32,7 +32,7 @@
 
     // Set UL = UL_est
     UL = rAUL*UEqnL.H();
-    
+    Info<< "min,max ULest = " << min(mag(UL)).value() << ", " << max(mag(UL)).value() << endl;
     // Set phiL = phiLEst
     phiL = 
     (

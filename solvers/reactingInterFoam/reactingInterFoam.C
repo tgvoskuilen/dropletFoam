@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     //volScalarField divU(fvc::div(phi));
 
     //#include "correctPhi.H"
-    #include "CourantNo.H"
+    #include "compressibleCourantNo.H"
     #include "setInitialDeltaT.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -71,9 +71,11 @@ int main(int argc, char *argv[])
     while (runTime.run())
     {
         #include "readControls.H"
-        #include "alphaCourantNo.H"
-        #include "CourantNo.H"
+        //#include "alphaCourantNo.H"
+        #include "compressibleCourantNo.H"
         #include "setDeltaT.H"
+        
+        Info<< "max dT = " << maxDeltaT << endl;
 
         //Limit deltaT based on maxVolSource
         if (adjustTimeStep)
@@ -95,14 +97,14 @@ int main(int argc, char *argv[])
             //Info<< "Source*dT = " << mag(maxVolSource)*runTime.deltaTValue() 
             //    << endl;
 
-            /*runTime.setDeltaT
+            runTime.setDeltaT
             (
                 min
                 (
                     runTime.deltaTValue(),
-                    maxVolDeltaT
+                    maxDeltaT
                 )
-            );*/
+            );
 
             Info<< "Fo-limited deltaT = " << runTime.deltaTValue() << endl;
         }
@@ -169,9 +171,14 @@ int main(int argc, char *argv[])
 
 
         #include "checkMassBalance.H"
-        
+        p = mixture.liquid().p() * mixture.alphaLiquid()
+            + mixture.vapor().p() * mixture.alphaVapor();
+        U = mixture.liquid().U() * mixture.alphaLiquid()
+            + mixture.vapor().U() * mixture.alphaVapor();
+               
         mixture.calculateRho(); // rho = alpha1*rho1(p,T,Ys) + alpha2*rho2(p,T,Ys)
         rho = mixture.rho();
+        
         
         runTime.write();
         

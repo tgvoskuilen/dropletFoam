@@ -123,7 +123,9 @@ Foam::phase::phase
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-        mesh.lookupObject<volScalarField>("mu")
+        mesh,
+        dimensionedScalar("mu",dimMass/dimLength/dimTime,0.0)
+        //mesh.lookupObject<volScalarField>("mu")
     ),
     combustionPtr_(NULL),
     species_(species),
@@ -172,12 +174,43 @@ Foam::phase::phase
         ),
         mesh,
         dimensionedScalar("pSu_"+name, dimDensity/dimTime, 0.0)
+    ),
+    U_Sp_
+    (
+        IOobject
+        (
+            "USp_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("USp_"+name, dimDensity/dimTime, 0.0)
+    ),
+    U_Su_
+    (
+        IOobject
+        (
+            "USu_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedVector("USu_"+name, dimDensity*dimVelocity/dimTime, vector::zero)
     )
 {    
     if( name_ == "Liquid" )
     {
-        dimensionedScalar dpi("dpi",dimPressure,140);
+        dimensionedScalar dpi("dpi",dimPressure,70); //1 mm radius 2D circle 0.07 N/m surface tension
         p_ += dpi;
+        mu_ = dimensionedScalar("mu",dimMass/dimLength/dimTime,1e-3);
+    }
+    else
+    {
+        mu_ = dimensionedScalar("mu",dimMass/dimLength/dimTime,1.8e-5);
     }
 
     rho_ = rho(p_,T_);
@@ -207,7 +240,7 @@ Foam::autoPtr<Foam::phase> Foam::phase::clone() const
 Foam::tmp<Foam::volScalarField> Foam::phase::U_Sp
 (
     const PLICInterface& i
-) const
+)
 {
     if( name_ == "Vapor" )
     {
@@ -217,6 +250,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::U_Sp
             dimDensity/dimTime,
             1.0/mesh().time().deltaTValue()
         );
+        U_Sp_ = (i.smallGasCells() + i.noGasCells())*rhorDT;
         return (i.smallGasCells() + i.noGasCells())*rhorDT;
     }
     else
@@ -227,6 +261,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::U_Sp
             dimDensity/dimTime,
             1000./mesh().time().deltaTValue()
         );
+        U_Sp_ = (i.smallLiquidCells() + i.noLiquidCells())*rhorDT;
         return (i.smallLiquidCells() + i.noLiquidCells())*rhorDT;
     }
 }
@@ -236,7 +271,7 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
     const PLICInterface& i,
     const volVectorField& U_opp,
     const volScalarField& mu_opp
-) const
+)
 {
     if( name_ == "Vapor" )
     {
@@ -246,6 +281,10 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
             dimDensity/dimTime,
             1.0/mesh().time().deltaTValue()
         );
+        
+        U_Su_ = (i.smallGasCells()*i.scAverage<vector>(name_,U_)
+             + i.noGasCells()*UFarField(i)) * rhorDT
+             + i.gasCells()*i.shearVec(name_, U_opp, U_, mu_opp, mu_);
         
         return (i.smallGasCells()*i.scAverage<vector>(name_,U_)
              + i.noGasCells()*UFarField(i)) * rhorDT
@@ -259,6 +298,9 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
             dimDensity/dimTime,
             1000.0/mesh().time().deltaTValue()
         );
+        U_Su_ = (i.noLiquidCells() * UFarField(i)
+             + i.smallLiquidCells()*i.scAverage<vector>(name_,U_)) * rhorDT
+             + i.liquidCells()*i.shearVec(name_, U_, U_opp, mu_, mu_opp);
         
         return (i.noLiquidCells() * UFarField(i)
              + i.smallLiquidCells()*i.scAverage<vector>(name_,U_)) * rhorDT

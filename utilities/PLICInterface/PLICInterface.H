@@ -41,6 +41,7 @@ SourceFiles
 #include "dictionaryEntry.H"
 #include "dimensionedScalar.H"
 #include "dimensionedScalarFwd.H"
+#include "CPCCellToCellStencil.H"
 #include "cuttableCell.H"
 #include "cuttableFace.H"
 
@@ -122,7 +123,7 @@ class PLICInterface
 
     // Private member functions        
         //- Calculate the interface normals
-        void calculateInterfaceNormal(const volScalarField& intermeds);
+        void calculateInterfaceNormal();
         
         //- Get the outward facing normal vector from faceI relative to cellI
         vector outwardNormal(label faceI, label cellI) const;
@@ -230,8 +231,9 @@ public:
         );
         
         //- Update the stored curvature field
-        void updateKappa();
-        void updateKappaTest();
+        void updateKappa(bool changeNormals);
+        void updateKappaTest(bool changeNormals);
+        tmp<surfaceVectorField> liquidUf() const;
         
         //- Calculate the interface parameters given alpha
         void correct();
@@ -266,6 +268,26 @@ public:
             Type zero
         );
         
+        void solveCholesky
+        (
+            scalarList& A,
+            scalarList& b,
+            scalarList& x
+        ) const;
+        
+        void addPoint
+        (
+            const vector& r,
+            const Tensor<scalar>& T,
+            scalarList& A,
+            scalarList& b,
+            scalar w,
+            label dims
+        ) const;
+        
+        void calcInterfacePlanes();
+        
+        void calcAlphaf();
         //- Set source terms in small cells to set values in governing eqns
         /*template<class Type>
         void setScValue
@@ -368,6 +390,7 @@ public:
         {
             return ibInterpolate<vector>(tvf());
         }
+        
 };
 
 

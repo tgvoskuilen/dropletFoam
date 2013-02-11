@@ -27,9 +27,9 @@ endTime         1e-1;
 
 deltaT          1e-8;
 
-writeControl    timeStep; //adjustableRunTime; //timeStep
+writeControl    adjustableRunTime; //timeStep
 
-writeInterval   1; //1e-3;
+writeInterval   1e-4;
 
 purgeWrite      0;
 
@@ -50,7 +50,7 @@ adjustTimeStep  yes;
 maxCo           0.2;
 maxAlphaCo      0.2;
 
-maxDeltaT       1;
+maxDeltaT       1e-6;
 
 volSourceLimit  0.2;
 
