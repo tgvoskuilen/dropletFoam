@@ -233,6 +233,35 @@ Foam::PLICInterface::PLICInterface
         dimensionedScalar("intermeds", dimless, 0.0)
     ),
     
+    alphaLsmooth_
+    (
+        IOobject
+        (
+            "alphaLsmooth",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("alphaLsmooth", dimless, 0.0)
+    ),
+    
+    smoothN_
+    (
+        IOobject
+        (
+            "smoothN",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_,
+        dimensionedVector("smoothN", dimless, vector::zero)
+    ),
+    
+    
     liquidCells_
     (
         IOobject
@@ -399,10 +428,25 @@ void Foam::PLICInterface::update()
 
 void Foam::PLICInterface::calculateInterfaceNormal()
 {    
+    alphaLsmooth_ = alphaLiquid_;
+    scalar dx = 6e-5;
+    dimensionedScalar dTau("dTau",dimArea,dx*dx/4.0);
+    
+    for(label i = 0; i < 2; i++)
+    {
+        alphaLsmooth_ += dTau * fvc::laplacian(alphaLsmooth_);
+    }
+    
+    dimensionedScalar s("s",dimless/dimLength,SMALL);
+    iNormal_ = -fvc::grad(alphaLsmooth_) / (mag(fvc::grad(alphaLsmooth_)) + s) * intermeds_;
+
+    iNormal_.correctBoundaryConditions();
+    
+
     //Use a smoothing procedure to capture the interface better
         
     // Get gradient
-    iNormal_ = -fvc::grad(alphaLiquid_)*dimensionedScalar("one",dimLength,1.0);
+    /*iNormal_ = -fvc::grad(alphaLiquid_)*dimensionedScalar("one",dimLength,1.0);
         
     // Do spatial smoothing operation
     // TODO: Make the weights inputtable in dictionary
@@ -418,6 +462,7 @@ void Foam::PLICInterface::calculateInterfaceNormal()
     // Normalize and limit iNormal only to intermediate cells
     iNormal_ *= intermeds_ / (mag(iNormal_) + SMALL);
     iNormal_.correctBoundaryConditions();
+    */
 }
 
 
@@ -478,7 +523,7 @@ Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
     dimensionedScalar s2("s2",dimMass/dimArea/dimTime,SMALL);
     tmp<volVectorField> uti = (wV()*utV() + wL()*utL())/(wV()+wL()+s2);
     
-    dimensionedScalar rV("rV",dimless/dimVolume,1.0);
+    dimensionedScalar rV("rV",dimless/dimVolume,0.0); //TEMPORARY
     if( region == "Vapor" )
     {
         tmp<volVectorField> tau = -muV*iArea_/(deltaV_+s)*(utV - uti)*rV;
@@ -497,6 +542,24 @@ Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
 
 void Foam::PLICInterface::updateKappaTest(bool changeNormals)
 {
+/*
+    alphaLsmooth_ = alphaLiquid_;
+    scalar dx = 6e-5;
+    dimensionedScalar dTau("dTau",dimArea,dx*dx/4.0);
+    
+    for(label i = 0; i < 3; i++)
+    {
+        alphaLsmooth_ += dTau * fvc::laplacian(alphaLsmooth_);
+    }
+    dimensionedScalar s("s",dimless/dimLength,SMALL);
+    
+    smoothN_ = fvc::grad(alphaLsmooth_) / (mag(fvc::grad(alphaLsmooth_)) + s);
+    
+    kappaTest_ = -fvc::div(fvc::interpolate(smoothN_) & mesh_.Sf()) * pos(mag(iNormal_) - SMALL);
+
+    smoothN_ *= pos(mag(iNormal_) - SMALL);
+    */
+
 /*
     tmp<surfaceVectorField> nf
     (
@@ -737,6 +800,56 @@ void Foam::PLICInterface::updateKappaTest(bool changeNormals)
     //TODO: Get cells through parallel patches
     Info<< "max kappaTest before smoothing = " << Foam::max(kappaTest_) << endl;
     
+    // kappa averaging iterations
+    tmp<volScalarField> tkappaIter
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "kappaIter",
+                mesh_.time().timeName(),
+                mesh_
+            ),
+            kappaTest_
+        )
+    );
+        
+    for(label k = 0; k < 5; ++k)
+    {
+        forAll(mesh_.C(), lcellI)
+        {
+            if( mag(kappaTest_[lcellI]) > SMALL )
+            {
+                const labelList& cell27Stencil = wideStencil[lcellI];
+                    
+                scalar avgKappa = 0.0;
+                label n = 0;
+                
+                //get coordinate system
+                forAll(cell27Stencil, cellI)
+                {
+                    if( cell27Stencil[cellI] < mesh_.nCells() )
+                    {
+                        label cellJ = cell27Stencil[cellI];
+                        if( mag(kappaTest_[cellJ]) > SMALL )
+                        {
+                            avgKappa += kappaTest_[cellJ];
+                            ++n;
+                        }
+                    }
+                }
+                
+                tkappaIter()[lcellI] = avgKappa/n;
+            }
+        }
+        kappaTest_ = tkappaIter();
+        
+        Info<< "max kappaTest after iter "<< k 
+            <<" = " << Foam::max(kappaTest_) << endl;
+    }
+    
+    /*
     //smooth kappa along interface
     tmp<surfaceScalarField> kapf
     (
@@ -798,7 +911,7 @@ void Foam::PLICInterface::updateKappaTest(bool changeNormals)
         
         Info<< "max kappaTest after iter "<<i<<" = " << Foam::max(kappaTest_) << endl;
     }
-    
+    */
 }
 
 
@@ -964,12 +1077,12 @@ void Foam::PLICInterface::updateKappa(bool changeNormals)
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
     kappaI_ = -fvc::div(nHatfv & mesh_.Sf());*/
     
-    //updateKappaTest(changeNormals);
+    updateKappaTest(changeNormals);
     
     
     
-    kappaI_ = dimensionedScalar("k",dimless/dimLength,1.0/0.00101) * pos(mag(iNormal_)-SMALL);
-    //kappaI_ = kappaTest_;
+    //kappaI_ = dimensionedScalar("k",dimless/dimLength,1.0/0.00101) * pos(mag(iNormal_)-SMALL);
+    kappaI_ = kappaTest_;
 }
 
 

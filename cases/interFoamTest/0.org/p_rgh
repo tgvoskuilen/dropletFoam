@@ -9,49 +9,41 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      controlDict;
+    class       volScalarField;
+    object      p_rgh;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     reactingInterFoam;
+dimensions      [1 -1 -2 0 0 0 0];
 
-startFrom       latestTime;
+internalField   uniform 1e5;
 
-startTime       0;
+boundaryField
+{
+    atmosphere
+    {
+        type            zeroGradient;
+        value           uniform 1e5;
+        /*type            waveTransmissive;
+        value           uniform 1e5;
+        phi             phi;
+        rho             rho;
+        gamma           1.4;
+        lInf            0.05;
+        fieldInf        1e5;*/
+    }
 
-stopAt          endTime;
 
-endTime         1e-1;
-
-deltaT          1e-8;
-
-writeControl    adjustableRunTime; //timeStep
-
-writeInterval   1e-4;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  7;
-
-writeCompression compressed;
-
-timeFormat      general;
-
-timePrecision   7;
-
-runTimeModifiable yes;
-
-adjustTimeStep  yes;
-
-maxCo           0.2;
-maxAlphaCo      0.2;
-
-maxDeltaT       1e-6;
-
-volSourceLimit  0.2;
+    
+    frontAndBack
+    {
+        type            symmetryPlane;
+    }
+    
+    defaultFaces
+    {
+        type            empty;
+    }
+}
 
 // ************************************************************************* //

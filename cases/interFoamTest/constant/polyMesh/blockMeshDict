@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.x                                 |
+|  \\    /   O peration     | Version:  2.1.0                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,34 +10,61 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      VOFSetFieldsDict;
+    object      blockMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defaultSpecies
+convertToMeters 0.01; //values here are in cm
+
+vertices
 (
-    N2   1.0
+    (-0.001 0   0)
+    (-0.001 0.3 0)
+    ( 0.001 0.3 0)
+    ( 0.001 0   0)
+    (-0.001 0   0.3)
+    (-0.001 0.3 0.3)
+    ( 0.001 0.3 0.3)
+    ( 0.001 0   0.3)
 );
 
-droplets
+blocks
 (
-    DropMMH
+    hex (0 3 2 1 4 7 6 5) (1 50 50) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    atmosphere
     {
-        center   (0 0.0015 0.0015);
-        radius   (0 0.001 0.0005);
-        delVapor 1e-4;
-        U        (0 0 0);
-        liquidSpecies
+        type patch;
+        faces
         (
-            CH3NHNH2L  1.0
+            (0 1 2 3)
+            (1 5 6 2)
+            (6 5 4 7)
+            (0 3 7 4)
         );
-        vaporSpecies
-        (
-            CH3NHNH2   0.05
-        );
+    }
+
+    frontAndBack
+    {
+      type symmetryPlane;
+      faces
+      (
+       (3 2 6 7)
+       (5 1 0 4)
+      );
+
     }
 );
 
+mergePatchPairs
+(
+);
 
 // ************************************************************************* //

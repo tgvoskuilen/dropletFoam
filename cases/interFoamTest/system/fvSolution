@@ -11,47 +11,55 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      controlDict;
+    object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     reactingInterFoam;
+solvers
+{
+    pcorr
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+    }
 
-startFrom       latestTime;
+    p_rgh
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-07;
+        relTol          0.05;
+    }
 
-startTime       0;
+    p_rghFinal
+    {
+        $p_rgh;
+        tolerance       1e-07;
+        relTol          0;
+    }
 
-stopAt          endTime;
+    U
+    {
+        solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       1e-06;
+        relTol          0;
+    }
+}
 
-endTime         1e-1;
-
-deltaT          1e-8;
-
-writeControl    adjustableRunTime; //timeStep
-
-writeInterval   1e-4;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  7;
-
-writeCompression compressed;
-
-timeFormat      general;
-
-timePrecision   7;
-
-runTimeModifiable yes;
-
-adjustTimeStep  yes;
-
-maxCo           0.2;
-maxAlphaCo      0.2;
-
-maxDeltaT       1e-6;
-
-volSourceLimit  0.2;
+PIMPLE
+{
+    momentumPredictor no;
+    nCorrectors     2;
+    nOuterCorrectors 1;
+    nNonOrthogonalCorrectors 2;
+    nAlphaCorr      1;
+    nAlphaSubCycles 2;
+    cAlpha          1;
+    pRefCell        0;
+    pRefValue       1e5;
+}
 
 // ************************************************************************* //

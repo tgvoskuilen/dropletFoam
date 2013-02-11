@@ -18,7 +18,7 @@
     phiv = 
     (
         (fvc::interpolate(Uv*rhov) & mesh.Sf())*alphafv
-      //+ fvc::ddtPhiCorr(rAU, rho, U, phi) //TODO: Fix near interface
+      //+ fvc::ddtPhiCorr(rAUv, rhov, Uv, phiv) //TODO: Fix near interface
     );
     
     
@@ -37,7 +37,7 @@
     phiL = 
     (
         (fvc::interpolate(UL*rhoL) & mesh.Sf())*alphafL
-      //+ fvc::ddtPhiCorr(rAU, rho, U, phi) //TODO: Fix near interface
+      //+ fvc::ddtPhiCorr(rAUL, rhoL, UL, phiL) //TODO: Fix near interface
     );
     
     

@@ -102,7 +102,8 @@ class PLICInterface
         surfaceScalarField wV_;
         
         volScalarField intermeds_;
-
+        volScalarField alphaLsmooth_;
+        volVectorField smoothN_;
         
         //TEMPORARY
         volScalarField liquidCells_;

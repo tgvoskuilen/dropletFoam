@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.1                                 |
+|  \\    /   O peration     | Version:  2.1.x                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -11,47 +11,30 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      controlDict;
+    object      VOFSetFieldsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     reactingInterFoam;
+defaultSpecies
+(
+);
 
-startFrom       latestTime;
+droplets
+(
+    WaterDrop
+    {
+        center   (0 0.0015 0.0015);
+        radius   (0 0.001 0.0005);
+        delVapor 1e-4;
+        U        (0 0 0);
+        liquidSpecies
+        (
+        );
+        vaporSpecies
+        (
+        );
+    }
+);
 
-startTime       0;
-
-stopAt          endTime;
-
-endTime         1e-1;
-
-deltaT          1e-8;
-
-writeControl    adjustableRunTime; //timeStep
-
-writeInterval   1e-4;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  7;
-
-writeCompression compressed;
-
-timeFormat      general;
-
-timePrecision   7;
-
-runTimeModifiable yes;
-
-adjustTimeStep  yes;
-
-maxCo           0.2;
-maxAlphaCo      0.2;
-
-maxDeltaT       1e-6;
-
-volSourceLimit  0.2;
 
 // ************************************************************************* //
