@@ -20,14 +20,14 @@ FoamFile
     atmosphere
     {
         type            patch;
-        nFaces          200;
-        startFace       4900;
+        nFaces          400;
+        startFace       19800;
     }
     frontAndBack
     {
         type            symmetryPlane;
-        nFaces          5000;
-        startFace       5100;
+        nFaces          20000;
+        startFace       20200;
     }
 )
 

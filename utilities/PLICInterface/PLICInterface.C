@@ -481,12 +481,12 @@ tmp<surfaceScalarField> Foam::PLICInterface::stf() const
 void Foam::PLICInterface::calculateInterfaceNormal()
 {    
     alphaLsmooth_ = alphaLiquid_;
-    scalar dx = 6e-5;
-    dimensionedScalar dTau("dTau",dimArea,dx*dx/4.0);
+    dimensionedScalar dx = pow(min(mesh_.V()), 1.0/3.0);
+    dimensionedScalar dA = dx*dx/4.0; //dTau("dTau",dimArea,dx*dx/4.0);
     
     for(label i = 0; i < 2; i++)
     {
-        alphaLsmooth_ += dTau * fvc::laplacian(alphaLsmooth_);
+        alphaLsmooth_ += dA * fvc::laplacian(alphaLsmooth_);
     }
     
     dimensionedScalar s("s",dimless/dimLength,SMALL);
@@ -1195,30 +1195,21 @@ void Foam::PLICInterface::calcAlphaf()
             //   +---------+
             //
             //  The value of alphaf (===) for the face is calculated correctly,
-            //  but needs to be added to the interface area of the liquid cell
+            //  but needs to be added to the interface area of the liquid cell.
+            //  Because this can happen to more than one face of a cell, we
+            //  must increment iNormal each time we find one.
             
-            if (alphaVapor_[own] < reconstructTol_   //own is pure liquid and didn't get a point and normal created for it
+            if (alphaVapor_[own] < reconstructTol_ 
                 && (1.0 - alphaf_[faceI]) > SMALL)
             {                        
                 //own is liquid
-                
-                if( mag(iNormal_[own]) > SMALL )
-                {
-                    Info<<"warn 1"<<endl;
-                }
-                
                 iArea_[own] += mesh_.magSf()[faceI] * (1.0-alphaf_[faceI]);
                 iNormal_[own] += outwardNormal(faceI,own)*(1.0-alphaf_[faceI]);
             }
             else if (alphaVapor_[nei] < reconstructTol_
                      && (1.0 - alphaf_[faceI]) > SMALL)
             {
-                //nei is liquid
-                if( mag(iNormal_[nei]) > SMALL )
-                {
-                    Info<<"warn 2"<<endl;
-                }
-                
+                //nei is liquid                
                 iArea_[nei] += mesh_.magSf()[faceI] * (1.0-alphaf_[faceI]);
                 iNormal_[nei] += outwardNormal(faceI,nei)*(1.0-alphaf_[faceI]);
             }
@@ -1233,11 +1224,6 @@ void Foam::PLICInterface::calcAlphaf()
             
             //set iNormal and area
             label liquidcell = (alphaLiquid_[own] > 0.5) ? own : nei;
-            
-            if( mag(iNormal_[liquidcell]) > SMALL )
-            {
-                Info<<"warn 3"<<endl;
-            }
             
             // Increment iArea since a liquid cell could technically have more
             // than one sharp boundary
@@ -1288,7 +1274,7 @@ void Foam::PLICInterface::calcAlphaf()
             
             //patch face starting IDs in mesh.faces()
             label patchFs = alphaLPf.patch().start();
-            //const fvPatch& meshPf = mesh_.boundary()[patchI];
+            const fvPatch& meshPf = mesh_.boundary()[patchI];
             
             forAll(alphafPf, pFaceI)
             {
@@ -1320,23 +1306,22 @@ void Foam::PLICInterface::calcAlphaf()
                         && (1.0-alphafPf[pFaceI]) > SMALL)
                     {
                         //own is liquid
-                        Info<<"warn 4"<<endl;
-                        /*iArea_[pfCellI] += meshPf.magSf()[pFaceI]
+
+                        iArea_[pfCellI] += meshPf.magSf()[pFaceI]
                                            *(1.0-alphafPf[pFaceI]);
 
                         iNormal_[pfCellI] += 
                                 outwardNormal(patchFs+pFaceI, pfCellI)
-                                *(1.0-alphafPf[pFaceI]);*/
+                                *(1.0-alphafPf[pFaceI]);
                     }
                     
                 }
                 else if (mag(alphaLiquid_[pfCellI] - alphaLPNf[pFaceI]) > 0.1)
                 {
-                    Info<<"warn 5"<<endl;
                     alphafPf[pFaceI] = 0.0;
 
                     //set iNormal and iArea for this case
-                    /*if (alphaLiquid_[pfCellI] > 0.1)
+                    if (alphaLiquid_[pfCellI] > 0.1)
                     {
                         // than one sharp boundary
                         iArea_[pfCellI] += meshPf.magSf()[pFaceI];
@@ -1344,7 +1329,7 @@ void Foam::PLICInterface::calcAlphaf()
                         // Increment iNormal_
                         iNormal_[pfCellI] += 
                             outwardNormal(patchFs+pFaceI, pfCellI);
-                    }*/
+                    }
                 }
             }
         }
@@ -1422,6 +1407,8 @@ void Foam::PLICInterface::correct()
         }
     }
     alphaLiquid_.correctBoundaryConditions();
+    
+    // Set alphaVapor
     alphaVapor_ = scalar(1.0) - alphaLiquid_;
     
 
@@ -1437,16 +1424,10 @@ void Foam::PLICInterface::correct()
     
     // Step 0: Calculate new curvature field (kappaI_) from alphaLiquid_
     updateKappa(false);
-    
-    //calcInterfacePlanes();
-    
-    //updateKappa(false);
-    
+        
     //calculate alphaf
     calcAlphaf();
 
-
-    
     // Calculate transfer weights on small cells
     calcTransferWeights();
     
@@ -1483,13 +1464,6 @@ void Foam::PLICInterface::calcTransferWeights()
         label own = owner[faceI];
         label nei = neighbor[faceI];
         
-        /*if( own == 76057 || nei == 76057 )
-        {
-            Info<< "Calculating weight at face " << faceI << " of cell 76057" << endl;
-            Info<< "  alphaShiftV["<<own<<"] = " << alphaShiftV[own] << endl;
-            Info<< "  alphaShiftV["<<nei<<"] = " << alphaShiftV[nei] << endl;
-            Info<< "  alphaf[faceI] = " << alphaf_[faceI] << endl;
-        }*/
 
         if (alphaShiftL[own] * alphaShiftL[nei] * alphaf_[faceI] < 0.0)
         { //one is small, one is not, and they share a gas boundary
@@ -1513,12 +1487,7 @@ void Foam::PLICInterface::calcTransferWeights()
             (
                 iNormal_[sc] & mesh_.Sf()[faceI]
             ) * (1.0 - alphaf_[faceI]);
-            
-            /*if( sc == 76057 )
-            {
-                Info<< "at cell 76057 face "<<faceI<<", wV = " << wV_[faceI] << endl;
-            }*/
-            
+
             alphaf_[faceI] = 1.0;
         }
         
