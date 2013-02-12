@@ -539,26 +539,43 @@ Foam::tmp<Foam::volVectorField> Foam::PLICInterface::shearVec
 }
 
 
+tmp<surfaceScalarField> Foam::PLICInterface::stf() const
+{
+    tmp<surfaceScalarField> stf
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "stf",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar("stf", dimPressure/dimLength, 0.0)
+        )
+    );
+
+    dimensionedScalar sigma("sigma",dimPressure*dimLength,0.07);
+    
+    stf() = sigma * fvc::interpolate(kappaI_) * fvc::snGrad(alphaLiquid_);
+
+    return stf;
+}
 
 void Foam::PLICInterface::updateKappaTest(bool changeNormals)
 {
-/*
-    alphaLsmooth_ = alphaLiquid_;
-    scalar dx = 6e-5;
-    dimensionedScalar dTau("dTau",dimArea,dx*dx/4.0);
+    //alphaLsmooth is calculated when the normals are calculated    
+    //smoothN_ = fvc::grad(alphaLsmooth_) / (mag(fvc::grad(alphaLsmooth_)) + s);
     
-    for(label i = 0; i < 3; i++)
-    {
-        alphaLsmooth_ += dTau * fvc::laplacian(alphaLsmooth_);
-    }
-    dimensionedScalar s("s",dimless/dimLength,SMALL);
-    
-    smoothN_ = fvc::grad(alphaLsmooth_) / (mag(fvc::grad(alphaLsmooth_)) + s);
-    
-    kappaTest_ = -fvc::div(fvc::interpolate(smoothN_) & mesh_.Sf()) * pos(mag(iNormal_) - SMALL);
+    //kappaTest_ = -fvc::div(fvc::interpolate(smoothN_) & mesh_.Sf());
 
-    smoothN_ *= pos(mag(iNormal_) - SMALL);
-    */
+    dimensionedScalar s("s",dimless/dimLength,SMALL);
+    smoothN_ = fvc::grad(alphaLiquid_) / (mag(fvc::grad(alphaLiquid_)) + s);
+    
+    kappaTest_ = fvc::div(fvc::interpolate(smoothN_) & mesh_.Sf());
 
 /*
     tmp<surfaceVectorField> nf
@@ -659,7 +676,7 @@ void Foam::PLICInterface::updateKappaTest(bool changeNormals)
     kappaTest_ = fvc::div(nfDotAf) * pos(mag(iNormal_)-SMALL);
 */
 
-
+/*
     //3D or 2D selection required
     label dims = 2;
 
@@ -756,7 +773,7 @@ void Foam::PLICInterface::updateKappaTest(bool changeNormals)
                     kappaTest_[lcellI] = -2.0*x[0]/Foam::pow(1+x[1]*x[1],1.5);
 
                     
-                    /*if( kappaTest_[lcellI] < 500 || kappaTest_[lcellI] > 1500)
+                    if( kappaTest_[lcellI] < 500 || kappaTest_[lcellI] > 1500)
                     {
                         Info<< "norm error at "<<lcellI<< " = " << x[1] << " with k = " << kappaTest_[lcellI] << endl;
                         forAll(cell27Stencil, cellI)
@@ -774,7 +791,7 @@ void Foam::PLICInterface::updateKappaTest(bool changeNormals)
                                 }
                             }
                         } 
-                    }*/
+                    }
                     
                     if( mag(x[1]) > 0.01 && changeNormals )
                     {
@@ -848,7 +865,7 @@ void Foam::PLICInterface::updateKappaTest(bool changeNormals)
         Info<< "max kappaTest after iter "<< k 
             <<" = " << Foam::max(kappaTest_) << endl;
     }
-    
+    */
     /*
     //smooth kappa along interface
     tmp<surfaceScalarField> kapf

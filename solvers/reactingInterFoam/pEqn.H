@@ -40,6 +40,11 @@
       //+ fvc::ddtPhiCorr(rAUL, rhoL, UL, phiL) //TODO: Fix near interface
     );
     
+    phiL += 
+    (
+        (mixture.interface().stf())*rhorAULf*mesh.magSf()
+    );
+    
     
 // -- SOLUTION LOOP ------
     Info<< "Starting pressure solution loop" << endl;

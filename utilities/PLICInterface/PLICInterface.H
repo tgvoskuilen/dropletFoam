@@ -204,6 +204,8 @@ public:
         tmp<volScalarField> AbydeltaLV() const;
       
        // tmp<volScalarField> AbydeltaV() const;
+       
+        tmp<surfaceScalarField> stf() const;
         
         tmp<volVectorField> shearVec
         (
