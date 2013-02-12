@@ -50,7 +50,7 @@ adjustTimeStep  yes;
 maxCo           0.2;
 maxAlphaCo      0.2;
 
-maxDeltaT       1e-6;
+maxDeltaT       1e-5;
 
 volSourceLimit  0.2;
 

@@ -107,7 +107,9 @@ private:
         
         //- Velocity field
         const volVectorField& U_;
-                                
+                           
+        surfaceScalarField rhoPhi_;     
+         
         //- Surface tension
         volScalarField sigma_;
                         
@@ -258,6 +260,11 @@ public:
                 return vapor_;
             }
             
+            const surfaceScalarField& rhoPhi() const
+            {
+                return rhoPhi_;
+            }
+            
             phase& liquid()
             {
                 return liquid_;
@@ -276,7 +283,7 @@ public:
             }
             
             //- Solve reaction chemistry, evaporation, and phase transport       
-            void solve(surfaceScalarField& phi);
+            void solve(volScalarField& rho, const surfaceScalarField& phi);
 
             //- Update the density (rho_) based on current alphas, p, and T
             void calculateRho();

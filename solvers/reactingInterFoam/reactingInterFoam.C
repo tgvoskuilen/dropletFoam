@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     //volScalarField divU(fvc::div(phi));
 
     //#include "correctPhi.H"
-    #include "compressibleCourantNo.H"
+    #include "CourantNo.H"
     #include "setInitialDeltaT.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
     while (runTime.run())
     {
         #include "readControls.H"
-        //#include "alphaCourantNo.H"
-        #include "compressibleCourantNo.H"
+        #include "alphaCourantNo.H"
+        #include "CourantNo.H"
         #include "setDeltaT.H"
         
         Info<< "max dT = " << maxDeltaT << endl;
@@ -149,8 +149,9 @@ int main(int argc, char *argv[])
         {
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
             Info<<"Solving alpha transport equations"<<endl;
-            mixture.solve( phi );
-
+            mixture.solve( rho, phi );
+            //rhoEqn?
+            // PLICinterFoam does rho == alpha1*rhoL+(1-alpha1)*rhog
 
             dQ = combustion->dQ();
 
@@ -171,11 +172,7 @@ int main(int argc, char *argv[])
 
 
         #include "checkMassBalance.H"
-        p = mixture.liquid().p() * mixture.alphaLiquid()
-            + mixture.vapor().p() * mixture.alphaVapor();
-        U = mixture.liquid().U() * mixture.alphaLiquid()
-            + mixture.vapor().U() * mixture.alphaVapor();
-               
+
         mixture.calculateRho(); // rho = alpha1*rho1(p,T,Ys) + alpha2*rho2(p,T,Ys)
         rho = mixture.rho();
         

@@ -75,31 +75,8 @@ Foam::phase::phase
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-        mesh.lookupObject<volScalarField>("rho")
-    ),
-    U_
-    (
-        IOobject
-        (
-            "U"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh.lookupObject<volVectorField>("U")
-    ),
-    p_
-    (
-        IOobject
-        (
-            "p"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh.lookupObject<volScalarField>("p")
+        mesh,
+        dimensionedScalar("rho"+name, dimDensity, 1.2)
     ),
     T_
     (
@@ -148,64 +125,10 @@ Foam::phase::phase
         ),
         mesh,
         dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
-    ),
-    p_Sp_
-    (
-        IOobject
-        (
-            "pSp_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("pSp_"+name, dimDensity/dimTime/dimPressure, 0.0)
-    ),
-    p_Su_
-    (
-        IOobject
-        (
-            "pSu_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("pSu_"+name, dimDensity/dimTime, 0.0)
-    ),
-    U_Sp_
-    (
-        IOobject
-        (
-            "USp_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("USp_"+name, dimDensity/dimTime, 0.0)
-    ),
-    U_Su_
-    (
-        IOobject
-        (
-            "USu_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedVector("USu_"+name, dimDensity*dimVelocity/dimTime, vector::zero)
     )
 {    
     if( name_ == "Liquid" )
     {
-        dimensionedScalar dpi("dpi",dimPressure,70); //1 mm radius 2D circle 0.07 N/m surface tension
-        p_ += dpi;
         mu_ = dimensionedScalar("mu",dimMass/dimLength/dimTime,1e-3);
     }
     else
@@ -213,12 +136,10 @@ Foam::phase::phase
         mu_ = dimensionedScalar("mu",dimMass/dimLength/dimTime,1.8e-5);
     }
 
-    rho_ = rho(p_,T_);
+    rho_ = rho(T_,T_); //arguments not used for now
     rho_.oldTime();
     
-    p_.oldTime();
     T_.oldTime();
-    U_.oldTime();
     
     if( phaseDict_.found("SchmidtNo") )
     {
@@ -237,6 +158,7 @@ Foam::autoPtr<Foam::phase> Foam::phase::clone() const
     return autoPtr<phase>(NULL);
 }
 
+/*
 Foam::tmp<Foam::volScalarField> Foam::phase::U_Sp
 (
     const PLICInterface& i
@@ -264,8 +186,8 @@ Foam::tmp<Foam::volScalarField> Foam::phase::U_Sp
         U_Sp_ = (i.smallLiquidCells() + i.noLiquidCells())*rhorDT;
         return (i.smallLiquidCells() + i.noLiquidCells())*rhorDT;
     }
-}
-
+}*/
+/*
 Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
 (
     const PLICInterface& i,
@@ -306,15 +228,18 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
              + i.smallLiquidCells()*i.scAverage<vector>(name_,U_)) * rhorDT
              + i.liquidCells()*i.shearVec(name_, U_, U_opp, mu_, mu_opp);
     }
-}
+}*/
 
 
 
-void Foam::phase::setPhi( const surfaceScalarField& alphaf )
+void Foam::phase::setPhi( const surfaceScalarField& phiAlpha )
 {
     //TODO: Correct interpolation near interface
-    phi_ = (fvc::interpolate(rho_ * U_) * alphaf) & mesh().Sf();
+    //phi_ = (fvc::interpolate(rho_ * U_) * alphaf) & mesh().Sf();
+    
+    phi_ = phiAlpha * fvc::interpolate(rho_);
 }
+
 
 Foam::tmp<Foam::volScalarField> Foam::phase::alphaCorr
 (
@@ -346,7 +271,7 @@ label Foam::phase::numSmallAndEmptyCells
 }
 
 
-
+/*
 void Foam::phase::calcFixedRhoValues
 (
     labelList& cells,
@@ -380,9 +305,9 @@ void Foam::phase::calcFixedRhoValues
         }
     }
 }
+*/
 
-
-
+/*
 void Foam::phase::updateRho
 (
     const PLICInterface& interface
@@ -403,7 +328,8 @@ void Foam::phase::updateRho
     Info<< "Min, max rho" << name_ << "= " << Foam::gMin(rho_) << ", "
         << Foam::gMax(rho_) << endl;
 }
-
+*/
+/*
 Foam::tmp<Foam::volScalarField> Foam::phase::rho_Sp
 (
     const PLICInterface& i
@@ -543,7 +469,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Su
              + i.liquidCells()*rhorAU*i.AbydeltaLV()*(p_opp + sigmaT*i.kappa()); //Add m_evap
     }
 }
-
+*/
 
 // Only applicable for liquid phase. Vapor phase will return 0 here.
 Foam::tmp<Foam::volScalarField> Foam::phase::mu
@@ -602,7 +528,7 @@ void Foam::phase::setCombustionPtr
 
 void Foam::phase::correct()
 {
-    rho_ = rho(p_,T_);
+    //rho_ = rho(p_,T_);
 
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   

@@ -34,7 +34,7 @@ boundaryField
     
     defaultFaces
     {
-        type            symmetryPlane;
+        type            empty;
     }
 }
 

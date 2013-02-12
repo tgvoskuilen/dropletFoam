@@ -82,12 +82,6 @@ class phase
         //- Density field for this phase
         volScalarField rho_;
         
-        //- Velocity field for this phase
-        volVectorField U_;
-        
-        //- Pressure field for this phase
-        volScalarField p_;
-        
         //- Temperature field for this phase
         volScalarField T_;   
         
@@ -111,11 +105,6 @@ class phase
         
         //- Mass diffusion coefficient
         surfaceScalarField D_;
-        
-        volScalarField p_Sp_;
-        volScalarField p_Su_;
-        volScalarField U_Sp_;
-        volVectorField U_Su_;
 
 public:
 
@@ -175,26 +164,6 @@ public:
         const volScalarField& mu() const
         {
             return mu_;
-        }
-        
-        const volVectorField& U() const
-        {
-            return U_;
-        }
-        
-        volVectorField& U()
-        {
-            return U_;
-        }
-        
-        const volScalarField& p() const
-        {
-            return p_;
-        }
-        
-        volScalarField& p()
-        {
-            return p_;
         }
         
         //- Return the phase density
@@ -297,39 +266,14 @@ public:
             const surfaceScalarField& alphaf
         );
 
-        dimensionedScalar rhoFarField(const PLICInterface& i) const;
-        dimensionedVector UFarField(const PLICInterface& i) const;
-        dimensionedScalar pFarField(const PLICInterface& i) const;
-        
+
         void setPhi(const surfaceScalarField& alphaf);
-        void updateRho(const PLICInterface& i);
+
         tmp<volScalarField> alphaCorr(const PLICInterface& i) const;
-        tmp<volScalarField> U_Sp(const PLICInterface& i);
-        tmp<volVectorField> U_Su
-        (
-            const PLICInterface& i,
-            const volVectorField& U_opp,
-            const volScalarField& mu_opp
-        );
-        
-        tmp<volScalarField> rho_Sp(const PLICInterface& i) const;
-        tmp<volScalarField> rho_Su(const PLICInterface& i) const;
-        
-        tmp<volScalarField> p_Sp
-        (
-            const PLICInterface& i,
-            const volScalarField& rhorAU
-        );
-        
-        tmp<volScalarField> p_Su
-        (
-            const PLICInterface& i,
-            const volScalarField& p_opp,
-            const volScalarField& rhorAU
-        );
+
+
         
         label numSmallAndEmptyCells(const PLICInterface& i) const;
-        void calcFixedRhoValues(labelList& cells, scalarList& values, const PLICInterface& i) const;
 
 };
 

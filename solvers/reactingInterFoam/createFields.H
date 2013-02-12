@@ -15,32 +15,8 @@
     );
     U.oldTime();
     
-    volScalarField rho
-    (
-        IOobject
-        (
-            "rho",
-            runTime.timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("rho",dimDensity,1.0)
-    );
-    
-    surfaceScalarField phi
-    (
-        IOobject
-        (
-            "phi",
-            runTime.timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::AUTO_WRITE
-        ),
-        linearInterpolate(rho*U) & mesh.Sf()
-    );
+
+    #include "createPhi.H"
 
     
     Info<< "Creating combustion model\n" << endl;
@@ -78,10 +54,20 @@
         dimensionedScalar("refinementField",dimless,0)
     );
     
-    
-    rho = mixture.rho();
-    
-    
+    volScalarField rho
+    (
+        IOobject
+        (
+            "rho",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mixture.rho()
+    );
+        
+    const surfaceScalarField& rhoPhi = mixture.rhoPhi();
     
     // Construct turbulence model
     //   The liquid phase is assumed laminar
@@ -89,9 +75,9 @@
     (
         compressible::turbulenceModel::New
         (
-            mixture.vapor().rho(),
-            mixture.vapor().U(), 
-            mixture.vapor().phi(),
+            rho,
+            U,
+            rhoPhi,
             mixture
         )
     );

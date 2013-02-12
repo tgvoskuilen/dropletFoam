@@ -77,7 +77,8 @@ class PLICInterface
         surfaceScalarField alphaf_;
         
         //- Volume flux of gas phase
-        surfaceScalarField phiAlpha_;
+        surfaceScalarField phiAlphaLiquid_;
+        surfaceScalarField phiAlphaVapor_;
         
         volScalarField sumalphaf_;
         
@@ -191,9 +192,14 @@ public:
             return iNormal_;
         }
         
-        const surfaceScalarField& phiAlpha() const
+        const surfaceScalarField& phiAlphaVapor() const
         {
-            return phiAlpha_;
+            return phiAlphaVapor_;
+        }
+        
+        const surfaceScalarField& phiAlphaLiquid() const
+        {
+            return phiAlphaLiquid_;
         }
         
         const volScalarField& kappa() const
@@ -204,6 +210,8 @@ public:
         tmp<volScalarField> AbydeltaLV() const;
       
        // tmp<volScalarField> AbydeltaV() const;
+        
+        tmp<surfaceScalarField> stf() const;
         
         tmp<volVectorField> shearVec
         (
@@ -228,7 +236,8 @@ public:
         //- Evolve the interface given a solid consumption rate
         void advect
         (
-            const volScalarField& liquidVolSource
+            const volScalarField& liquidVolSource,
+            const surfaceScalarField& phi
         );
         
         //- Update the stored curvature field

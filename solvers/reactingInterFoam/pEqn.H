@@ -1,99 +1,80 @@
 {
+    volScalarField rAU("rAU", 1.0/UEqn.A());
+    surfaceScalarField rAUf("Dp", fvc::interpolate(rAU));
 
+    volVectorField Uest("Uest", U);
+    Uest = rAU*UEqn.H();
     
-// -- VAPOR SETUP -------
-    Info<< "Setting up vapor fields for pEqn" << endl;
-    
-    // Load/create fields
-    tmp<volScalarField> tpsiv = vapor.psi();
-    const volScalarField& psiv = tpsiv();
-    
-    volScalarField rAUv(1.0/UEqnV.A());
-    surfaceScalarField rhorAUvf(fvc::interpolate(rhov*rAUv));
+    forAll(Uest, cellI)
+    {
+        Uest[cellI].x() = 0.0;
+    }
 
-    // Set Uv = Uv_est
-    Uv = rAUv*UEqnV.H();
-    Info<< "min,max Uvest = " << min(mag(Uv)).value() << ", " << max(mag(Uv)).value() << endl;
-    // Set phiv = phivEst
-    phiv = 
+    surfaceScalarField phiEst
     (
-        (fvc::interpolate(Uv*rhov) & mesh.Sf())*alphafv
-      //+ fvc::ddtPhiCorr(rAUv, rhov, Uv, phiv) //TODO: Fix near interface
+        "phiEst",
+        (fvc::interpolate(Uest) & mesh.Sf())
+      + fvc::ddtPhiCorr(rAU, rho, U, phi)
     );
-    
-    
-// -- LIQUID SETUP -------
-    Info<< "Setting up liquid fields for pEqn" << endl;
-    
-    // Create fields    
-    volScalarField rAUL(1.0/UEqnL.A());
-    volScalarField rhorAUL(rhoL * rAUL);
-    surfaceScalarField rhorAULf(fvc::interpolate(rhoL*rAUL));
 
-    // Set UL = UL_est
-    UL = rAUL*UEqnL.H();
-    Info<< "min,max ULest = " << min(mag(UL)).value() << ", " << max(mag(UL)).value() << endl;
-    // Set phiL = phiLEst
-    phiL = 
+    //adjustPhi(phiHbyA, U, p); //?
+    phi = phiEst;
+
+    surfaceScalarField phig
     (
-        (fvc::interpolate(UL*rhoL) & mesh.Sf())*alphafL
-      //+ fvc::ddtPhiCorr(rAUL, rhoL, UL, phiL) //TODO: Fix near interface
+        (
+            mixture.interface().stf()
+          - ghf*fvc::snGrad(rho)
+        )*rAUf*mesh.magSf()
     );
-    
-    
-// -- SOLUTION LOOP ------
-    Info<< "Starting pressure solution loop" << endl;
+
+    phiEst += phig;
+
     while (pimple.correctNonOrthogonal())
     {
-        fvScalarMatrix pEqnv
+        fvScalarMatrix pEqn
         (
-            fvm::ddt(psiv*vapor.alphaCorr(interface), pv)
-          + fvc::div(phiv) // <- Really phivEst
-          - fvm::laplacian(rhorAUvf*alphafv, pv)
-          - vapor.p_Su(interface, pL, rAUv)              //<- rAUv not used
-          + fvm::Sp( vapor.p_Sp(interface, rAUv), pv )   //<- rAUv not used
+            fvm::laplacian(rAUf, p) == fvc::div(phiEst)
         );
-        
-        solve
-        (
-            pEqnv,
-            mesh.solver(p.select(pimple.finalInnerIter()))
-        );
-        
-        fvScalarMatrix pEqnL
-        (
-            fvc::div(phiL) // <- Really phiLEst
-          - fvm::laplacian(rhorAULf*alphafL, pL)
-          - liquid.p_Su(interface, pv, rhorAUL)
-          + fvm::Sp( liquid.p_Sp(interface, rhorAUL), pL )
-        );
-          
-        solve
-        (
-            pEqnL,
-            mesh.solver(p.select(pimple.finalInnerIter()))
-        );
-        
+
+        //pEqn.setReference(pRefCell, getRefCellValue(p, pRefCell));
+
+        pEqn.solve(mesh.solver(p.select(pimple.finalInnerIter())));
+
         if (pimple.finalNonOrthogonalIter())
         {
-            phiv += pEqnv.flux();
-            phiL += pEqnL.flux();
+            phi = phiEst - pEqn.flux();
             
-            // Correct velocity fields
-            Uv += rAUv*fvc::reconstruct(pEqnv.flux()/rhorAUvf); //TODO: Fix near interface
-            Uv.correctBoundaryConditions();
-              
-            UL += rAUL*fvc::reconstruct(pEqnL.flux()/rhorAULf); //TODO: Fix near interface
-            UL.correctBoundaryConditions(); 
+            volScalarField Uestperp = Uest & vector(1,0,0);
+            volScalarField Ucorrperp = (rAU*fvc::reconstruct((phig - pEqn.flux())/rAUf)) & vector(1,0,0);
+            
+            if( Foam::max(Foam::mag(Uestperp)).value() > 1 || Foam::max(Foam::mag(Ucorrperp)).value() > 1 )
+            {
+                Info<<"Uestperp = " << Foam::max(Foam::mag(Uestperp)) << endl;
+                Info<<"Ucorrperp = " << Foam::max(Foam::mag(Ucorrperp)) << endl;
+            }
+            
+            U = Uest + rAU*fvc::reconstruct((phig - pEqn.flux())/rAUf);
+            U.correctBoundaryConditions();
         }
-    }            
-            
-    pv.max(dimensionedScalar("pMin",pv.dimensions(),10000.0));
-    pL.max(dimensionedScalar("pMin",pL.dimensions(),10000.0));
+    }
     
-    Info<< "min,max Uv = " << min(mag(Uv)).value() << ", " << max(mag(Uv)).value() << endl;
-    Info<< "min,max UL = " << min(mag(UL)).value() << ", " << max(mag(UL)).value() << endl;
+    Info<<"max U = " << Foam::max(Foam::mag(U)).value() << endl;
+    Info<<"max p = " << Foam::max(p).value() << endl;
+    Info<<"max phi = " << Foam::max(Foam::mag(phi)).value() << endl;
     
-    Info<< "min,max pv = " << min((pv)).value() << ", " << max((pv)).value() << endl;
-    Info<< "min,max pL = " << min((pL)).value() << ", " << max((pL)).value() << endl;
+    #include "continuityErrs.H"
+
+    /*p == p_rgh + rho*gh;
+
+    if (p_rgh.needReference())
+    {
+        p += dimensionedScalar
+        (
+            "p",
+            p.dimensions(),
+            pRefValue - getRefCellValue(p, pRefCell)
+        );
+        p_rgh = p - rho*gh;
+    }*/
 }

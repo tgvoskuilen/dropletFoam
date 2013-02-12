@@ -29,7 +29,7 @@ divSchemes
 {
     div(rho*phi,k)      Gauss vanLeer;
     
-    div(phi,U)      Gauss limitedLinear 1;
+    div(rhoPhi,U)      Gauss limitedLinear 1;
     div(phi,alpha)  Gauss vanLeer;
     div(phirb,alpha) Gauss interfaceCompression 1;
     
@@ -47,7 +47,7 @@ divSchemes
     div(phi,Te)  Gauss upwind;
     div(phi,k) Gauss limitedLinear 1;
     
-    div((muEff*dev2(T(grad(UVapor))))) Gauss linear;
+    div((muEff*dev2(T(grad(U))))) Gauss linear;
     div(uc*Yi)      Gauss linear corrected;
 }
 
@@ -69,8 +69,7 @@ snGradSchemes
 fluxRequired
 {
     default         no;
-    pVapor;
-    pLiquid
+    p;
     pcorr;
     "alpha(.*)";
 }

@@ -174,6 +174,19 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     ),
     phi_( mesh_.lookupObject<surfaceScalarField>("phi") ),
     U_( mesh_.lookupObject<volVectorField>("U") ),
+    rhoPhi_
+    (
+        IOobject
+        (
+            "rhoPhi",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("rhoPhi", dimMass/dimTime, 0.0)
+    ),
     sigma_
     (
         IOobject
@@ -211,7 +224,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     (
         liquid_,
         vapor_,
-        liquid_.U()
+        U_
     )
 {
 
@@ -492,19 +505,20 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateSurfaceTension()
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 (
-    surfaceScalarField& phiGlobal
+    volScalarField& rho,
+    const surfaceScalarField& phi
 )
 {
     //Correct phases (correct liquid viscosity model)
     liquid_.correct();
 
     //Solve for reaction rates
-    Info<< "Solving combustion" << endl;
-    combustionPtr_->correct();
+    //Info<< "Solving combustion" << endl;
+    //combustionPtr_->correct();
 
     //Solve for evaporation rates
-    Info<< "Solving evaporation" << endl;
-    calcEvaporation();
+    //Info<< "Solving evaporation" << endl;
+    //calcEvaporation();
 
     //Do solving for phase volume fractions
     const Time& runTime = mesh_.time();
@@ -543,19 +557,32 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     }
     else
     {
-        interface_.advect( liquid_.Sv_evap() );
+        interface_.advect( liquid_.Sv_evap(), phi );
             
-        //Update mass flux fields in each phase
-        liquid_.setPhi( interface_.alphaLiquidf() );
-        vapor_.setPhi( interface_.alphaVaporf() );      
+        //Update mass flux fields in each phase: phi = phiAlpha * rhof
+        liquid_.setPhi( interface_.phiAlphaLiquid() );
+        vapor_.setPhi( interface_.phiAlphaVapor() );    
+        
+        rhoPhi_ = vapor_.phi() + liquid_.phi();  
     }
 
     // Update phase densities to satisfy continuity
-    liquid_.updateRho( interface_ );
-    vapor_.updateRho( interface_ );
+    //liquid_.updateRho( interface_ );
+    //vapor_.updateRho( interface_ );
             
-    phiGlobal = vapor_.phi() + liquid_.phi();
+            
     
+    
+    //update rho?
+    //rho == liquid_ * liquid_.rho() + vapor_*vapor_.rho();
+    
+    //or
+    
+    
+    Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
+    
+    Info<< "Min, max rho = " << Foam::gMin(rho) << ", "
+        << Foam::gMax(rho) << endl;
     
     //set interface and domain-related source terms
     //tmp<surfaceScalarField> tw = interface_.scTransferWeights();

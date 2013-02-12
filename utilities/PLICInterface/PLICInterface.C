@@ -65,18 +65,32 @@ Foam::PLICInterface::PLICInterface
         dimensionedScalar("alphaf", dimless, 0.0)
     ),
     
-    phiAlpha_
+    phiAlphaLiquid_
     (
         IOobject
         (
-            "phiAlpha",
+            "phiAlphaLiquid",
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
         mesh_,
-        dimensionedScalar("phiAlpha", dimVolume/dimTime, 0.0)
+        dimensionedScalar("phiAlphaLiquid", dimVolume/dimTime, 0.0)
+    ),
+    
+    phiAlphaVapor_
+    (
+        IOobject
+        (
+            "phiAlphaVapor",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("phiAlphaVapor", dimVolume/dimTime, 0.0)
     ),
     
     sumalphaf_
@@ -425,6 +439,44 @@ void Foam::PLICInterface::update()
     correct();
 }
 
+tmp<surfaceScalarField> Foam::PLICInterface::stf() const
+{
+    tmp<surfaceScalarField> tstf
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "stf",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar("stf",dimPressure/dimLength,0.0)
+        )
+    );
+    
+    dimensionedScalar deltaN("deltaN", 1e-8/pow(average(mesh_.V()), 1.0/3.0));
+
+    // Cell gradient of alpha
+    const volVectorField gradAlpha(fvc::grad(alphaLiquid_));
+
+    // Interpolated face-gradient of alpha
+    surfaceVectorField gradAlphaf(fvc::interpolate(gradAlpha));
+
+    // Face unit interface normal
+    surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
+
+    // Simple expression for curvature
+    volScalarField kappaI = -fvc::div(nHatfv & mesh_.Sf());
+
+    tstf() = dimensionedScalar("sigma", dimPressure*dimLength, 0.07)
+     * fvc::interpolate(kappaI) * fvc::snGrad(alphaLiquid_);
+
+    return tstf;
+}
 
 void Foam::PLICInterface::calculateInterfaceNormal()
 {    
@@ -1077,12 +1129,12 @@ void Foam::PLICInterface::updateKappa(bool changeNormals)
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
     kappaI_ = -fvc::div(nHatfv & mesh_.Sf());*/
     
-    updateKappaTest(changeNormals);
+    //updateKappaTest(changeNormals);
     
     
     
     //kappaI_ = dimensionedScalar("k",dimless/dimLength,1.0/0.00101) * pos(mag(iNormal_)-SMALL);
-    kappaI_ = kappaTest_;
+    //kappaI_ = kappaTest_;
 }
 
 
@@ -1713,7 +1765,7 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
 
     //Then adjust at the interface regions
     //  the scheme for this interpolation is set in fvSchemes
-    surfaceVectorField Uf = liquidUf(); //fvc::interpolate(U_);
+    surfaceVectorField Uf = fvc::interpolate(U_);
     
     const labelUList& owner = mesh_.owner();
     const labelUList& neighbor = mesh_.neighbour();
@@ -1758,7 +1810,7 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
             phiAlphaFrac[faceI] = 0.0;
         }
 
-        else if (mag(alphaVapor_[own] - alphaVapor_[nei]) > 0.1)
+        else if (mag(alphaLiquid_[own] - alphaLiquid_[nei]) > 0.1)
         { //interface coincident with cell boundary
             phiAlphaFrac[faceI] = alphaLiquid_[uwCell];
         }
@@ -1890,14 +1942,15 @@ tmp<surfaceVectorField> Foam::PLICInterface::liquidUf() const
 
 void Foam::PLICInterface::advect
 (
-    const volScalarField& liquidVolSource
+    const volScalarField& liquidVolSource,
+    const surfaceScalarField& phi
 )
 {
     // Get the volume flux of liquid phase on faces
-    tmp<surfaceScalarField> tphi = liquidUf() & mesh_.Sf();
-    const surfaceScalarField& phi = tphi();
+    //tmp<surfaceScalarField> tphi = fvc::interpolate(U_) & mesh_.Sf();
+    //const surfaceScalarField& phi = tphi();
     
-    phiAlpha_ = phiAlphaFrac() * phi;
+    phiAlphaLiquid_ = phiAlphaFrac() * phi;
     
     volScalarField divU(fvc::div(phi));
     
@@ -1913,9 +1966,9 @@ void Foam::PLICInterface::advect
         ),
         // Divergence term is handled explicitly to be
         // consistent with the explicit transport solution
-        divU*min(alphaLiquid_, scalar(1)) + liquidVolSource
+        //divU*min(alphaLiquid_, scalar(1)) + liquidVolSource
         //divU*pos(alphaLiquid_-0.5) + liquidVolSource // Weymouth 2010
-        //liquidVolSource
+        liquidVolSource
     );  
         
     MULES::explicitSolve
@@ -1923,12 +1976,14 @@ void Foam::PLICInterface::advect
         geometricOneField(),
         alphaLiquid_, 
         phi, 
-        phiAlpha_, 
+        phiAlphaLiquid_, 
         zeroField(), //Sp
         Su, //Su
         1,           //alphaMax
         0            //alphaMin
     );
+    
+    phiAlphaVapor_ = phi - phiAlphaLiquid_;
         
     Info<< "Liquid phase volume fraction pre-correct = "
         << "  Min(alpha) = " << min(alphaLiquid_).value()
