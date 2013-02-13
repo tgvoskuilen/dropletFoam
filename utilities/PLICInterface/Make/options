@@ -1,9 +1,0 @@
-EXE_INC = \
-    -I../geometryTools/lnInclude \
-    -I$(LIB_SRC)/finiteVolume/lnInclude
-
-LIB_LIBS = \
-    -L$(FOAM_USER_LIBBIN) \
-    -lfiniteVolume \
-    -lgeometryTools
-
