@@ -1,4 +1,0 @@
-cuttableCell.C
-cuttableFace.C
-
-LIB = $(FOAM_USER_LIBBIN)/libgeometryTools
