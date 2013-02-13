@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createDynamicFvMesh.H"
     #include "createFields.H"
+    #include "createPhi.H" //needed to do boundary corrections.
     
     // Set drop species and liquid fraction
     forAllIter(PtrDictionary<droplet>, droplets, dropI)
@@ -55,9 +56,11 @@ int main(int argc, char *argv[])
         dropI().set(alphaLiquid, U, species);
     }
     
+    alphaLiquid.correctBoundaryConditions();
+    
     // Set vapor fraction
     alphaVapor = 1.0 - alphaLiquid;
-    
+    alphaVapor.correctBoundaryConditions();
     
     // Set surrounding species
     forAll(species, i)
@@ -85,6 +88,7 @@ int main(int argc, char *argv[])
     forAll(species, j)
     {
         species[j].max(0.0);
+        species[j].correctBoundaryConditions();
     }
 	
 	runTime.writeNow();

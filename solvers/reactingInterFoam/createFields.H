@@ -54,6 +54,19 @@
         dimensionedScalar("refinementField",dimless,0)
     );
     
+    volScalarField divU
+    (
+        IOobject
+        (
+            "divU",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        fvc::div(phi)
+    );
+    
     volScalarField rho
     (
         IOobject

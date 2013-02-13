@@ -59,11 +59,18 @@ int main(int argc, char *argv[])
 
     pimpleControl pimple(mesh);
     //volScalarField divU(fvc::div(phi));
+    divU = fvc::div(phi);
 
-    //#include "correctPhi.H"
+    #include "correctPhi.H"
     #include "CourantNo.H"
     #include "setInitialDeltaT.H"
 
+    // ugly hack to deal with out-of-plane velocities in 2D simulations
+    // causing crashes
+    vector xvec(1,0,0);
+    volScalarField dxVec = mag(mesh.C() & xvec);
+    bool is2D = gMax(dxVec) < 2e-5;
+    
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
@@ -116,7 +123,7 @@ int main(int argc, char *argv[])
 
         {
             // Store divU from the previous mesh for correctPhi.H
-            //divU = fvc::div(phi);
+            divU = fvc::div(phi);
 
             //Identify regions near ANY interface or reaction zone
             refinementField = mixture.getRefinementField();
@@ -129,11 +136,14 @@ int main(int argc, char *argv[])
         {
             gh = g & mesh.C();
             ghf = g & mesh.Cf();
+            
+            //Update PLIC interface for new mesh
+            mixture.interface().update();
         }
 
         if (mesh.changing() && correctPhi)
         {
-            //#include "correctPhi.H"
+            #include "correctPhi.H"
         }
 
         if (mesh.changing() && checkMeshCourantNo)
@@ -143,15 +153,13 @@ int main(int argc, char *argv[])
         // END MESH ADAPTATION
 
 
-        //solve( fvm::ddt(rho) + fvc::div(phi) );
+        //solve( fvm::ddt(rho) + fvc::div(rhoPhi) );
  
         while (pimple.loop())
         {
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
             Info<<"Solving alpha transport equations"<<endl;
             mixture.solve( rho, phi );
-            //rhoEqn?
-            // PLICinterFoam does rho == alpha1*rhoL+(1-alpha1)*rhog
 
             dQ = combustion->dQ();
 
@@ -174,6 +182,7 @@ int main(int argc, char *argv[])
         #include "checkMassBalance.H"
 
         mixture.calculateRho(); // rho = alpha1*rho1(p,T,Ys) + alpha2*rho2(p,T,Ys)
+        mixture.calculateMu();
         rho = mixture.rho();
         
         

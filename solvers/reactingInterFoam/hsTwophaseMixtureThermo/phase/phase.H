@@ -77,7 +77,7 @@ class phase
         dictionary phaseDict_;
         
         //- Mass flux field for this phase
-        surfaceScalarField phi_;
+        surfaceScalarField rhoPhi_;
         
         //- Density field for this phase
         volScalarField rho_;
@@ -151,14 +151,14 @@ public:
             return subSpecies_;
         }
                 
-        surfaceScalarField& phi()
+        surfaceScalarField& rhoPhi()
         {
-            return phi_;
+            return rhoPhi_;
         }
         
-        const surfaceScalarField& phi() const
+        const surfaceScalarField& rhoPhi() const
         {
-            return phi_;
+            return rhoPhi_;
         }
         
         const volScalarField& mu() const
@@ -267,10 +267,13 @@ public:
         );
 
 
-        void setPhi(const surfaceScalarField& alphaf);
+        void setRhoPhi(const surfaceScalarField& alphaf, scalar fraction = 0.0);
 
         tmp<volScalarField> alphaCorr(const PLICInterface& i) const;
-
+        void updateRho
+        (
+            const PLICInterface& interface
+        );
 
         
         label numSmallAndEmptyCells(const PLICInterface& i) const;

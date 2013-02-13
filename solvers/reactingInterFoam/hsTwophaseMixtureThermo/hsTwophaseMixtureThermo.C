@@ -461,9 +461,12 @@ template<class MixtureType>
 Foam::tmp<Foam::volScalarField>
 Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
 {
+    // Refine ALL cells at the interface to the maximum level
     tmp<volScalarField> tRefinementField = interface_.getRefinementField();
 
-    forAll(this->Y(), i)
+
+    // Then enforce other, less-strict requirements in the rest of the domain
+    /*forAll(this->Y(), i)
     {
         const volScalarField& Yi = this->Y()[i];
         tRefinementField().internalField() = max
@@ -471,7 +474,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
             tRefinementField().internalField(), 
             mag(fvc::grad(Yi)) * Foam::pow(mesh_.V(),1.0/3.0)
         );
-    }
+    }*/
 
     //Include total volume source into refinement criteria
     /*tRefinementField().internalField() = max
@@ -505,8 +508,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateSurfaceTension()
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 (
-    volScalarField& rho,
-    const surfaceScalarField& phi
+    volScalarField& rho,          // <- global density field
+    const surfaceScalarField& phi // <- global volume flux field
 )
 {
     //Correct phases (correct liquid viscosity model)
@@ -531,58 +534,60 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     Info<< "Beginning alpha subcycle" << endl;
     if (nAlphaSubCycles > 1)
     {
-        //surfaceScalarField rhoPhiSum(0.0*rhoPhi_);
         dimensionedScalar totalDeltaT = runTime.deltaT();
-
+        
+        // In subcycling mode mass fluxes are zeroed and incremented
+        rhoPhi_ *= 0.0;
+        liquid_.rhoPhi() *= 0.0;
+        vapor_.rhoPhi() *= 0.0;
+        
         for
         (
             subCycle<volScalarField> alphaSubCycle(liquid_, nAlphaSubCycles);
             !(++alphaSubCycle).end();
         )
         {
-         /*   interface_.advect( liquid_.Sv_evap() );
-            
-            surfaceScalarField rhoVf(fvc::interpolate(vapor_.rho()));
-            surfaceScalarField rhoLf(fvc::interpolate(liquid_.rho()));
+            interface_.advect( liquid_.Sv_evap(), phi );
         
-            //TODO
-            //liquid_.phi() = phiAlphaL * rhoLf;
-            //vapor_.phi() = phi_*rhoVf - phiAlphaL * rhoVf;
-            rhoPhi_ = interface_.phiAlpha()*(rhoLf - rhoVf) + phi_*rhoVf;
+            //Update mass flux fields in each phase: phi = phiAlpha * rhof
+            scalar fraction = (runTime.deltaT().value()/totalDeltaT.value());
             
-            rhoPhiSum += (runTime.deltaT()/totalDeltaT)*rhoPhi_;*/
+            // Add the fractional mass fluxes to each phase
+            liquid_.setRhoPhi( interface_.phiAlphaLiquid(), fraction );
+            vapor_.setRhoPhi( interface_.phiAlphaVapor(), fraction );
+            
+            // total mass flux is the sum of the phase mass fluxes            
+            rhoPhi_ += vapor_.rhoPhi() + liquid_.rhoPhi();
         }
-
-        //rhoPhi_ = rhoPhiSum;
     }
     else
     {
         interface_.advect( liquid_.Sv_evap(), phi );
             
         //Update mass flux fields in each phase: phi = phiAlpha * rhof
-        liquid_.setPhi( interface_.phiAlphaLiquid() );
-        vapor_.setPhi( interface_.phiAlphaVapor() );    
+        liquid_.setRhoPhi( interface_.phiAlphaLiquid() );
+        vapor_.setRhoPhi( interface_.phiAlphaVapor() );    
         
-        rhoPhi_ = vapor_.phi() + liquid_.phi();  
+        // total mass flux is the sum of the phase mass fluxes
+        rhoPhi_ = vapor_.rhoPhi() + liquid_.rhoPhi();  
     }
 
     // Update phase densities to satisfy continuity
-    //liquid_.updateRho( interface_ );
-    //vapor_.updateRho( interface_ );
+    //   right now this just checks how far off they are, but does not change them
+    liquid_.updateRho( interface_ );
+    vapor_.updateRho( interface_ );
             
             
     
     
-    //update rho?
-    //rho == liquid_ * liquid_.rho() + vapor_*vapor_.rho();
-    
-    //or
-    
-    
+    //update global density field to satisfy continuity with new rhoPhi
     Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     
     Info<< "Min, max rho = " << Foam::gMin(rho) << ", "
         << Foam::gMax(rho) << endl;
+    
+    
+    
     
     //set interface and domain-related source terms
     //tmp<surfaceScalarField> tw = interface_.scTransferWeights();

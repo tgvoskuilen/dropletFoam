@@ -54,7 +54,7 @@
 
     dimensionedScalar rAUf("(1|A(U))", dimTime/dimDensity, 1.0);
 
-    adjustPhi(phi, U, pcorr);
+    //adjustPhi(phi, U, pcorr);
 
     //fvc::makeAbsolute(phi, U);
 

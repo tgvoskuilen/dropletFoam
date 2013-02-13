@@ -211,7 +211,7 @@ public:
       
        // tmp<volScalarField> AbydeltaV() const;
         
-        tmp<surfaceScalarField> stf() const;
+        tmp<surfaceScalarField> stf();
         
         tmp<volVectorField> shearVec
         (

@@ -141,11 +141,12 @@ private:
         //- Update the compressibility (psi_) based on current alphas, p, and T
         void calculatePsi();
 
-        //- Update the stored viscosity (mu_)
-        void calculateMu();
+
                 
 public:
-
+        //- Update the stored viscosity (mu_)
+        void calculateMu();
+        
     //- Runtime type information
     TypeName("hsTwophaseMixtureThermo");
 
@@ -246,6 +247,11 @@ public:
         
         // Multiphase specific methods
             const PLICInterface& interface() const
+            {
+                return interface_;
+            }
+            
+            PLICInterface& interface()
             {
                 return interface_;
             }

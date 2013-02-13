@@ -87,6 +87,8 @@
     
     PtrList<volScalarField> species(specieNames.size());
     
+    Info<< "Loading species " << specieNames << endl;
+    
     for(label i = 0; i < specieNames.size(); ++i)
     {
         //Follow basicMultiComponentMixture

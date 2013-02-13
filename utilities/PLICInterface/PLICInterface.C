@@ -425,6 +425,7 @@ void Foam::PLICInterface::update()
     // require the boundary to always be refined to the maximum level. It can
     // only unrefine when the boundary has moved away.
     
+    // Update alphaLiquid_ using point and normal inserted into children cells
     forAll(alphaLiquid_, cellI)
     {
         if (mag(iNormal_[cellI]) > SMALL && mag(iPoint_[cellI]) > SMALL)
@@ -436,10 +437,11 @@ void Foam::PLICInterface::update()
     }
     alphaLiquid_.correctBoundaryConditions();
     
+    //Then recalculate interface
     correct();
 }
 
-tmp<surfaceScalarField> Foam::PLICInterface::stf() const
+tmp<surfaceScalarField> Foam::PLICInterface::stf()
 {
     tmp<surfaceScalarField> tstf
     (
@@ -461,7 +463,7 @@ tmp<surfaceScalarField> Foam::PLICInterface::stf() const
     dimensionedScalar deltaN("deltaN", 1e-8/pow(average(mesh_.V()), 1.0/3.0));
 
     // Cell gradient of alpha
-    const volVectorField gradAlpha(fvc::grad(alphaLiquid_));
+    const volVectorField gradAlpha(fvc::grad(alphaLsmooth_));
 
     // Interpolated face-gradient of alpha
     surfaceVectorField gradAlphaf(fvc::interpolate(gradAlpha));
@@ -470,10 +472,10 @@ tmp<surfaceScalarField> Foam::PLICInterface::stf() const
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN));
 
     // Simple expression for curvature
-    volScalarField kappaI = -fvc::div(nHatfv & mesh_.Sf());
+    kappaI_ = -fvc::div(nHatfv & mesh_.Sf());
 
     tstf() = dimensionedScalar("sigma", dimPressure*dimLength, 0.07)
-     * fvc::interpolate(kappaI) * fvc::snGrad(alphaLiquid_);
+     * fvc::interpolate(kappaI_) * fvc::snGrad(alphaLsmooth_);
 
     return tstf;
 }
@@ -482,9 +484,9 @@ void Foam::PLICInterface::calculateInterfaceNormal()
 {    
     alphaLsmooth_ = alphaLiquid_;
     dimensionedScalar dx = pow(min(mesh_.V()), 1.0/3.0);
-    dimensionedScalar dA = dx*dx/4.0; //dTau("dTau",dimArea,dx*dx/4.0);
+    dimensionedScalar dA = dx*dx/20.0; //dTau("dTau",dimArea,dx*dx/4.0);
     
-    for(label i = 0; i < 2; i++)
+    for(label i = 0; i < 12; i++)
     {
         alphaLsmooth_ += dA * fvc::laplacian(alphaLsmooth_);
     }
@@ -1168,6 +1170,17 @@ void Foam::PLICInterface::calcAlphaf()
             // If we just use iNormal as a criteria, it can break, since
             //  iNormal can be incremented for cells with coincident boundaries
             //  while iPoint is left at its default (0,0,0)
+            //
+            //   +---------+
+            //   |\        |
+            //   | \   l   |
+            //   |g \      |
+            //   +---oooo==+ <- alphaf is the '=' region, so the 'ooo' area is
+            //   |      |  |    not included in any interface areas
+            //   |   g  | l|
+            //   |      |  |
+            //   +---------+
+            //
             if (mag(iNormal_[nei]) > SMALL && mag(iPoint_[nei]) > SMALL)
             {
                 Foam::plane p(iPoint_[nei], iNormal_[nei]);
@@ -1219,7 +1232,6 @@ void Foam::PLICInterface::calcAlphaf()
         // is the one that will be given the interface area
         else if (mag(alphaLiquid_[own] - alphaLiquid_[nei]) > 0.1)
         {
-
             alphaf_[faceI] = 0.0;
             
             //set iNormal and area
@@ -1786,10 +1798,12 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
     }
 
     //Loop through boundary patches to set phiAlpha at processor patches
-    // Assume that the nominal treatment of phiAlpha at boundary patches is ok
-    // for now.
+    // Assume that the nominal treatment of phiAlpha at non-processor
+    // boundary patches is ok for now. This treats the inflow and outflow
+    // boundaries as if the normal is perpendicular to the face for all
+    // cases (SLIC approximation at the boundary).
 
-    const volScalarField::GeometricBoundaryField& alphaBf = alphaLiquid_.boundaryField();
+    const volScalarField::GeometricBoundaryField& alphaLBf = alphaLiquid_.boundaryField();
     const volVectorField::GeometricBoundaryField& iPointBf = iPoint_.boundaryField();
     const volVectorField::GeometricBoundaryField& iNormalBf = iNormal_.boundaryField();
 
@@ -1798,62 +1812,71 @@ Foam::tmp<surfaceScalarField> Foam::PLICInterface::phiAlphaFrac() const
 
     forAll(phiAlphaFracBf, patchI)
     {
-        const fvPatchScalarField& alphaPf = alphaBf[patchI];
+        const fvPatchScalarField& alphaLPf = alphaLBf[patchI];
         const fvPatchVectorField& iPointPf = iPointBf[patchI];
         const fvPatchVectorField& iNormalPf = iNormalBf[patchI];
 
         const vectorField& UfPf = UfBf[patchI];
         scalarField& phiAlphaFracPf = phiAlphaFracBf[patchI];
 
-        const labelList& pFaceCells = mesh_.boundary()[patchI].faceCells();
-
-        if (alphaPf.coupled()) //returns true if a parallel or cyclic patch
+        if (alphaLPf.coupled()) //returns true if a parallel or cyclic patch
         {
-            // Get point and normal field values across parallel patch
+            // Get point, normal, and alphaL field values across parallel patch
             const vectorField iPointPNf(iPointPf.patchNeighbourField());
             const vectorField iNormalPNf(iNormalPf.patchNeighbourField());
+            const scalarField alphaLPNf(alphaLPf.patchNeighbourField());
 
-            forAll(phiAlphaFracPf, pFaceI)
+            const fvPatch& meshPf = mesh_.boundary()[patchI];
+            const labelList& pFaceCells = meshPf.faceCells();
+
+            forAll(phiAlphaFracPf, pFaceI) //loop over faces in this patch
             {
+                // ID of the cell in this mesh adjacent to this face
                 label pfCellI = pFaceCells[pFaceI];
 
-                //TODO Switch to upwind later
+                // Figure out which cell is upwind of this face
+                vector vfO = cellCenters[pfCellI] - meshPf.Cf()[pFaceI];
+                
+                // Assume it's the cell on this processor and store it's
+                //  point and normal
+                vector uwNorm = iNormal_[pfCellI];
+                point uwPoint = iPoint_[pfCellI];
+                bool ownsUpwind = true;
+                
+                // Check if that assumption is actually true
+                if ((vfO & UfPf[pFaceI]) < 0.0)
+                {
+                    ownsUpwind = false;
+                    uwNorm = iNormalPNf[pFaceI];
+                    uwPoint = iPointPNf[pFaceI];
+                }
+                
+                // The other option here is to project both planes and take
+                // the average, or use some sort of higher order scheme.
 
-                if ((iNormal_[pfCellI] != vector::zero || iNormalPNf[pFaceI] != vector::zero)
-                    && mag(UfPf[pFaceI] & alphaPf.patch().Sf()[pFaceI]) > SMALL)
+                if (mag(uwNorm) > SMALL 
+                    && mag(UfPf[pFaceI] & meshPf.Sf()[pFaceI]) > SMALL)
                 {
                     //patch face starting IDs in mesh.faces()
-                    label patchFs = alphaPf.patch().start();
+                    label patchFs = alphaLPf.patch().start();
 
                     // Make a cuttable cell by extruding face in direction -Uf*dT
                     cuttableCell pf(mesh_, patchFs+pFaceI, -UfPf[pFaceI]*dT);
-
-                    scalar cutSum = 0.0;
-                    label nCuts = 0;
-
-                    if (iNormal_[pfCellI] != vector::zero && iPoint_[pfCellI] != vector::zero)
-                    {
-                        // Cut the polyhedron by the reconstructed interface plane in cell on this proc
-                        cutSum += pf.cut( plane(iPoint_[pfCellI], iNormal_[pfCellI]) );
-                        nCuts++;
-                    }
-
-                    if (iNormalPNf[pFaceI] != vector::zero && iPointPNf[pFaceI] != vector::zero)
-                    {
-                        // Cut the polyhedron by the reconstructed interface plane in cell on neighbour proc
-                        cutSum += pf.cut( plane(iPointPNf[pFaceI], iNormalPNf[pFaceI]) );
-                        nCuts++;
-                    }
-
-                    phiAlphaFracPf[pFaceI] = cutSum / nCuts;            
+                    
+                    // Cut the extruded face by the interface plane in the
+                    // upwind cell
+                    phiAlphaFracPf[pFaceI] = pf.cut( plane(uwPoint, uwNorm) );             
                 }
-                else if (mag(UfPf[pFaceI] & alphaPf.patch().Sf()[pFaceI]) <= SMALL)
-                {
+                else if (mag(UfPf[pFaceI] & meshPf.Sf()[pFaceI]) <= SMALL)
+                { // flux is zero anyway, flux polygon has zero volume
                     phiAlphaFracPf[pFaceI] = 0.0;
                 }
-
-                //TODO do upwindy here
-
+                
+                else if (mag(alphaLiquid_[pfCellI] - alphaLPNf[pFaceI]) > 0.1)
+                { //interface coincident with cell boundary
+                    phiAlphaFracPf[pFaceI] = (ownsUpwind) ? alphaLiquid_[pfCellI]
+                                                          : alphaLPNf[pFaceI];
+                }
             }
 
         }
@@ -1951,6 +1974,7 @@ void Foam::PLICInterface::advect
         1,           //alphaMax
         0            //alphaMin
     );
+    
     
     phiAlphaVapor_ = phi - phiAlphaLiquid_;
         

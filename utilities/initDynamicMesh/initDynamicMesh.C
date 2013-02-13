@@ -82,6 +82,15 @@ int main(int argc, char *argv[])
         ),
         mesh
     );
+    
+    //relax alphaVapor a little bit
+    /*dimensionedScalar dx = pow(min(mesh.V()), 1.0/3.0);
+    dimensionedScalar dA = dx*dx/4.0; //dTau("dTau",dimArea,dx*dx/4.0);
+    
+    for(label i = 0; i < 1; i++)
+    {
+        alphaVapor += dA * fvc::laplacian(alphaVapor);
+    }*/
 
 
     volScalarField refinementField
@@ -94,9 +103,9 @@ int main(int argc, char *argv[])
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-        mag(fvc::grad(alphaVapor))
+        1e6*mag(fvc::grad(alphaVapor))
     );
-    refinementField.internalField() *= pow(mesh.V(),1.0/3.0);
+    //refinementField.internalField() *= pow(mesh.V(),1.0/3.0);
 
     runTime.setDeltaT(1e-6);
     runTime++;
@@ -108,8 +117,7 @@ int main(int argc, char *argv[])
 	{
 		mesh.update();
 
-        refinementField.internalField() = mag(fvc::grad(alphaVapor))
-             * pow(mesh.V(),1.0/3.0);
+        refinementField = 1e6*mag(fvc::grad(alphaVapor));
         mesh.update();
 	}
 	

@@ -1,0 +1,84 @@
+#!/usr/bin/python
+
+import os
+import sys
+
+sys.path.append('../../python')
+import pyOpenFOAM
+
+# The inputs for this case builder are
+#    chemkin/chem.inp   -   Reaction information and species list
+#    chemkin/therm.dat  -   Thermodynamic database for species
+#    chemkin/properties.db  -  Transport property database for species
+#
+
+
+
+# Read number of processors from command line (1 by default)
+np = pyOpenFOAM.read_inputs(sys.argv)
+print "Running with %d processors" % np
+
+# Convert the chemkin files to Foam format
+#pyOpenFOAM.run('chemkinToFoam',args='chemkin/chem.inp chemkin/therm.dat constant/reactions constant/thermo');
+
+# Read species list from 'constant/reactions'
+#species = pyOpenFOAM.read_species()
+
+# Make 0 directory for this species list
+#pyOpenFOAM.make_zero_dir(species, default='N2')
+
+# Generate the transportProperties dict
+#pyOpenFOAM.make_transport_properties(species)
+
+# Make the *.foam file for ParaView
+pyOpenFOAM.touch_foam_files('plic')
+
+os.system('cp -r 0.org 0')
+
+# Generate the initial mesh
+print "Generating blockMesh"
+pyOpenFOAM.run('blockMesh')
+
+# Decompose parallel problems
+if np > 1:
+    # For parallel runs, decompose the problem
+    print "Decomposing problem"
+    #pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+    pyOpenFOAM.run('decomposePar',args='-cellDist')
+    for p in range(0,np):
+        os.system('cp -r processor%1d/0 processor%1d/0.org' % (p, p) )  
+    
+
+# Should be greater than max mesh refinement level set in dynamicMeshDict
+n_adapts = 3
+
+                
+for i in range(0,n_adapts):
+    print "Pre-Refinement loop", i
+    pyOpenFOAM.run('VOFSetFields',np)
+    pyOpenFOAM.run('initDynamicMesh',np)
+    if np > 1:
+        lasttime = pyOpenFOAM.get_sorted_time_folders(True).pop()
+        for p in range(0,np):
+            proc_folder = "processor"+str(p)
+            #os.system('rm '+proc_folder+'/'+lasttime+'/alphaVapor*')
+            os.system('cp '+proc_folder+'/0.org/* '+proc_folder+'/'+lasttime+'/')
+    else:
+        lasttime = pyOpenFOAM.get_sorted_time_folders(False).pop()
+        # folder now has alphaVapor.gz. When we copy 0.org into it, then it
+        # will have alphaVapor and alphaVapor.gz, so we have to delete it
+        # first
+        os.system('rm '+lasttime+'/alphaVapor*')
+        os.system('cp 0.org/* '+lasttime+'/')
+
+print "Post-refinment final problem setup"
+pyOpenFOAM.run('VOFSetFields',np)
+
+
+print "Running the problem"
+pyOpenFOAM.run('reactingInterFoam',np,hide=False)
+
+
+print "Finished!"
+
+

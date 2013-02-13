@@ -52,18 +52,18 @@ Foam::phase::phase
     ),
     name_(name),
     phaseDict_(phaseDict),
-    phi_
+    rhoPhi_
     (
         IOobject
         (
-            "phi"+name,
+            "rhoPhi"+name,
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
         mesh,
-        dimensionedScalar("phi"+name, dimMass/dimTime, 0.0)
+        dimensionedScalar("rhoPhi"+name, dimMass/dimTime, 0.0)
     ),
     rho_
     (
@@ -232,12 +232,21 @@ Foam::tmp<Foam::volVectorField> Foam::phase::U_Su
 
 
 
-void Foam::phase::setPhi( const surfaceScalarField& phiAlpha )
+void Foam::phase::setRhoPhi
+(
+    const surfaceScalarField& phiAlpha,
+    scalar fraction
+)
 {
     //TODO: Correct interpolation near interface
-    //phi_ = (fvc::interpolate(rho_ * U_) * alphaf) & mesh().Sf();
-    
-    phi_ = phiAlpha * fvc::interpolate(rho_);
+    if( fraction > SMALL )
+    {
+        rhoPhi_ += fraction * phiAlpha * fvc::interpolate(rho_);
+    }
+    else
+    {
+        rhoPhi_ = phiAlpha * fvc::interpolate(rho_);
+    }
 }
 
 
@@ -307,28 +316,28 @@ void Foam::phase::calcFixedRhoValues
 }
 */
 
-/*
+
 void Foam::phase::updateRho
 (
     const PLICInterface& interface
 )
 {
-    Info<< "Min, max rho" << name_ << "= " << Foam::gMin(rho_) << ", "
-        << Foam::gMax(rho_) << endl;
+    const volScalarField& alpha = *this;
+    Info<< "Max rhoErr" << name_ << " = " 
+        << Foam::max(Foam::mag(fvc::ddt(alpha,rho_) + fvc::div(rhoPhi_)))
+        << endl;
+
+/*
+    volScalarField rhoTmp = rho_;
     
-    Foam::solve
-    (
-        fvm::ddt(alphaCorr(interface), rho_)
-      + fvc::div(phi_)
-      - rho_Su(interface)
-      + fvm::Sp( rho_Sp(interface), rho_ ),
-      mesh().solverDict("rho")
-    );
+    Foam::solve( fvm::ddt(alpha,rhoTmp) + fvc::div(rhoPhi_), mesh().solverDict("rho") );
     
-    Info<< "Min, max rho" << name_ << "= " << Foam::gMin(rho_) << ", "
-        << Foam::gMax(rho_) << endl;
-}
+    Info<< "Min,max rhoTmp" << name_ << " = " 
+        << Foam::min(rhoTmp).value() << ", " << Foam::max(rhoTmp).value() <<
+        << endl;
 */
+}
+
 /*
 Foam::tmp<Foam::volScalarField> Foam::phase::rho_Sp
 (
