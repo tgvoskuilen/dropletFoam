@@ -24,7 +24,7 @@ foamChemistryFile "$FOAM_CASE/constant/reactions";
 foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
 // No mass diffusion before this time to let the phase interfaces relax
-relaxTime  5e-6;
+relaxTime  1e-5;
 
 Vapor
 {
@@ -80,19 +80,29 @@ Liquid
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
             sigmaa          0.884;
                
-            evaporationModel HertzKnudsenPressure;
+            evaporationModel HertzKnudsenTemperature;
             
             HertzKnudsenPressureCoeffs
             {
-               vapor           CH3NHNH2;
-               Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
-               Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
-               La              0.38;
-               betaM           0.03;
+                vapor           CH3NHNH2;
+                Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
+                Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
+                La              0.38;
+                betaM           0.03;
 
-               Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
-               Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
-               PvCoeffs        (9.1834 1943.89 492587.8);
+                Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
+                Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
+                PvCoeffs        (9.1834 1943.89 492587.8);
+            }
+            
+            HertzKnudsenTemperatureCoeffs
+            {
+                vapor           CH3NHNH2;
+                Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
+                Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
+                Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
+                La              0.38;
+                betaM           0.03;
             }
         }
         
@@ -108,19 +118,29 @@ Liquid
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
             sigmaa          0.745;
               
-            evaporationModel HertzKnudsenPressure;
+            evaporationModel HertzKnudsenTemperature;
              
             HertzKnudsenPressureCoeffs
             {
-                 vapor           N2O4;
-                 Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
-                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
-                 La              0.38;
-                 betaM           0.03;
+                vapor           N2O4;
+                Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
+                Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
+                La              0.38;
+                betaM           0.03;
 
-                 Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
-                 Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
-                 PvCoeffs        (16.1 5400.115 -194831.8);
+                Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
+                Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
+                PvCoeffs        (16.1 5400.115 -194831.8);
+            }
+            
+            HertzKnudsenTemperatureCoeffs
+            {
+                vapor           N2O4;
+                Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
+                Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
+                Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
+                La              0.38;
+                betaM           0.03;
             }
          }
          

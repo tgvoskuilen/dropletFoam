@@ -94,8 +94,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateMu()
 {    
-    alphaVapor_.correct();
-    alphaLiquid_.correct();
+    alphaVapor_.correct(p_,T_);
+    alphaLiquid_.correct(p_,T_);
     
     mu_ = alphaVapor_ * muV() + 
             alphaLiquid_ * alphaLiquid_.mu(p_, T_);
@@ -309,7 +309,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             );
         }
     }
-    
+
     calculateRho();
     rho_.oldTime();   
     
@@ -318,6 +318,9 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     setHs(T_);
 
     calculate();
+    
+    alphaVapor_.setSpecies( rho_ );
+    alphaLiquid_.setSpecies( rho_ );
 }
 
 
@@ -660,7 +663,7 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     calculateAlphaVapor();
 
     //Correct phases (correct liquid viscosity model)
-    alphaLiquid_.correct();
+    //alphaLiquid_.correct();
 
     //Solve for reaction rates
     Info<< "Solving combustion" << endl;
@@ -714,14 +717,14 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     tmp<volVectorField> ucL = alphaLiquid_.calculateDs
     (
         0.95, 
-        mesh_.time().time().value() > phaseRelaxTime_, 
+        false, //mesh_.time().time().value() > phaseRelaxTime_, 
         combustionPtr_->turbulence()
     );
     
     tmp<volVectorField> ucV = alphaVapor_.calculateDs
     (
         0.95, 
-        mesh_.time().time().value() > phaseRelaxTime_, 
+        false, //mesh_.time().time().value() > phaseRelaxTime_, 
         combustionPtr_->turbulence()
     );
     
@@ -851,7 +854,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 
         surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
         surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
-
+        
         alphaLiquid_.rhoPhiAlpha() = phiAlphaL * rhoLf;
         alphaVapor_.rhoPhiAlpha() = phi_*rhoVf - phiAlphaL * rhoVf;
 

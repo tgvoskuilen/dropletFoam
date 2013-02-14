@@ -65,6 +65,19 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("rhoPhiAlpha"+name, dimMass/dimTime, 0.0)
     ),
+    rho_
+    (
+        IOobject
+        (
+            "rho_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("rho_"+name, dimDensity, 1.0)
+    ),
     combustionPtr_(NULL),
     species_(species),
     speciesData_(speciesData),
@@ -87,7 +100,8 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
     )
-{
+{  
+    rho_.oldTime();  
     if( phaseDict_.found("SchmidtNo") )
     {
         Sc_ = readScalar(phaseDict_.lookup("SchmidtNo"));
@@ -103,6 +117,15 @@ Foam::autoPtr<Foam::phase> Foam::phase::clone() const
 {
     notImplemented("phase::clone() const");
     return autoPtr<phase>(NULL);
+}
+
+void Foam::phase::setSpecies( const volScalarField& rhoTotal )
+{
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {   
+        specieI().Yp() = specieI().Y() / (Yp() + SMALL);
+        specieI().Yp().oldTime();
+    }
 }
 
 // Only applicable for liquid phase. Vapor phase will return 0 here.
@@ -160,8 +183,15 @@ void Foam::phase::setCombustionPtr
 }
 
 
-void Foam::phase::correct()
+void Foam::phase::correct(const volScalarField& p, const volScalarField& T)
 {
+    rho_ = rho(p,T);
+    
+    
+    Info<< "Min,max rho "<<name_<<" = " << Foam::min(rho_).value() << ", " 
+        << Foam::max(rho_).value() << endl;
+        
+    
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
         specieI().correct();
@@ -463,7 +493,7 @@ Foam::tmp<volScalarField> Foam::phase::rho
                     mesh()
                 ),
                 mesh(),
-                dimensionedScalar("den", dimless/dimDensity, SMALL)
+                dimensionedScalar("den", dimless/dimDensity, VSMALL)
             )
         );
         
@@ -471,8 +501,8 @@ Foam::tmp<volScalarField> Foam::phase::rho
         {
             den() += specieI().Y() / specieI().rho0();
         }
-        
-        return Yp() / den;
+        dimensionedScalar rhoBase("rhoBase",dimDensity,1000);
+        return pos(Yp()-1e-6-VSMALL)* (Yp() / den) + neg(Yp()-1e-6)*rhoBase;
     }
 }
 
@@ -742,6 +772,41 @@ scalar Foam::phase::solveSubSpecies
         <<" subspecie(s) for phase: " 
         << name_ << endl;
         
+    // Test evaluate continuity-satisfying phase density
+    //  subspecies store phase-specific Ys?
+    //volScalarField rhoTmp = rho_;
+    
+    Info<< "Min,max rho = " << Foam::min(rho_).value() << ", " 
+        << Foam::max(rho_).value() << endl;
+        
+    const volScalarField& alpha = *this;
+    tmp<surfaceScalarField> maskf = pos(fvc::interpolate(alpha) - 0.1);
+    /*tmp<volScalarField> maskc = pos(fvc::surfaceSum(maskf()) - SMALL)*pos(alpha-1e-4);
+    
+    dimensionedScalar rDT = 1.0/mesh().time().deltaT();
+    dimensionedScalar rhoff("rhoff",dimDensity,1);
+    
+    Foam::solve
+    (
+        fvm::ddt(alpha*maskc(),rho_)
+      + fvc::div(rhoPhiAlpha_*maskf())
+      - (1-maskc())*rDT*rhoff
+      + fvm::Sp((1-maskc())*rDT,rho_),
+        mesh().solverDict("rho")
+    );*/
+    
+    Foam::solve
+    (
+        fvm::ddt(rho_) + fvc::div(rhoPhiAlpha_),
+        mesh().solverDict("rho")
+    );
+    
+    Info<< "Min,max rho = " << Foam::min(rho_).value() << ", " 
+        << Foam::max(rho_).value() << endl;
+        
+        
+        
+        
     // Save Yp so it is constant throughout subspecie solving
     tmp<volScalarField> Yp0 = Yp()+SMALL;
     
@@ -773,6 +838,7 @@ scalar Foam::phase::solveSubSpecies
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
     }
     
+    /*
     Yp0 = Yp() + SMALL;
     tmp<volScalarField> YpMax = rho(p,T)/rhoTotal*sharp(0.0001);
     tmp<volScalarField> factor = YpMax / Yp0;
@@ -793,6 +859,7 @@ scalar Foam::phase::solveSubSpecies
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
 	  	
     }
+    */
     
     return MaxFo;
 }

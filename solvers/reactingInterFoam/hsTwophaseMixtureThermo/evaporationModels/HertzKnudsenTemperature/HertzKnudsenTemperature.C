@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "HertzKnudsenPressure.H"
+#include "HertzKnudsenTemperature.H"
 #include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -32,13 +32,13 @@ namespace Foam
 {
 namespace evaporationModels
 {
-    defineTypeNameAndDebug(HertzKnudsenPressure, 0);
-    addToRunTimeSelectionTable(evaporationModel, HertzKnudsenPressure, components);
+    defineTypeNameAndDebug(HertzKnudsenTemperature, 0);
+    addToRunTimeSelectionTable(evaporationModel, HertzKnudsenTemperature, components);
 }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
+Foam::evaporationModels::HertzKnudsenTemperature::HertzKnudsenTemperature
 (
     dictionary specieDict,
     const volScalarField& p,
@@ -48,69 +48,23 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
 )
 :
     evaporationModel(typeName, specieDict, p, T, alphaL, alphaV),
-    x_
-    (
-        IOobject
-        (
-            "x_" + vapor_specie_,
-            alphaL.mesh().time().timeName(),
-            alphaL.mesh(),
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        alphaL.mesh(),
-        dimensionedScalar("x",dimless,0.0)
-    ),
-    p_vap_
-    (
-        IOobject
-        (
-            "p_vap_" + vapor_specie_,
-            alphaL.mesh().time().timeName(),
-            alphaL.mesh(),
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        alphaL.mesh(),
-        dimensionedScalar("pv",dimPressure,0.0)
-    ),
-    Pc_(evapDict_.lookup("Pc")),
-    PvCoeffs_(evapDict_.lookup("PvCoeffs")),
     betaM_(readScalar(evapDict_.lookup("betaM")))
 {
 }
     
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-void Foam::evaporationModels::HertzKnudsenPressure::calculate
+void Foam::evaporationModels::HertzKnudsenTemperature::calculate
 (
     const volScalarField& evapMask
 )
 {
     setMask( evapMask );
-    
-    //Calculate the vapor pressure
-    dimensionedScalar p0("p0",dimPressure,101325);
-    
-    p_vap_ = p0*exp
-     (
-        (-Lb_/R_*(1.0/T_ - 1.0/Tb_))*neg(T_ - Tb_)
-
-      + (
-           PvCoeffs_[0]
-         - dimensionedScalar("B",dimTemperature,PvCoeffs_[1])/T_
-         - dimensionedScalar("C",dimTemperature*dimTemperature,PvCoeffs_[2])
-         / (T_*T_)
-        )*pos(T_ - Tb_)
-     );
-    
-    p_vap_.min(Pc_);
-                              
-    //Calculate the vapor mol fraction
-    x_ = alphaV_.Y(vapor_specie_) / (W_ * alphaV_.Np()); // * mask_;
-    
+        
     scalar pi = constant::mathematical::pi;
+    tmp<volScalarField> rhoV = p_*W_/(R_*T_);
     
-    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_*T_)) * (p_vap_ - p_*x_);
+    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_))
+              * L()*rhoV*(T_ - Tb_)/Foam::pow(Tb_,1.5);
     m_evap_.max(0.0);
     
     Foam::Info << "Min,max evaporation source for " << vapor_specie_ << " = "

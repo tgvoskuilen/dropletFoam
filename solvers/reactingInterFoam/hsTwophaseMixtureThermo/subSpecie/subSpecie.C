@@ -41,6 +41,7 @@ Foam::subSpecie::subSpecie
     name_(name),
     subSpecieDict_(subSpecieDict),
     Y_(specie),
+    Yp_(specie),
     thermo_(specieData),
     idx_(idx),
     rho0_(subSpecieDict.lookupOrDefault("rho0",dimensionedScalar("rho0",dimDensity,0.0))),

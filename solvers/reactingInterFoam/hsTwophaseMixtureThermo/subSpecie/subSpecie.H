@@ -83,6 +83,8 @@ class subSpecie
         //- Mass fraction of this subspecie
         volScalarField& Y_;
         
+        volScalarField Yp_;
+        
         //- Thermo properties of this subspecie
         const gasThermoPhysics& thermo_;
         
@@ -221,6 +223,16 @@ public:
         volScalarField& Y()
         {
             return Y_;
+        }
+        
+        const volScalarField& Yp() const
+        {
+            return Yp_;
+        }
+                
+        volScalarField& Yp()
+        {
+            return Yp_;
         }
                 
         bool hasNuModel() const

@@ -117,6 +117,12 @@ tmp<volScalarField> Foam::evaporationModel::L() const
     return tL;
 }
 
+void Foam::evaporationModel::setMask(const volScalarField& evapMask)
+{
+    mask_ = (evapMask * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9))
+     * pos(alphaV_.Yp() - 1e-3);  
+}
+
 tmp<volScalarField> Foam::evaporationModel::Sh() const
 {
     return -L() * m_evap_;
@@ -125,7 +131,9 @@ tmp<volScalarField> Foam::evaporationModel::Sh() const
 tmp<volScalarField> Foam::evaporationModel::area() const
 {
     const volScalarField& YL = alphaL_.Y(vapor_specie_+"L");
-    return Foam::mag(fvc::grad(YL)) * mask_;
+    
+    // The mask excludes areas where two liquids have begun to coalesce
+    return Foam::mag(fvc::grad(alphaL_)) * pos(YL - SMALL) * mask_;
 }
 
 

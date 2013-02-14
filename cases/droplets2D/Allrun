@@ -3,7 +3,7 @@
 import os
 import sys
 
-sys.path.append('../../python')
+sys.path.append('../../../foamTools/python')
 import pyOpenFOAM
 
 # The inputs for this case builder are
@@ -39,7 +39,7 @@ os.system('cp -r 0.org 0')
 print "Generating blockMesh"
 pyOpenFOAM.run('blockMesh')
 
-for i in range(0,2):
+for i in range(0,3):
     print "Pre-Refinement loop", i
     pyOpenFOAM.run('VOFSetFields')
     pyOpenFOAM.run('initDynamicMesh')

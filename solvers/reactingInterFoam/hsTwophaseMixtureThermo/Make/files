@@ -3,7 +3,7 @@ phase/phase.C
 evaporationModels/evaporationModel/evaporationModel.C
 evaporationModels/evaporationModel/newEvaporationModel.C
 evaporationModels/HertzKnudsenPressure/HertzKnudsenPressure.C
-
+evaporationModels/HertzKnudsenTemperature/HertzKnudsenTemperature.C
 
 hsNewReactionThermos.C
 

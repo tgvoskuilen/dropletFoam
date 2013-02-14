@@ -77,6 +77,8 @@ class phase
         //- Volume flux field for this phase
         surfaceScalarField rhoPhiAlpha_;
         
+        volScalarField rho_;
+        
         //- Pointer to the top-level combustion model
         const combustionModels::rhoChemistryCombustionModel* combustionPtr_;
 
@@ -187,7 +189,7 @@ public:
         tmp<volScalarField> Cv(const volScalarField& T) const;
                 
         //- Correct the phase properties
-        void correct();
+        void correct(const volScalarField& p, const volScalarField& T);
         
         //- Read base transportProperties dictionary
         bool read(const dictionary& phaseDict);
@@ -196,6 +198,8 @@ public:
         (
             combustionModels::rhoChemistryCombustionModel* combustion
         );
+        
+        void setSpecies(const volScalarField& rho);
         
         volScalarField& Y(const word& specie);
         

@@ -164,13 +164,15 @@ public:
         ) = 0;
         
         //- Calculate enthalpy source due to evaporation
-        tmp<volScalarField> Sh() const;
+        virtual tmp<volScalarField> Sh() const;
         
         //- Calculate latent heat of vaporization (function of T)
-        tmp<volScalarField> L() const;
+        virtual tmp<volScalarField> L() const;
         
         //- Calculate interface area/volume
-        tmp<volScalarField> area() const;
+        virtual tmp<volScalarField> area() const;
+        
+        void setMask(const volScalarField& evapMask);
 
 };
 
