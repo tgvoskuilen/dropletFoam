@@ -19,7 +19,7 @@ np = pyOpenFOAM.read_inputs(sys.argv)
 print "Running with %d processors" % np
 
 # Convert the chemkin files to Foam format
-pyOpenFOAM.run('chemkinToFoam',args='chemkin/chem.inp chemkin/therm.dat constant/reactions constant/thermo');
+# pyOpenFOAM.run('chemkinToFoam',args='chemkin/chem.inp chemkin/therm.dat constant/reactions constant/thermo');
 
 # Read species list from 'constant/reactions'
 #species = pyOpenFOAM.read_species()

@@ -35,28 +35,7 @@ Vapor
        CH3NHNH2 {}
        N2O4     {}
        NO2      {}
-       H2       {}
-       CH3NNH2  {}
-       CH3NNH   {}
-       HONO     {}
-       CH3NN    {}
        N2       {}
-       O2       {}
-       H        {}
-       H2O      {}
-       CO2      {}
-       CO       {}
-       NO       {}
-       OH       {}
-       O        {}
-       HO2      {}
-       CH3O     {}
-       CH3      {}
-       CH2O     {}
-       CH3OH    {}
-       HCO      {}
-       HNO      {}
-       HNO3     {}
    );
 }
 
@@ -102,7 +81,7 @@ Liquid
                 Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
                 Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
                 La              0.38;
-                betaM           0.03;
+                betaM           0.0;
             }
         }
         
@@ -140,7 +119,7 @@ Liquid
                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
                 Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
                 La              0.38;
-                betaM           0.03;
+                betaM           0.0;
             }
          }
          

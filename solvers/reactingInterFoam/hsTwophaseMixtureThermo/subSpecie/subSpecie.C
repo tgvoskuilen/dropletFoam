@@ -41,7 +41,18 @@ Foam::subSpecie::subSpecie
     name_(name),
     subSpecieDict_(subSpecieDict),
     Y_(specie),
-    Yp_(specie),
+    Yp_
+    (
+        IOobject
+        (
+            "Yp_" + name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        specie
+    ),
     thermo_(specieData),
     idx_(idx),
     rho0_(subSpecieDict.lookupOrDefault("rho0",dimensionedScalar("rho0",dimDensity,0.0))),

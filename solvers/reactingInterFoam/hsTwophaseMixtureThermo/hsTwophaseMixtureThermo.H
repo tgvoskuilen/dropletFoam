@@ -117,6 +117,8 @@ private:
         
         //- Surface tension
         volScalarField sigma_;
+        
+        volScalarField divPhiL_;
                 
         //- Evaporation mask to stop evaporation at diffuse liquid interfaces
         volScalarField evap_mask_;

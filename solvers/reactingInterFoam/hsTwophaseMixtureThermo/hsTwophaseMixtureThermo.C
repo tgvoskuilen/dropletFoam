@@ -251,6 +251,19 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0),
         zeroGradientFvPatchScalarField::typeName
     ),
+    divPhiL_
+    (
+        IOobject
+        (
+            "divPhiL",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("divPhiL", dimVolume/dimTime, 0.0)
+    ),
     evap_mask_
     (
         IOobject
@@ -661,7 +674,7 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 )
 {
     calculateAlphaVapor();
-
+    
     //Correct phases (correct liquid viscosity model)
     //alphaLiquid_.correct();
 
@@ -747,6 +760,10 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     scalar FoLiq = alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
     scalar FoVap = alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
 
+
+    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
+    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
+    
     scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     
     // Calculate Ysum
@@ -844,6 +861,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         );
         
         alphaLiquid_.max(0.0);
+        
+        divPhiL_ = fvc::average(Foam::mag(phi_ - phiAlphaL));
         
         // WARNING:
         //   This solution provides a rho and rhoPhi pair that do not satisfy

@@ -78,6 +78,7 @@ class phase
         surfaceScalarField rhoPhiAlpha_;
         
         volScalarField rho_;
+        volScalarField rhoAlpha_;
         
         //- Pointer to the top-level combustion model
         const combustionModels::rhoChemistryCombustionModel* combustionPtr_;
@@ -151,6 +152,11 @@ public:
         const surfaceScalarField& rhoPhiAlpha() const
         {
             return rhoPhiAlpha_;
+        }
+                
+        const volScalarField& rhoAlpha() const
+        {
+            return rhoAlpha_;
         }
 
         //- Return the phase density
@@ -248,6 +254,8 @@ public:
             const volVectorField& uc,
             const tmp<fv::convectionScheme<scalar> >& mvConvection
         );
+        
+        void updateGlobalYs(const volScalarField& rhoE);
 
 };
 
