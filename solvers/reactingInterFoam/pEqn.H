@@ -1,8 +1,9 @@
 {
     const volScalarField& alphaV = mixture.alphaVapor();
+    rho = thermo.rho();
     
     // First part of density update, only changes compressible regions
-    rho = thermo.rho();
+    //  since psi is psiV*alphaV and is zero in the liquid regions
     thermo.rho() -= thermo.psi() * p;
     
     volScalarField rAU(1.0/UEqn.A());

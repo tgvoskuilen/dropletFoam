@@ -24,7 +24,7 @@ foamChemistryFile "$FOAM_CASE/constant/reactions";
 foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
 // No mass diffusion before this time to let the phase interfaces relax
-relaxTime  1e-5;
+phaseMaskTol 0.001;
 
 Vapor
 {

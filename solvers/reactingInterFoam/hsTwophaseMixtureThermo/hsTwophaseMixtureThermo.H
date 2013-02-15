@@ -109,7 +109,7 @@ private:
         //- Velocity field
         const volVectorField& U_;
                 
-        //- Sharpened vapor fraction (for calculating curvature)
+        //- Sharpened vapor fraction (for calculating curvature kappaI)
         volScalarField alphaVaporSharp_;
         
         //- Curvature
@@ -117,19 +117,21 @@ private:
         
         //- Surface tension
         volScalarField sigma_;
-        
-        volScalarField divPhiL_;
                 
         //- Evaporation mask to stop evaporation at diffuse liquid interfaces
         volScalarField evap_mask_;
         
         //- Sum of all mass fractions
         volScalarField YSum_;
+        
+        volScalarField muE_;
 
         //- Stabilisation for normalisation of the interface normal
         const dimensionedScalar deltaN_;
         
         scalar phaseRelaxTime_;
+        
+        scalar phaseMaskTol_;
         
         multivariateSurfaceInterpolationScheme<scalar>::fieldTable fields_;
 
@@ -148,7 +150,12 @@ private:
         void calculatePsi();
 
         //- Solve the alpha transport equations
-        void solveAlphas(const scalar cAlpha, const label nAlphaCorr);
+        void solveAlphas
+        (
+            const scalar cAlpha, 
+            const label nAlphaCorr, 
+            scalar f = 1.0
+        );
 
         //- Update the stored viscosity (mu_)
         void calculateMu();

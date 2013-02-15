@@ -97,8 +97,11 @@ class phase
         scalar Sc_;
         
         //- Mass diffusion coefficient
-        volScalarField D_;
+        surfaceScalarField D_;
 
+        volScalarField cellMask_;
+        
+        surfaceScalarField faceMask_;
 
 public:
 
@@ -164,6 +167,8 @@ public:
         {
             otherPhase_ = other;
         }
+        
+        void setPhaseMasks(scalar maskTol);
 
         //- Return the phase density
         tmp<volScalarField> rho
@@ -229,7 +234,6 @@ public:
         //- Get mass source (or sink) for specie Yi due to evaporation
         tmp<volScalarField> Su_Yi_evap
         (
-            const phase& alphaL,
             const subSpecie& specieI
         ) const;
         
@@ -243,22 +247,16 @@ public:
         ) const;
                         
         
-        tmp<volVectorField> calculateDs
+        tmp<surfaceScalarField> calculateDs
         ( 
-            scalar maskTol, 
-            bool allowDiffusion, 
             const compressible::turbulenceModel& turb 
         );
 
         scalar solveSubSpecies
         (
-            const volScalarField& rhoTotal,
-            const surfaceScalarField& rhoPhi,
             const volScalarField& p,
             const volScalarField& T,
-            const phase& alphaLiquid,
-            const volVectorField& uc,
-            const tmp<fv::convectionScheme<scalar> >& mvConvection
+            const surfaceScalarField& uc
         );
         
         void updateGlobalYs(const volScalarField& rhoE);

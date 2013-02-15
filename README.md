@@ -57,13 +57,17 @@ Solution Flow
    * Update `rho` to satisfy continuity with `rhoPhi_`
      * Solves `fvm::ddt(rho) + fvc::div(rhoPhi_) == 0`
      
-   * TODO: Diffusion
+   * Set phase masks (`faceMask` and `cellMask`)
+   * Calculate diffusion coefficients using Schmidt number
+     * Set `Df = Sc * muf * faceMask`
    
    * Solve subspecies
-     * Apply a mask to `rhoPhiAlpha_` to prevent advection into other phase
+     * Apply `faceMask` to `rhoPhiAlpha_` to prevent advection into other phase
      * Update `rhoAlpha_` to satisfy continuity with masked `rhoPhiAlpha_`
-       * Solves `fvm::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_*mask) == S_evap`
+       * `fvm::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_*faceMask) == S_evap`
      * Solve Yp flux using `rhoAlpha_` and masked `rhoPhiAlpha_` pair
+   * Set global mass fractions
+     * Set `Y = Yp * rhoAlpha_ / (rhoAlpha_ + otherRhoAlpha_)`
 
  * UEqn
    * Needs rho-rhoPhi pair that satisfy continuity

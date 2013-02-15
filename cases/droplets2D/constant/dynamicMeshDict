@@ -63,6 +63,10 @@ dynamicRefineFvMeshCoeffs
         (rhoPhiAlphaLiquid U)
         (rhoPhiAlphaVapor U)
         (rho*phi*Hs U)
+        (faceMask_Liquid none)
+        (faceMask_Vapor none)
+        (D_Liquid none)
+        (D_Vapor none)
     );
 
     // Write the refinement level as a volScalarField

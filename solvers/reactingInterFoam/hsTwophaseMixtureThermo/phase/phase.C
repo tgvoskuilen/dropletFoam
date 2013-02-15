@@ -100,6 +100,32 @@ Foam::phase::phase
         ),
         mesh,
         dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
+    ),
+    cellMask_
+    (
+        IOobject
+        (
+            "cellMask_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("cellMask_"+name, dimless, 0.0)
+    ),
+    faceMask_
+    (
+        IOobject
+        (
+            "faceMask_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("faceMask_"+name, dimless, 0.0)
     )
 {  
     rhoAlpha_.oldTime();
@@ -254,7 +280,6 @@ Foam::tmp<Foam::volScalarField> Foam::phase::S_evap
 // term in the Yi equation for each subspecie
 Foam::tmp<Foam::volScalarField> Foam::phase::Su_Yi_evap
 (
-    const phase& alphaL,
     const subSpecie& specieI
 ) const
 {
@@ -275,7 +300,12 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Su_Yi_evap
     
     if (name_ == "Vapor")
     {
-        forAllConstIter(PtrDictionary<subSpecie>, alphaL.subSpecies(), specieLI)
+        forAllConstIter
+        (
+            PtrDictionary<subSpecie>, 
+            otherPhase_->subSpecies(), 
+            specieLI
+        )
         {
             if (specieLI().hasEvaporation())
             {
@@ -634,18 +664,16 @@ Foam::tmp<Foam::volScalarField> Foam::phase::k() const
 
 
 
-tmp<volVectorField> Foam::phase::calculateDs
+tmp<surfaceScalarField> Foam::phase::calculateDs
 (
-    scalar maskTol,
-    bool allowDiffusion,
     const compressible::turbulenceModel& turb
 )
 {
     Info<< "Calculating diffusion coefficients for " << name_ << endl;
     
-    tmp<volVectorField> tUc
+    tmp<surfaceScalarField> tUc
     (
-        new volVectorField
+        new surfaceScalarField
         (
             IOobject
             (
@@ -654,28 +682,16 @@ tmp<volVectorField> Foam::phase::calculateDs
                 mesh()
             ),
             mesh(),
-            dimensionedVector("Uc",dimVelocity*dimDensity,vector::zero)
+            dimensionedScalar("Uc",dimMass/dimTime,0.0)
         )
     );
-        
-    // DiM = (1-xi)/sum((xj/Dij) j != i)  <-- Harvasinski and Livermore document
-    // may be out of date, Stefan-Maxwell equation may be better.
-    const phase& alpha = *this;
-    tmp<volScalarField> tYp = Yp();
+
+    D_ = Sc_ * fvc::interpolate(turb.muEff()) * faceMask_;
     
-    D_ = Sc_ * turb.muEff() * pos(alpha - maskTol);
-    
-    if( allowDiffusion )
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
-        forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-        {
-            const volScalarField& Yi = specieI().Y();
-            tUc() += D_ * fvc::grad(Yi / (tYp()+SMALL));
-        }
-    }
-    else
-    {
-        D_ *= 0.0;
+        const volScalarField& Yi = specieI().Yp();
+        tUc() += D_ * fvc::snGrad(Yi) * mesh().magSf();
     }
 
     return tUc;
@@ -757,24 +773,20 @@ Foam::tmp<Foam::volScalarField> Foam::phase::sharp
 // this phase.
 scalar Foam::phase::solveSubSpecies
 (
-    const volScalarField& rhoTotal,
-    const surfaceScalarField& rhoPhi,
     const volScalarField& p,
     const volScalarField& T,
-    const phase& alphaLiquid,
-    const volVectorField& uc,
-    const tmp<fv::convectionScheme<scalar> >& mvConvection
+    const surfaceScalarField& uc
 )
 {   
     word divScheme("div(rho*phi*alpha,Yi)");
-    word divSchemeCorr("div(uc*Yi)");
-    scalar MaxFo = Foam::max
+    word divSchemeCorr("div(uc,Yi)");
+
+    tmp<volScalarField> DbyRho = fvc::average(D_) / rho(p,T);
+    scalar MaxFo = mesh().time().deltaTValue() * Foam::max
     (
-        D_.internalField()
-        /rhoTotal.internalField()
-        /Foam::pow(mesh().V(),2.0/3.0)
-    )*mesh().time().deltaTValue();
-    
+        DbyRho().internalField() / pow(mesh().V(),2.0/3.0)
+    );
+        
     Info<< "Max D = " << Foam::max(D_).value() << endl;
     Info<< "Max Fo = " << MaxFo << endl;
         
@@ -783,14 +795,13 @@ scalar Foam::phase::solveSubSpecies
         << name_ << endl;
         
 
-    const volScalarField& alpha = *this;
-    
     scalarField& rhoAlphaIf = rhoAlpha_;
     const scalarField& rhoAlpha0 = rhoAlpha_.oldTime();
     const scalar deltaT = mesh().time().deltaTValue();
 
     rhoAlphaIf = 0.0;
-    fvc::surfaceIntegrate(rhoAlphaIf, rhoPhiAlpha_);
+    surfaceScalarField rhoPhiAlphaMasked = rhoPhiAlpha_*faceMask_;
+    fvc::surfaceIntegrate(rhoAlphaIf, rhoPhiAlphaMasked);
     
     //TODO: Need source term in here for evaporation
     forAll(rhoAlphaIf, cellI)
@@ -799,26 +810,10 @@ scalar Foam::phase::solveSubSpecies
     }
     rhoAlpha_.correctBoundaryConditions();
     
-    volScalarField cellMask = pos(alpha - 0.0001);
-    volScalarField Sp = (1.0 - cellMask)*rho(p,T)/mesh().time().deltaT();
-    rhoAlpha_ *= cellMask;
+    volScalarField Sp = (1.0 - cellMask_)*rho(p,T)/mesh().time().deltaT();
+    rhoAlpha_ *= cellMask_;
     
-    
-    surfaceScalarField faceMask = pos(fvc::interpolate(cellMask) - 0.9);
-    
-    
-    Info<< "Max ddt(rhoAlpha) = " 
-        << Foam::max(Foam::mag(fvc::ddt(rhoAlpha_))).value() << endl;
-    Info<< "Max continuity error " 
-        << Foam::max(Foam::mag(fvc::ddt(rhoAlpha_)
-         + fvc::div(rhoPhiAlpha_*faceMask))).value()
-        << endl;
-    Info<< "Min rhoAlpha = " << Foam::min(rhoAlpha_).value() << endl;
-        
-        
-    // Save Yp so it is constant throughout subspecie solving
-    //tmp<volScalarField> Yp0 = Yp()+SMALL;
-    
+   
     // Loop through phase's subspecies
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
@@ -827,13 +822,12 @@ scalar Foam::phase::solveSubSpecies
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoAlpha_, Yi)
-          + fvm::div(rhoPhiAlpha_, Yi, divScheme)
-         // - fvm::laplacian(D_/Yp0(), Yi)
-         // + fvm::div((fvc::interpolate(uc/Yp0()) & mesh().Sf()), Yi, divSchemeCorr) //Harvazinski PhD thesis mass conservation correction term
-         // + fvc::laplacian(D_*Yi/Yp0()/Yp0(), Yp0())
+          + fvm::div(rhoPhiAlphaMasked, Yi, divScheme)
+          - fvm::laplacian(D_, Yi)
+          //+ fvm::div(uc, Yi, divSchemeCorr) //Harvazinski Thesis
          ==
             combustionPtr_->R(Yi)
-        //  + Su_Yi_evap( alphaLiquid, specieI() )
+          + Su_Yi_evap( specieI() )
           - fvm::Sp(Sp, Yi)
         );
 
@@ -847,58 +841,16 @@ scalar Foam::phase::solveSubSpecies
             << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
             
-            
-    /*
-        volScalarField& Yi = specieI().Y();
-        
-        fvScalarMatrix YiEqn
-        (
-            fvm::ddt(rhoTotal, Yi)
-          + mvConvection->fvmDiv(rhoPhi, Yi)
-         // - fvm::laplacian(D_/Yp0(), Yi)
-         // + fvm::div((fvc::interpolate(uc/Yp0()) & mesh().Sf()), Yi, divSchemeCorr) //Harvazinski PhD thesis mass conservation correction term
-         // + fvc::laplacian(D_*Yi/Yp0()/Yp0(), Yp0())
-         ==
-            combustionPtr_->R(Yi)
-        //  + Su_Yi_evap( alphaLiquid, specieI() )
-        );
-
-        YiEqn.relax();
-        YiEqn.solve(mesh().solver("Yi"));
-        
-        Yi.max(0.0);
-        Yi.min(1.0);
-        
-        Info<< "  Pre-coerce: " << Yi.name() << " min,max,avg = " 
-            << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
-            << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
-            */
     }
-    
-    /*
-    Yp0 = Yp() + SMALL;
-    tmp<volScalarField> YpMax = rho(p,T)/rhoTotal*sharp(0.0001);
-    tmp<volScalarField> factor = YpMax / Yp0;
-    
-    Info<< "  Max f = " << Foam::max(factor()).value() << endl;
-    
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        volScalarField& Yi = specieI().Y();
-
-        Yi *= factor();
-
-        Yi.max(0.0);
-        Yi.min(1.0);
         
-        Info<< "  " << Yi.name() << " min,max,avg = " 
-            << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
-            << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
-	  	
-    }
-    */
-    
     return MaxFo;
+}
+
+void Foam::phase::setPhaseMasks(scalar maskTol)
+{
+    const volScalarField& alpha = *this;
+    cellMask_ = pos(alpha - maskTol);
+    faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
 }
 
 void Foam::phase::updateGlobalYs(const volScalarField& rhoAlphaOther)
