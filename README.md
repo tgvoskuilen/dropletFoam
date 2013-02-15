@@ -7,19 +7,19 @@ Compressible, multiphase OpenFOAM combustion solver
 Solution Flow
 -----------------------
 Flow Chart
-    Create mixtureThermo
-        create vapor phase
-            create fields
-            create subspecies
-                link with global mass fraction Y
-                create local mass fraction Yp
-        create liquid phase
-            create fields
-            create subspecies
-                link with global mass fraction Y
-                create local mass fraction Yp
-                create viscosity model
-        create evaporation models in liquid phase subspecies
+  *  Create mixtureThermo
+     *  create vapor phase
+        *   create fields
+        *   create subspecies
+            *   link with global mass fraction Y
+            *   create local mass fraction Yp
+     *  create liquid phase
+        *   create fields
+        *   create subspecies
+            *   link with global mass fraction Y
+            *   create local mass fraction Yp
+            *   create viscosity model
+     *  create evaporation models in liquid phase subspecies
         
         calculate thermo density, set to old time slot
         

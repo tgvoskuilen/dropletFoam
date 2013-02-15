@@ -65,19 +65,6 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("rhoPhiAlpha"+name, dimMass/dimTime, 0.0)
     ),
-    rho_
-    (
-        IOobject
-        (
-            "rho_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("rho_"+name, dimDensity, 1.0)
-    ),
     rhoAlpha_
     (
         IOobject
@@ -91,6 +78,7 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("rhoAlpha_"+name, dimDensity, 1.0)
     ),
+    otherPhase_(NULL),
     combustionPtr_(NULL),
     species_(species),
     speciesData_(speciesData),
@@ -114,7 +102,6 @@ Foam::phase::phase
         dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
     )
 {  
-    rho_.oldTime();  
     rhoAlpha_.oldTime();
     if( phaseDict_.found("SchmidtNo") )
     {
@@ -199,12 +186,12 @@ void Foam::phase::setCombustionPtr
 
 void Foam::phase::correct(const volScalarField& p, const volScalarField& T)
 {
-    rho_ = rho(p,T);
-    rhoAlpha_ = (*this) * rho_;
+    rhoAlpha_ = (*this) * rho(p,T);
     
     
-    Info<< "Min,max rho "<<name_<<" = " << Foam::min(rho_).value() << ", " 
-        << Foam::max(rho_).value() << endl;
+    Info<< "Min,max rhoAlpha"<<name_
+        <<" = " << Foam::min(rhoAlpha_).value() << ", " 
+        << Foam::max(rhoAlpha_).value() << endl;
         
     
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
@@ -577,16 +564,16 @@ Foam::tmp<volScalarField> Foam::phase::Np() const
 }
 
 
-// Construct the molar mass field. Should be zero if Yp == 0. If Yp == VSMALL
-// though then W -> VSMALL
+// Construct the molar mass field.
 Foam::tmp<volScalarField> Foam::phase::W() const
 {
 //    return Yp()/Np();
-    dimensionedScalar WBase("WBase",dimMass/dimMoles,28);
+    dimensionedScalar ws("ws",dimMass/dimMoles,SMALL);
+    tmp<volScalarField> Wother = otherPhase_->Yp() / otherPhase_->Np();
     
     tmp<volScalarField> Yp_ = Yp();
     tmp<volScalarField> Yvoid = 0.0001*neg(Yp_()-0.05);
-    tmp<volScalarField> den = Yvoid()/WBase;
+    tmp<volScalarField> den = Yvoid()/(Wother+ws);
     
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
@@ -781,7 +768,12 @@ scalar Foam::phase::solveSubSpecies
 {   
     word divScheme("div(rho*phi*alpha,Yi)");
     word divSchemeCorr("div(uc*Yi)");
-    scalar MaxFo = Foam::max(D_.internalField()/rhoTotal.internalField()/Foam::pow(mesh().V(),2.0/3.0))*mesh().time().deltaTValue();
+    scalar MaxFo = Foam::max
+    (
+        D_.internalField()
+        /rhoTotal.internalField()
+        /Foam::pow(mesh().V(),2.0/3.0)
+    )*mesh().time().deltaTValue();
     
     Info<< "Max D = " << Foam::max(D_).value() << endl;
     Info<< "Max Fo = " << MaxFo << endl;
@@ -790,58 +782,8 @@ scalar Foam::phase::solveSubSpecies
         <<" subspecie(s) for phase: " 
         << name_ << endl;
         
-    // Test evaluate continuity-satisfying phase density
-    //  subspecies store phase-specific Ys?
-    //volScalarField rhoTmp = rho_;
-    
-    Info<< "Min,max rho = " << Foam::min(rho_).value() << ", " 
-        << Foam::max(rho_).value() << endl;
-        
+
     const volScalarField& alpha = *this;
-    //tmp<surfaceScalarField> maskf = pos(fvc::interpolate(alpha) - 0.1);
-    /*tmp<volScalarField> maskc = pos(fvc::surfaceSum(maskf()) - SMALL)*pos(alpha-1e-4);
-    
-    dimensionedScalar rDT = 1.0/mesh().time().deltaT();
-    dimensionedScalar rhoff("rhoff",dimDensity,1);
-    
-    Foam::solve
-    (
-        fvm::ddt(alpha*maskc(),rho_)
-      + fvc::div(rhoPhiAlpha_*maskf())
-      - (1-maskc())*rDT*rhoff
-      + fvm::Sp((1-maskc())*rDT,rho_),
-        mesh().solverDict("rho")
-    );*/
-    
-    /*Foam::solve
-    (
-        fvm::ddt(rho_) + fvc::div(rhoPhiAlpha_),
-        mesh().solverDict("rho")
-    );*/
-    
-    /*volScalarField Sp
-    (
-        IOobject
-        (
-            "Sp",
-            mesh().time().timeName(),
-            mesh()
-        ),
-        mesh(),
-        dimensionedScalar("Sp",dimDensity/dimTime,0.0)
-    );
-    
-    volScalarField cellMask
-    (
-        IOobject
-        (
-            "cellMask",
-            mesh().time().timeName(),
-            mesh()
-        ),
-        mesh(),
-        dimensionedScalar("cellMask",dimless,1.0)
-    );*/
     
     scalarField& rhoAlphaIf = rhoAlpha_;
     const scalarField& rhoAlpha0 = rhoAlpha_.oldTime();
@@ -853,27 +795,23 @@ scalar Foam::phase::solveSubSpecies
     forAll(rhoAlphaIf, cellI)
     {
         rhoAlphaIf[cellI] = rhoAlpha0[cellI] - rhoAlphaIf[cellI]*deltaT;
-        
-        /*if( alpha[cellI] < 0.01 )
-        {
-            rhoAlphaIf[cellI] = 0.0;
-            Sp[cellI] = rho_[cellI]/deltaT;
-            cellMask[cellI] = 0.0;
-        }*/
     }
     rhoAlpha_.correctBoundaryConditions();
-    //cellMask.correctBoundaryConditions();
     
-    volScalarField cellMask = pos(alpha - 0.001);
-    volScalarField Sp = (1.0 - cellMask)*rho_/mesh().time().deltaT();
+    volScalarField cellMask = pos(alpha - 0.0001);
+    volScalarField Sp = (1.0 - cellMask)*rho(p,T)/mesh().time().deltaT();
     rhoAlpha_ *= cellMask;
     
     
     surfaceScalarField faceMask = pos(fvc::interpolate(cellMask) - 0.9);
     
     
-    Info<< "Max ddt(rhoAlpha) = " << Foam::max(Foam::mag(fvc::ddt(rhoAlpha_))).value() << endl;
-    Info<< "Max continuity error " << Foam::max(Foam::mag(fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_*faceMask))).value() << endl;
+    Info<< "Max ddt(rhoAlpha) = " 
+        << Foam::max(Foam::mag(fvc::ddt(rhoAlpha_))).value() << endl;
+    Info<< "Max continuity error " 
+        << Foam::max(Foam::mag(fvc::ddt(rhoAlpha_)
+         + fvc::div(rhoPhiAlpha_*faceMask))).value()
+        << endl;
     Info<< "Min rhoAlpha = " << Foam::min(rhoAlpha_).value() << endl;
         
         

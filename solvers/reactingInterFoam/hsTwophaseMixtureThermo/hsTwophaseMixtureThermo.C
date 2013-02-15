@@ -304,6 +304,9 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     {
         fields_.add(this->Y()[i]);
     }
+    
+    alphaLiquid_.setOtherPhase( &alphaVapor_ );
+    alphaVapor_.setOtherPhase( &alphaLiquid_ );
 
     //Set evaporation models
     Info<< "Setting evaporation models" << endl;
@@ -703,7 +706,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
         for
         (
-            subCycle<volScalarField> alphaSubCycle(alphaLiquid_, nAlphaSubCycles);
+            subCycle<volScalarField> 
+                alphaSubCycle(alphaLiquid_, nAlphaSubCycles);
             !(++alphaSubCycle).end();
         )
         {
@@ -757,8 +761,10 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     );
     
     // Solve for subspecie transport within each phase
-    scalar FoLiq = alphaLiquid_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
-    scalar FoVap = alphaVapor_.solveSubSpecies(rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
+    scalar FoLiq = alphaLiquid_.solveSubSpecies
+    (rho, rhoPhi_, p_, T_, alphaLiquid_, ucL(), mvConvection);
+    scalar FoVap = alphaVapor_.solveSubSpecies
+    (rho, rhoPhi_, p_, T_, alphaLiquid_, ucV(), mvConvection);
 
 
     alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
@@ -807,7 +813,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     
     //Calculate interface curvature field
     // Cell gradient of alpha
-    const volVectorField gradAlpha(fvc::grad(alphaLiquid_)); //TODO: Use alphaVapor ?
+    const volVectorField gradAlpha(fvc::grad(alphaLiquid_));
 
     // Interpolated face-gradient of alpha
     surfaceVectorField gradAlphaf(fvc::interpolate(gradAlpha));

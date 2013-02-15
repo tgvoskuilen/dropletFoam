@@ -77,8 +77,9 @@ class phase
         //- Volume flux field for this phase
         surfaceScalarField rhoPhiAlpha_;
         
-        volScalarField rho_;
         volScalarField rhoAlpha_;
+        
+        const phase* otherPhase_;
         
         //- Pointer to the top-level combustion model
         const combustionModels::rhoChemistryCombustionModel* combustionPtr_;
@@ -157,6 +158,11 @@ public:
         const volScalarField& rhoAlpha() const
         {
             return rhoAlpha_;
+        }
+        
+        void setOtherPhase(const phase* other)
+        {
+            otherPhase_ = other;
         }
 
         //- Return the phase density
