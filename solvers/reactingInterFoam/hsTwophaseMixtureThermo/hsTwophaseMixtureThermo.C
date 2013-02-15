@@ -81,6 +81,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
         }
     }
     
+    alphaVapor_.correct(p_,T_);
+    alphaLiquid_.correct(p_,T_);
     
     calculateMu();
     calculateRho();
@@ -94,12 +96,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateMu()
 {    
-    alphaVapor_.correct(p_,T_);
-    alphaLiquid_.correct(p_,T_);
-    
-    mu_ = alphaVapor_ * muV() + 
-            alphaLiquid_ * alphaLiquid_.mu(p_, T_);
-    
+    mu_ = alphaVapor_*muV() + alphaLiquid_*alphaLiquid_.mu(p_, T_);
+    mu_.correctBoundaryConditions();
 }
 
 
@@ -144,11 +142,11 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcEvaporation()
         Info<< "Max grad prod = " << Foam::max(tgradProd()).value() << endl;
         
         evap_mask_ = pos(neg(tgradProd() - 100000.0)
-                         + pos(alphaVaporSharp_ - 0.9) - SMALL);
+                         + pos(alphaVapor_ - 0.9) - SMALL);
     }
     else
     {
-        evap_mask_ = pos(alphaVaporSharp_+1.0); //no multi-liquid mask
+        evap_mask_ = pos(alphaVapor_+1.0); //no multi-liquid mask
     }
     
     
@@ -399,12 +397,22 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::W() const
         )
     );
 
-    forAllConstIter(PtrDictionary<subSpecie>, alphaVapor_.subSpecies(), specieI)
+    forAllConstIter
+    (
+        PtrDictionary<subSpecie>, 
+        alphaVapor_.subSpecies(), 
+        specieI
+    )
     {
         tden() += specieI().Y() / specieI().W();
     }
     
-    forAllConstIter(PtrDictionary<subSpecie>, alphaLiquid_.subSpecies(), specieI)
+    forAllConstIter
+    (
+        PtrDictionary<subSpecie>,
+        alphaLiquid_.subSpecies(),
+        specieI
+    )
     {
         tden() += specieI().Y() / specieI().W();
     }
@@ -676,11 +684,6 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     volScalarField& rho
 )
 {
-    calculateAlphaVapor();
-    
-    //Correct phases (correct liquid viscosity model)
-    //alphaLiquid_.correct();
-
     //Solve for reaction rates
     Info<< "Solving combustion" << endl;
     combustionPtr_->correct();
@@ -688,7 +691,6 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     //Solve for evaporation rates
     Info<< "Solving evaporation" << endl;
     calcEvaporation();
-
 
     //Do solving for phase volume fractions
     const Time& runTime = mesh_.time();

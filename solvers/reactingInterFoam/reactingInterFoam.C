@@ -140,7 +140,8 @@ int main(int argc, char *argv[])
         }
         // END MESH ADAPTATION
 
-
+        // This line is most likely not needed since mixture.solve
+        // does this too
         solve( fvm::ddt(rho) + fvc::div(mixture.rhoPhi()) );
  
         while (pimple.loop())
@@ -169,7 +170,7 @@ int main(int argc, char *argv[])
 
         #include "checkMassBalance.H"
         
-        mixture.calculateRho(); // rho = alpha1*rho1(p,T,Ys) + alpha2*rho2(p,T,Ys)
+        //mixture.calculateRho(); //needed?
         rho = mixture.rho();
         
         runTime.write();
