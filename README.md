@@ -6,7 +6,8 @@ Compressible, multiphase OpenFOAM combustion solver
 
 Solution Flow
 -----------------------
-Flow Chart
+## Problem Setup
+
   *  Create mixtureThermo
      *  create vapor phase
         *   create fields
@@ -21,28 +22,28 @@ Flow Chart
             *   create viscosity model
      *  create evaporation models in liquid phase subspecies
         
-        calculate thermo density, set to old time slot
+     *  calculate thermo density, set to old time slot
         
-        set hs_ based on T_
+     *  set hs_ based on T_
         
-        calculate()
-            Updates T_ based on hs_
-            updates alpha_ (not used?)
-            liquid.correct(p,T)
-                updates rho_  <-  don't want this?
-            vapor.correct(p,T)
-                updates rho_  <-  don't want this?
-            updates mu_
-            updates rho_
-            updates psi_
+     *  calculate()
+        *   Updates T_ based on hs_
+        *   updates alpha_ (not used?)
+        *   liquid.correct(p,T)
+            *   updates rhoAlpha_
+        *   vapor.correct(p,T)
+            *   updates rhoAlpha_
+        *   updates mu_
+        *   updates rho_
+        *   updates psi_
         
-        set vapor specie relative Ys
-            Yp = Y / sum(Y in phase)
+     *  set vapor specie relative Ys
+        *   Yp = Y / sum(Y in phase)
             
-        set liquid specie relative Ys
-            Yp = Y / sum(Y in phase)
+     *  set liquid specie relative Ys
+        *   Yp = Y / sum(Y in phase)
             
-SOLUTION ROUTINE
+## Solution Routine
 
     mixture.solve
         update alphaVaporSharp_
