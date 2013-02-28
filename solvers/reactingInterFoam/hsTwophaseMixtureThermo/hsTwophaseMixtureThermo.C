@@ -96,14 +96,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateMu()
 {    
-    //mu_ = alphaVapor_*muV() + alphaLiquid_*alphaLiquid_.mu(p_, T_);
-    
-    //const volScalarField limitedAlphaL("limitedAlphaL",min(max(alphaLiquid_,0.0),1.0));
-    
-    dimensionedScalar muVconst("muV",dimMass/dimLength/dimTime,1.8e-5);
-    dimensionedScalar muLconst("muL",dimMass/dimLength/dimTime,1e-3);
-    
-    mu_ = alphaVapor_*muVconst + alphaLiquid_*muLconst;
+    mu_ = alphaVapor_*muV() + alphaLiquid_*alphaLiquid_.mu(p_, T_);
     mu_.correctBoundaryConditions();
     
     muE_ = mu_;
@@ -376,8 +369,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateRho()
             << "\n    and that a nonzero alpha is specified on each boundary."
             << exit(FatalError);
     }
-
-    //rho_.correctBoundaryConditions();
 }
 
 
@@ -440,17 +431,17 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
                 mesh_
             ),
             mesh_,
-            dimensionedScalar("tmu", dimMass/dimTime/dimLength, 1.7e-5)
+            dimensionedScalar("tmu", dimMass/dimTime/dimLength, 0.0)
         )
     );
 
 
-    /* TODO
     scalarField& muCells = tmu().internalField();
     const scalarField& TCells = T_.internalField();
 
     forAll(TCells, celli)
     {
+        //TODO: Cell mixture of only gas species here, or apply mu mixture rule
         muCells[celli] = this->cellMixture(celli).mu( TCells[celli] );
     }
 
@@ -461,7 +452,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
             T_.boundaryField()[patchi], 
             patchi
         );
-    }*/
+    }
 
     return tmu;
 }
@@ -699,11 +690,10 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculateSurfaceTension()
 
 
     //Calculate the surface tension field
-    /*dimensionedScalar one("one",dimLength,1.0);
+    dimensionedScalar one("one",dimLength,1.0);
     tmp<volScalarField> mask = pos(Foam::mag(kappaI_)*one - 1e-4)
                              + neg(alphaVapor_ - 0.1);
-    sigma_ = alphaLiquid_.sigma(T_, mask());*/
-    sigma_ = dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.07);
+    sigma_ = alphaLiquid_.sigma(T_, mask());
 }
 
 template<class MixtureType>
@@ -754,11 +744,11 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     }
 
 
-    //calculateAlphaVapor();
+    calculateAlphaVapor();
     calculateSurfaceTension();
     
     
-    correct();
+    //correct(); //needed?
     //rho = rho_;
     //calculateRho(); //rho == alphaV*rhoV + alphaL*rhoL
     
@@ -769,7 +759,7 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     Info<< "Min,max rho = " << Foam::min(rho).value() << ", " 
         << Foam::max(rho).value() << endl;
-/*
+
 
     alphaLiquid_.setPhaseMasks(phaseMaskTol_);
     alphaVapor_.setPhaseMasks(phaseMaskTol_);
@@ -815,6 +805,7 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     //Foam::Info << "Min,Max Ysum = " << Foam::min(YSum_).value() 
     //           << ", " << Foam::max(YSum_).value() << Foam::endl;
                
+    correct();
     return 0.0; //MaxFo;
 }
 
@@ -892,7 +883,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             )
         );
 
-        //MULES::explicitSolve(alphaLiquid_, phi_, phiAlphaL, 1, 0);
         MULES::explicitSolve
         (
             geometricOneField(),
@@ -917,11 +907,10 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
         surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
         
-        //alphaLiquid_.rhoPhiAlpha() += f * phiAlphaL * rhoLf;
-        //alphaVapor_.rhoPhiAlpha() += f * (phi_ - phiAlphaL) * rhoVf;
+        alphaLiquid_.rhoPhiAlpha() += f * phiAlphaL * rhoLf;
+        alphaVapor_.rhoPhiAlpha() += f * (phi_ - phiAlphaL) * rhoVf;
 
         rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
-        //rhoPhi_ = phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf;
 
         alphaVapor_ == scalar(1) - alphaLiquid_;
         alphaVapor_.max(0.0);
@@ -1209,7 +1198,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::kappaV() const
 
     forAll(T_.boundaryField(), patchi)
     {
-        tkappa().boundaryField()[patchi] = kappa(T_.boundaryField()[patchi], patchi);
+        tkappa().boundaryField()[patchi] = 
+            kappa(T_.boundaryField()[patchi], patchi);
     }
 
     return tkappa;

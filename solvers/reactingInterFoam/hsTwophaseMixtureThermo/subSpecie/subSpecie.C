@@ -55,14 +55,43 @@ Foam::subSpecie::subSpecie
     ),
     thermo_(specieData),
     idx_(idx),
-    rho0_(subSpecieDict.lookupOrDefault("rho0",dimensionedScalar("rho0",dimDensity,0.0))),
-    Tc_(subSpecieDict.lookupOrDefault("Tc",dimensionedScalar("Tc",dimTemperature,300.0))),
-    sigma0_(subSpecieDict.lookupOrDefault("sigma0",dimensionedScalar("sigma0",dimMass/dimTime/dimTime,0.0))),
-    kappa_(subSpecieDict.lookupOrDefault("kappa",dimensionedScalar("kappa",dimPower/dimLength/dimTemperature,0.0)))
+    rho0_
+    (
+        subSpecieDict.lookupOrDefault
+        (
+            "rho0",
+            dimensionedScalar("rho0",dimDensity,0.0)
+        )
+    ),
+    Tc_
+    (
+        subSpecieDict.lookupOrDefault
+        (
+            "Tc",
+            dimensionedScalar("Tc",dimTemperature,300.0)
+        )
+    ),
+    sigma0_
+    (
+        subSpecieDict.lookupOrDefault
+        (
+            "sigma0",
+            dimensionedScalar("sigma0",dimMass/dimTime/dimTime,0.0)
+        )
+    ),
+    kappa_
+    (
+        subSpecieDict.lookupOrDefault
+        (
+            "kappa",
+            dimensionedScalar("kappa",dimPower/dimLength/dimTemperature,0.0)
+        )
+    )
 {
 
     // Set scalars
-    sigmaa_ = (subSpecieDict_.found("sigmaa")) ? readScalar(subSpecieDict_.lookup("sigmaa")) : 0;
+    sigmaa_ = (subSpecieDict_.found("sigmaa")) ?
+             readScalar(subSpecieDict_.lookup("sigmaa")) : 0;
 
     if( subSpecieDict_.found("transportModel") )
     {

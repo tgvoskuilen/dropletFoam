@@ -540,15 +540,12 @@ Foam::tmp<volScalarField> Foam::phase::rho
     if (name_ == "Vapor")
     {
         return psi(T) * p;
-        /*dimensionedScalar rhoBase("rhoBase",dimDensity,1.2);
-        trho() = rhoBase;
-        return trho;*/
     }
     else
     {
         dimensionedScalar rhoBase("rhoBase",dimDensity,1000);
         
-        /*tmp<volScalarField> Yp_ = Yp();
+        tmp<volScalarField> Yp_ = Yp();
         tmp<volScalarField> Yvoid = 0.0001*neg(Yp_()-0.05);
         tmp<volScalarField> den = Yvoid()/rhoBase;
         
@@ -557,10 +554,10 @@ Foam::tmp<volScalarField> Foam::phase::rho
             den() += specieI().Y() / specieI().rho0();
         }
         
-        return (Yvoid + Yp_)/den;*/
+        return (Yvoid + Yp_)/den;
         
-        trho() = rhoBase;
-        return trho;
+        /*trho() = rhoBase;
+        return trho;*/
     }
 }
 
@@ -595,11 +592,11 @@ Foam::tmp<volScalarField> Foam::phase::psi
 
     if (name_ == "Vapor")
     {
-        dimensionedScalar Wtmp("Wtmp",dimMass/dimMoles,28);
-        tpsi() = Wtmp/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
+        //dimensionedScalar Wtmp("Wtmp",dimMass/dimMoles,28);
+        //tpsi() = Wtmp/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
         //tpsi() = W()/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
-        //dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
-        //tpsi() = W() / (Ru * T);
+        dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
+        tpsi() = W() / (Ru * T);
     }
 
     return tpsi;
@@ -833,7 +830,7 @@ scalar Foam::phase::solveSubSpecies
         <<" subspecie(s) for phase: " 
         << name_ << endl;
         
-
+    //solve ddt(rhoAlpha) + div(rhoPhiAlpha) == 0
     scalarField& rhoAlphaIf = rhoAlpha_;
     const scalarField& rhoAlpha0 = rhoAlpha_.oldTime();
     const scalar deltaT = mesh().time().deltaTValue();
