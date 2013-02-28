@@ -23,7 +23,7 @@ foamChemistryFile "$FOAM_CASE/constant/reactions";
 
 foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
-// No mass diffusion before this time to let the phase interfaces relax
+// Phase volume fraction tolerance for diffusion mask
 phaseMaskTol 0.001;
 
 Vapor

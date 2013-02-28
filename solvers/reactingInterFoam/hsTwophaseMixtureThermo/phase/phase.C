@@ -181,7 +181,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
     {   
         if( specieI().hasNuModel() )
         {
-            tmu() += specieI().nuModel().nu() * specieI().Y() * rho(p,T);
+            tmu() += specieI().nuModel().nu() * specieI().Yp() * rho(p,T);
         }
     }
     
@@ -348,9 +348,12 @@ Foam::tmp<volScalarField> Foam::phase::sigma
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0)
+            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.07)
         )
     );
+    
+    return tsigma;
+    /*
     
     tmp<volScalarField> tn
     (
@@ -366,8 +369,8 @@ Foam::tmp<volScalarField> Foam::phase::sigma
             dimensionedScalar("n", dimless, 0.0)
         )
     );
-    
-    dimensionedScalar dTau("dTau",dimArea,1e-12);
+
+    dimensionedScalar dA = Foam::pow(Foam::min(mesh().V()),2.0/3.0)/30.0;
     
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
@@ -375,9 +378,9 @@ Foam::tmp<volScalarField> Foam::phase::sigma
         {
             volScalarField Ys(specieI().Y());
             
-            for(label i = 0; i < 3; i++)
+            for(label i = 0; i < 5; i++)
             {
-                Ys += dTau * fvc::laplacian(Ys);
+                Ys += dA * fvc::laplacian(Ys);
             }
             
             Ys = pos(Foam::mag(Ys) - SMALL) * kappaMask;
@@ -388,7 +391,7 @@ Foam::tmp<volScalarField> Foam::phase::sigma
     
     tn() += neg(tn() - SMALL);
 
-    return tsigma/tn;
+    return tsigma/tn;*/
 }
 
 
@@ -453,6 +456,32 @@ Foam::tmp<volScalarField> Foam::phase::Yp() const
 }
 
 
+Foam::tmp<volScalarField> Foam::phase::Ypp() const
+{
+    tmp<volScalarField> tYpp
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tYpp"+name_,
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("Ypp",dimless,0.0)
+        )
+    );
+    
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        tYpp() += specieI().Yp();
+    }
+    
+    return tYpp;
+}
+
+
 // Volumetric sink term from evaporation = m_evap/rhoL (only applicable to
 //  liquid phase, used in the alpha equation in the source term)
 Foam::tmp<volScalarField> Foam::phase::Sv_evap() const
@@ -511,12 +540,15 @@ Foam::tmp<volScalarField> Foam::phase::rho
     if (name_ == "Vapor")
     {
         return psi(T) * p;
+        /*dimensionedScalar rhoBase("rhoBase",dimDensity,1.2);
+        trho() = rhoBase;
+        return trho;*/
     }
     else
     {
         dimensionedScalar rhoBase("rhoBase",dimDensity,1000);
         
-        tmp<volScalarField> Yp_ = Yp();
+        /*tmp<volScalarField> Yp_ = Yp();
         tmp<volScalarField> Yvoid = 0.0001*neg(Yp_()-0.05);
         tmp<volScalarField> den = Yvoid()/rhoBase;
         
@@ -525,7 +557,10 @@ Foam::tmp<volScalarField> Foam::phase::rho
             den() += specieI().Y() / specieI().rho0();
         }
         
-        return (Yvoid + Yp_)/den;
+        return (Yvoid + Yp_)/den;*/
+        
+        trho() = rhoBase;
+        return trho;
     }
 }
 
@@ -560,7 +595,11 @@ Foam::tmp<volScalarField> Foam::phase::psi
 
     if (name_ == "Vapor")
     {
-        tpsi() = W()/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
+        dimensionedScalar Wtmp("Wtmp",dimMass/dimMoles,28);
+        tpsi() = Wtmp/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
+        //tpsi() = W()/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
+        //dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
+        //tpsi() = W() / (Ru * T);
     }
 
     return tpsi;
@@ -603,7 +642,7 @@ Foam::tmp<volScalarField> Foam::phase::W() const
     
     tmp<volScalarField> Yp_ = Yp();
     tmp<volScalarField> Yvoid = 0.0001*neg(Yp_()-0.05);
-    tmp<volScalarField> den = Yvoid()/(Wother+ws);
+    tmp<volScalarField> den = Yvoid()/(Wother + ws);
     
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {

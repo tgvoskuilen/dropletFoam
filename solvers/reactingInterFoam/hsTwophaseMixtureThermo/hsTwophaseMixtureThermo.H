@@ -110,7 +110,7 @@ private:
         const volVectorField& U_;
                 
         //- Sharpened vapor fraction (for calculating curvature kappaI)
-        volScalarField alphaVaporSharp_;
+        volScalarField alphaVaporSmooth_;
         
         //- Curvature
         volScalarField kappaI_;

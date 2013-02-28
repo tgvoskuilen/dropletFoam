@@ -194,6 +194,7 @@ public:
                 
 
         tmp<volScalarField> Yp() const;
+        tmp<volScalarField> Ypp() const;
         tmp<volScalarField> Np() const;
         
         //- Get phase molar mass field

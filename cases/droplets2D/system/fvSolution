@@ -71,7 +71,7 @@ solvers
             mergeLevels     1;
         }
 
-        tolerance       1e-8
+        tolerance       0.0001;
         relTol          0;
         maxIter         100;
     }
@@ -80,7 +80,7 @@ solvers
     {
         solver          GAMG;
         tolerance       1e-08;
-        relTol          0.001;
+        relTol          0.05;
         smoother        GaussSeidel;
         nPreSweeps      0;
         nPostSweeps     2;
@@ -121,7 +121,7 @@ solvers
         smoother        GaussSeidel;
         tolerance       1e-06;
         relTol          0;
-        nSweeps         2;
+        nSweeps         1;
     }
 
     "(k|B|nuTilda)"
@@ -179,9 +179,9 @@ PIMPLE
     nHsSubCycles    3;
     nCorrectors     3;
     nOuterCorrectors 1;
-    nNonOrthogonalCorrectors 2;
-    nAlphaCorr      3;
-    nAlphaSubCycles 1;
+    nNonOrthogonalCorrectors 0;
+    nAlphaCorr      1;
+    nAlphaSubCycles 3;
     cAlpha          1;
 
 //    pRefPoint      (0.51 0.51 0.51);

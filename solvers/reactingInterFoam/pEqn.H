@@ -20,24 +20,25 @@
     );
 
     // Estimate U with no force terms
-    U = rAU*UEqn.H();
+    volVectorField& Uest = U; // <- for clarity
+    Uest = rAU*UEqn.H();
     
     surfaceScalarField phiEst
     (
         "phiEst",
-        (fvc::interpolate(U) & mesh.Sf())
-      + fvc::ddtPhiCorr(rAU, rho, U, phi)
+        (fvc::interpolate(Uest) & mesh.Sf())
+      + fvc::ddtPhiCorr(rAU, rho, Uest, phi)
     );
 
     // Add surface tension and gravity forces to flux estimate
-    phi = phiEst + 
+    phi = phiEst +
     (
         (
             mixture.surfaceTensionForce()
           - ghf*fvc::snGrad(rho)
         )*rAUf*mesh.magSf()
     );
-    
+        
     // Solve for pressure to enforce continuity (based on phi)
     while (pimple.correctNonOrthogonal())
     {
@@ -65,16 +66,14 @@
         }
     }
     
-    U += rAU*fvc::reconstruct((phi - phiEst)/rAUf);
-    U.correctBoundaryConditions();
-    
     // Continuity error check checks whether thermo.rho satisfies continuity
     // with rhoPhi field
     // However, since we aren't updated rhoPhi, this would not make sense
     // so we don't check, and we instead just update thermo.rho with psi*dp
+    U += rAU*fvc::reconstruct((phi - phiEst)/rAUf);
+    U.correctBoundaryConditions();    
             
-            
-    p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
+    //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
 
     
     Info<< "min,max p = " << gMin(p)/1e5 << ", " 

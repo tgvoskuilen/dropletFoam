@@ -32,6 +32,11 @@
 	
 	Info<< "Extracting two phase mixture thermo:" << endl;
 
+    if( !isA<hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> > >(thermo.composition()) )
+    {
+        //Fatal error
+    }
+
     hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> >& mixture =
         dynamic_cast<hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> >& >(thermo.composition());
 

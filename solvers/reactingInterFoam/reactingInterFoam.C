@@ -142,18 +142,19 @@ int main(int argc, char *argv[])
 
         // This line is most likely not needed since mixture.solve
         // does this too
-        solve( fvm::ddt(rho) + fvc::div(mixture.rhoPhi()) );
- 
+        // solve( fvm::ddt(rho) + fvc::div(mixture.rhoPhi()) );
+        mixture.solve( rho );
+        
         while (pimple.loop())
         {
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
-            Info<<"Solving alpha transport equations"<<endl;
-            MaxFo = mixture.solve( rho );
+            //Info<<"Solving alpha transport equations"<<endl;
+            //MaxFo = mixture.solve( rho );
 
-            dQ = combustion->dQ();
+            //dQ = combustion->dQ();
 
             #include "UEqn.H"	
-            #include "TEqn.H"
+            //#include "TEqn.H"
 
             // --- Pressure corrector loop
             while (pimple.correct())
@@ -171,7 +172,7 @@ int main(int argc, char *argv[])
         #include "checkMassBalance.H"
         
         //mixture.calculateRho(); //needed?
-        rho = mixture.rho();
+        //rho = thermo.rho();
         
         runTime.write();
         
