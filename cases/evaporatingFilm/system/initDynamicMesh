@@ -11,37 +11,11 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      VOFSetFieldsDict;
+    object      initDynamicMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-
-defaultSpecies
-(
-    N2   1.0
-);
-
-liquidPhaseName  alphaLiquid;
-vaporPhaseName   alphaVapor;
-
-droplets
-(
-    WaterFilm
-    {
-        center   (-10 0.0005 0.0005);
-        radius   (10.001 10.001 10.001);
-        delVapor 1e-3;
-        U        (0 0 0);
-        liquidSpecies
-        (
-            H2OL  1.0
-        );
-        vaporSpecies
-        (
-            H2O   0.001
-        );
-    }
-);
+alphaName   alphaVapor;
 
 
 // ************************************************************************* //

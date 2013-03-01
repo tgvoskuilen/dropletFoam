@@ -278,10 +278,10 @@ public:
             const label patchi
         ) const;
 
-        tmp<volScalarField> hs
+        /*tmp<volScalarField> hs
         (
             const volScalarField& T
-        ) const;
+        ) const;*/
         
         tmp<volScalarField> Cv(const volScalarField& T) const;
         

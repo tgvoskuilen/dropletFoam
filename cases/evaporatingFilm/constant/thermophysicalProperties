@@ -23,8 +23,8 @@ foamChemistryFile "$FOAM_CASE/constant/reactions";
 
 foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
-// No mass diffusion before this time to let the phase interfaces relax
-relaxTime  3e-5;
+// Phase volume fraction tolerance for diffusion mask
+phaseMaskTol 0.001;
 
 Vapor
 {
@@ -54,8 +54,8 @@ Liquid
             Tc           Tc   [ 0 0 0 1 0 0 0]   647.1;
             kappa        kappa [1 1 -3 -1 0 0 0] 0.68;
             
-            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.13;
-            sigmaa          1.0;
+            sigma0       sigma0 [ 1 0 -2 0 0 0 0] 0.13;
+            sigmaa       1.0;
                
             evaporationModel HertzKnudsenPressure;
             

@@ -123,8 +123,6 @@ private:
         
         //- Sum of all mass fractions
         volScalarField YSum_;
-        
-        volScalarField muE_;
 
         //- Stabilisation for normalisation of the interface normal
         const dimensionedScalar deltaN_;
@@ -133,8 +131,6 @@ private:
         
         scalar phaseMaskTol_;
         
-        multivariateSurfaceInterpolationScheme<scalar>::fieldTable fields_;
-
     // Private methods
 
         //- Calculate T(hs), psi(p,T), mu(p,T), alpha(p,T), rho(p,T), alphas
@@ -146,9 +142,6 @@ private:
         //- Calculate evaporation rates for each evaporation pair
         void calcEvaporation();
 
-        //- Update the compressibility (psi_) based on current alphas, p, and T
-        void calculatePsi();
-
         //- Solve the alpha transport equations
         void solveAlphas
         (
@@ -156,9 +149,6 @@ private:
             const label nAlphaCorr, 
             scalar f = 1.0
         );
-
-        //- Update the stored viscosity (mu_)
-        void calculateMu();
                 
 public:
 
@@ -270,14 +260,12 @@ public:
             {
                 return alphaVapor_;
             }
-                        
-                        
-            tmp<volScalarField> psiV() const
-            {
-                dimensionedScalar R("R",dimensionSet(1, 2, -2, -1, -1),8314);
-                return W()/(R*T_);
-            }
             
+            volScalarField& T()
+            {
+                return T_;
+            }
+                                    
             //- Get mass flux field
             const surfaceScalarField& rhoPhi() const
             {
@@ -286,9 +274,6 @@ public:
 
             //- Solve reaction chemistry, evaporation, and phase transport       
             scalar solve(volScalarField& rho);
-
-            //- Update the density (rho_) based on current alphas, p, and T
-            void calculateRho();
             
             //- Calculate the surface tension force field
             tmp<surfaceScalarField> surfaceTensionForce();
@@ -313,17 +298,14 @@ public:
             
             //- Get the total volume source (for pEqn and deltaT)
             tmp<volScalarField> S_evap() const;
-                        
-            //- Get the viscosity field
-            tmp<surfaceScalarField> muf() const;
-            
+                                    
             //- Get the total reaction and evaporation enthalpy source
             tmp<volScalarField> Sh() const;
             
             tmp<volScalarField> kByCv(const volScalarField& muEff) const;
             tmp<volScalarField> rCv() const;
             
-            void setHs(const volScalarField& T);
+            void setHs();
             
             //- Calculate the sharpened volume fraction for the vapor phase
             void calculateAlphaVapor();

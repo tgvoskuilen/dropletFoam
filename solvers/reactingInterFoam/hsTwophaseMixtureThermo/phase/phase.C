@@ -134,7 +134,7 @@ Foam::phase::phase
         Sc_ = readScalar(phaseDict_.lookup("SchmidtNo"));
     }
     
-    Foam::Info<< "Created phase " << name << Foam::endl;
+    Info<< "Created phase " << name << endl;
 }
 
 
@@ -156,6 +156,7 @@ void Foam::phase::setSpecies( const volScalarField& rhoTotal )
 }
 
 // Only applicable for liquid phase. Vapor phase will return 0 here.
+// TODO: Have vapor specie do its sutherland calc here too
 Foam::tmp<Foam::volScalarField> Foam::phase::mu
 (
     const volScalarField& p,
@@ -214,12 +215,10 @@ void Foam::phase::correct(const volScalarField& p, const volScalarField& T)
 {
     rhoAlpha_ = (*this) * rho(p,T);
     
-    
     Info<< "Min,max rhoAlpha"<<name_
         <<" = " << Foam::min(rhoAlpha_).value() << ", " 
         << Foam::max(rhoAlpha_).value() << endl;
         
-    
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
         specieI().correct();
@@ -348,12 +347,10 @@ Foam::tmp<volScalarField> Foam::phase::sigma
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.07)
+            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0)
         )
     );
     
-    return tsigma;
-    /*
     
     tmp<volScalarField> tn
     (
@@ -391,7 +388,7 @@ Foam::tmp<volScalarField> Foam::phase::sigma
     
     tn() += neg(tn() - SMALL);
 
-    return tsigma/tn;*/
+    return tsigma/tn;
 }
 
 
@@ -555,9 +552,6 @@ Foam::tmp<volScalarField> Foam::phase::rho
         }
         
         return (Yvoid + Yp_)/den;
-        
-        /*trho() = rhoBase;
-        return trho;*/
     }
 }
 
@@ -592,9 +586,6 @@ Foam::tmp<volScalarField> Foam::phase::psi
 
     if (name_ == "Vapor")
     {
-        //dimensionedScalar Wtmp("Wtmp",dimMass/dimMoles,28);
-        //tpsi() = Wtmp/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
-        //tpsi() = W()/(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314) * T);
         dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
         tpsi() = W() / (Ru * T);
     }
@@ -699,8 +690,16 @@ Foam::tmp<Foam::volScalarField> Foam::phase::k() const
 }
 
 
+void Foam::phase::calculateDs
+(
+    const volScalarField& muEff
+)
+{
+    D_ = Sc_ * fvc::interpolate(muEff) * faceMask_;
+}
 
-tmp<surfaceScalarField> Foam::phase::calculateDs
+
+/*tmp<surfaceScalarField> Foam::phase::calculateDs
 (
     const compressible::turbulenceModel& turb
 )
@@ -731,7 +730,7 @@ tmp<surfaceScalarField> Foam::phase::calculateDs
     }
 
     return tUc;
-}
+}*/
 
 
 // Calculate phase specific heat using subspecie Cv model, which calls the
@@ -810,12 +809,10 @@ Foam::tmp<Foam::volScalarField> Foam::phase::sharp
 scalar Foam::phase::solveSubSpecies
 (
     const volScalarField& p,
-    const volScalarField& T,
-    const surfaceScalarField& uc
+    const volScalarField& T
 )
 {   
     word divScheme("div(rho*phi*alpha,Yi)");
-    word divSchemeCorr("div(uc,Yi)");
 
     tmp<volScalarField> DbyRho = fvc::average(D_) / rho(p,T);
     scalar MaxFo = mesh().time().deltaTValue() * Foam::max
@@ -860,7 +857,6 @@ scalar Foam::phase::solveSubSpecies
             fvm::ddt(rhoAlpha_, Yi)
           + fvm::div(rhoPhiAlphaMasked, Yi, divScheme)
           - fvm::laplacian(D_, Yi)
-          //+ fvm::div(uc, Yi, divSchemeCorr) //Harvazinski Thesis
          ==
             combustionPtr_->R(Yi)
           + Su_Yi_evap( specieI() )
@@ -873,7 +869,7 @@ scalar Foam::phase::solveSubSpecies
         Yi.max(0.0);
         Yi.min(1.0);
         
-        Info<< "  Pre-coerce: " << Yi.name() << " min,max,avg = " 
+        Info<< Yi.name() << " min,max,avg = " 
             << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
             

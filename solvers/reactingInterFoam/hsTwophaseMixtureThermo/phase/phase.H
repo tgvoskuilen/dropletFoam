@@ -247,17 +247,12 @@ public:
             const volScalarField& T
         ) const;
                         
-        
-        tmp<surfaceScalarField> calculateDs
-        ( 
-            const compressible::turbulenceModel& turb 
-        );
+        void calculateDs(const volScalarField& muEff);
 
         scalar solveSubSpecies
         (
             const volScalarField& p,
-            const volScalarField& T,
-            const surfaceScalarField& uc
+            const volScalarField& T
         );
         
         void updateGlobalYs(const volScalarField& rhoE);

@@ -140,7 +140,7 @@ solvers
         relTol          0.1;
     }
     
-    TeFinal
+    TFinal
     {
         solver          PCG;
         preconditioner  DIC;

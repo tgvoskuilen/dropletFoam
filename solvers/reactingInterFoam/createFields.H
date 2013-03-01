@@ -34,7 +34,7 @@
 
     if( !isA<hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> > >(thermo.composition()) )
     {
-        //Fatal error
+        //TODO: Fatal error
     }
 
     hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> >& mixture =
@@ -96,11 +96,13 @@
     surfaceScalarField ghf("ghf", g & mesh.Cf());
 
     //volScalarField& hs = thermo.hs();
-    const volScalarField& T = mixture.T();
+    //const volScalarField& T = mixture.T();
+    volScalarField& T = mixture.T();
+    T.oldTime(); //needed?
     volScalarField& p = mixture.p();
-    p.oldTime();
+    p.oldTime(); //needed?
  
-    volScalarField hs
+    /*volScalarField hs
     (
         IOobject
         (
@@ -125,10 +127,8 @@
         ),
         thermo.T()
     );
-    Te.oldTime();
+    Te.oldTime();*/
 
-
-    
     
     volScalarField dQ
     (

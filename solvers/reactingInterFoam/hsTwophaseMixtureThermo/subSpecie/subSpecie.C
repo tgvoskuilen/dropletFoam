@@ -130,6 +130,7 @@ Foam::autoPtr<Foam::subSpecie> Foam::subSpecie::clone() const
     return autoPtr<subSpecie>(NULL);
 }
 
+/*
 tmp<volScalarField> Foam::subSpecie::hs
 (
     const volScalarField& T
@@ -156,7 +157,7 @@ tmp<volScalarField> Foam::subSpecie::hs
     }
         
     return ths;
-}
+}*/
 
 Foam::tmp<Foam::scalarField> Foam::subSpecie::Cv
 (
