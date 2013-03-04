@@ -246,6 +246,8 @@ public:
             const volScalarField& p,
             const volScalarField& T
         ) const;
+        
+        tmp<volScalarField> m_evap_sum() const;
                         
         void calculateDs(const volScalarField& muEff);
 
@@ -256,6 +258,8 @@ public:
         );
         
         void updateGlobalYs(const volScalarField& rhoE);
+        
+        tmp<volScalarField> x(const word& name) const;
 
 };
 

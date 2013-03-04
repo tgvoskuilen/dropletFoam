@@ -71,7 +71,7 @@ solvers
             mergeLevels     1;
         }
 
-        tolerance       0.0001;
+        tolerance       1e-6;
         relTol          0;
         maxIter         100;
     }
@@ -179,7 +179,7 @@ PIMPLE
     nHsSubCycles    3;
     nCorrectors     3;
     nOuterCorrectors 1;
-    nNonOrthogonalCorrectors 0;
+    nNonOrthogonalCorrectors 3;
     nAlphaCorr      1;
     nAlphaSubCycles 3;
     cAlpha          1;

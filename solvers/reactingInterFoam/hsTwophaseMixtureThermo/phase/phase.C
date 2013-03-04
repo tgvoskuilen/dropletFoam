@@ -273,7 +273,63 @@ Foam::tmp<Foam::volScalarField> Foam::phase::S_evap
     return tS_evap;
 }
 
+// Calculates the total mass source/sink due to evaporation.
+Foam::tmp<Foam::volScalarField> Foam::phase::m_evap_sum() const
+{
+    tmp<volScalarField> tS_evap
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tm_evap",
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("m_evap", dimDensity/dimTime, 0.0)
+        )
+    );
+    
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        tS_evap() += Su_Yi_evap( specieI() );
+    }
+    
+    return tS_evap * cellMask_;
+}
 
+// Find the mole fraction of a named specie
+Foam::tmp<Foam::volScalarField> Foam::phase::x(const word& specie) const
+{
+    tmp<volScalarField> tx
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tx",
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("x", dimless, 0.0)
+        )
+    );
+
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        if( specieI().name() == specie )
+        {
+            const volScalarField& Yi = specieI().Y();
+            dimensionedScalar Wi = specieI().W();
+            tx() = Yi / (Wi * Np());
+            break;
+        }
+    }
+
+    return tx;
+}
 
 // Mass source term due to evaporation for a given subspecie. This is a source
 // term in the Yi equation for each subspecie
@@ -837,9 +893,18 @@ scalar Foam::phase::solveSubSpecies
     fvc::surfaceIntegrate(rhoAlphaIf, rhoPhiAlphaMasked);
     
     //TODO: Need source term in here for evaporation
+    
+    volScalarField Su = m_evap_sum(); //*cellMask_ ?;
+    
     forAll(rhoAlphaIf, cellI)
     {
-        rhoAlphaIf[cellI] = rhoAlpha0[cellI] - rhoAlphaIf[cellI]*deltaT;
+        //new amount = old amount + (source - outflux) * dt
+        rhoAlphaIf[cellI] = rhoAlpha0[cellI] + (Su[cellI] - rhoAlphaIf[cellI])*deltaT;
+        
+        if( cellMask_[cellI] < SMALL && mag(Su[cellI]) > SMALL )
+        {
+            Info<<"WARNING: evaporation outside mask region"<<endl;
+        }
     }
     rhoAlpha_.correctBoundaryConditions();
     

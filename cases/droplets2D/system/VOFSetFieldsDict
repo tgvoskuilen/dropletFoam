@@ -37,7 +37,7 @@ droplets
         );
         vaporSpecies
         (
-            //CH3NHNH2   0.05
+            CH3NHNH2   0.05
         );
     }
     
@@ -53,7 +53,7 @@ droplets
         );
         vaporSpecies
         (
-            //N2O4   0.90
+            N2O4   0.8
             //NO2    0.09
         );
     }

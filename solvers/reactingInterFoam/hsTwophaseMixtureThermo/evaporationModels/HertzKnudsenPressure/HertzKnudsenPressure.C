@@ -61,6 +61,19 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
         alphaL.mesh(),
         dimensionedScalar("x",dimless,0.0)
     ),
+    xL_
+    (
+        IOobject
+        (
+            "xL_" + vapor_specie_,
+            alphaL.mesh().time().timeName(),
+            alphaL.mesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        alphaL.mesh(),
+        dimensionedScalar("xL",dimless,0.0)
+    ),
     p_vap_
     (
         IOobject
@@ -105,12 +118,18 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     p_vap_.min(Pc_);
                               
-    //Calculate the vapor mol fraction
-    x_ = alphaV_.Y(vapor_specie_) / (W_ * alphaV_.Np()); // * mask_;
+    //Calculate the mole fractions
+    //x_ = alphaV_.Y(vapor_specie_) / (W_ * alphaV_.Np()); // * mask_;
+    
+    x_ = alphaV_.x(vapor_specie_);
+    xL_ = alphaL_.x(vapor_specie_+"L");
     
     scalar pi = constant::mathematical::pi;
     
-    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_*T_)) * (p_vap_ - p_*x_);
+    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_*T_))
+             * (p_vap_*xL_ - p_*x_);
+    
+    //no condensation
     m_evap_.max(0.0);
     
     Foam::Info << "Min,max evaporation source for " << vapor_specie_ << " = "

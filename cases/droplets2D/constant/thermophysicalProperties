@@ -59,7 +59,7 @@ Liquid
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
             sigmaa          0.884;
                
-            evaporationModel HertzKnudsenTemperature;
+            evaporationModel HertzKnudsenPressure;
             
             HertzKnudsenPressureCoeffs
             {
@@ -67,7 +67,7 @@ Liquid
                 Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
                 Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
                 La              0.38;
-                betaM           0.03;
+                betaM           0.6;
 
                 Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
                 Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
@@ -97,7 +97,7 @@ Liquid
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
             sigmaa          0.745;
               
-            evaporationModel HertzKnudsenTemperature;
+            evaporationModel HertzKnudsenPressure;
              
             HertzKnudsenPressureCoeffs
             {
@@ -105,7 +105,7 @@ Liquid
                 Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
                 La              0.38;
-                betaM           0.03;
+                betaM           0.6;
 
                 Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
                 Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
