@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
             Info<<"Solving alpha transport equations"<<endl;
             MaxFo = mixture.solve( rho );
 
-            dQ = combustion->dQ();
+            dQ = combustion->dQ() + mixture.dQ_evap();
 
             #include "UEqn.H"	
             #include "TEqn.H"

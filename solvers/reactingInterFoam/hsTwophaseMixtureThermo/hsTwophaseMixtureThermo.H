@@ -301,6 +301,7 @@ public:
                                     
             //- Get the total reaction and evaporation enthalpy source
             tmp<volScalarField> Sh() const;
+            tmp<volScalarField> dQ_evap() const;
             
             tmp<volScalarField> kByCv(const volScalarField& muEff) const;
             tmp<volScalarField> rCv() const;

@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     multiphaseCompRxnFoam;
+application     reactingInterFoam;
 
 startFrom       latestTime;
 
@@ -23,7 +23,7 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         0.5;
+endTime         2.0;
 
 deltaT          1e-5;
 

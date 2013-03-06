@@ -92,6 +92,7 @@ Foam::evaporationModel::evaporationModel
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
+
 tmp<volScalarField> Foam::evaporationModel::L() const
 {
     tmp<volScalarField> tL
@@ -130,10 +131,17 @@ tmp<volScalarField> Foam::evaporationModel::Sh() const
 
 tmp<volScalarField> Foam::evaporationModel::area() const
 {
-    const volScalarField& YL = alphaL_.Y(vapor_specie_+"L");
+    //const volScalarField& YL = alphaL_.Y(vapor_specie_+"L");
+    
+    tmp<volScalarField> A0 = Foam::mag(fvc::grad(alphaL_));
+    const volScalarField::DimensionedInternalField& V = alphaL_.mesh().V();
+    
+    A0().dimensionedInternalField() *= pos(A0().dimensionedInternalField() - Foam::pow(V,-1.0/3.0)/100.0);
+    A0().correctBoundaryConditions();
     
     // The mask excludes areas where two liquids have begun to coalesce
-    return Foam::mag(fvc::grad(alphaL_)) * pos(YL - SMALL) * mask_;
+    //return Foam::mag(fvc::grad(alphaL_)); // * pos(YL - SMALL) * mask_;
+    return A0;
 }
 
 

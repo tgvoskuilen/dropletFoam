@@ -109,7 +109,7 @@ Foam::phase::phase
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("cellMask_"+name, dimless, 0.0)
@@ -293,10 +293,35 @@ Foam::tmp<Foam::volScalarField> Foam::phase::m_evap_sum() const
     
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
-        tS_evap() += Su_Yi_evap( specieI() );
+        if (name_ == "Vapor")
+        {
+            forAllConstIter
+            (
+                PtrDictionary<subSpecie>, 
+                otherPhase_->subSpecies(), 
+                specieLI
+            )
+            {
+                if (specieLI().hasEvaporation())
+                {
+                    if (specieLI().evapModel().vaporName() == specieI().Y().name())
+                    {
+                        tS_evap() += specieLI().evapModel().m_evap();
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (specieI().hasEvaporation())
+            {
+                tS_evap() -= specieI().evapModel().m_evap();
+            }
+        }
     }
     
-    return tS_evap * cellMask_;
+    return tS_evap;
 }
 
 // Find the mole fraction of a named specie
@@ -324,6 +349,37 @@ Foam::tmp<Foam::volScalarField> Foam::phase::x(const word& specie) const
             const volScalarField& Yi = specieI().Y();
             dimensionedScalar Wi = specieI().W();
             tx() = Yi / (Wi * Np());
+            break;
+        }
+    }
+
+    return tx;
+}
+
+// Find the mole fraction of a named specie
+Foam::tmp<Foam::volScalarField> Foam::phase::xByY(const word& specie) const
+{
+    tmp<volScalarField> tx
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tx",
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("x", dimless, 0.0)
+        )
+    );
+
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        if( specieI().name() == specie )
+        {
+            dimensionedScalar Wi = specieI().W();
+            tx() = 1.0 / (Wi * Np());
             break;
         }
     }
@@ -871,13 +927,16 @@ scalar Foam::phase::solveSubSpecies
     word divScheme("div(rho*phi*alpha,Yi)");
 
     tmp<volScalarField> DbyRho = fvc::average(D_) / rho(p,T);
-    scalar MaxFo = mesh().time().deltaTValue() * Foam::max
+    
+    surfaceScalarField DbyDelta // m/s diffusion velocity
     (
-        DbyRho().internalField() / pow(mesh().V(),2.0/3.0)
+        mesh().surfaceInterpolation::deltaCoeffs()
+      * fvc::interpolate(DbyRho)
     );
-        
-    Info<< "Max D = " << Foam::max(D_).value() << endl;
-    Info<< "Max Fo = " << MaxFo << endl;
+    
+    scalar DiNum = gMax(DbyDelta.internalField())*mesh().time().deltaTValue();
+    
+    Info<< "Max DiNum = " << DiNum << endl;
         
     Info<< "Solving "<<subSpecies_.size()
         <<" subspecie(s) for phase: " 
@@ -892,9 +951,7 @@ scalar Foam::phase::solveSubSpecies
     surfaceScalarField rhoPhiAlphaMasked = rhoPhiAlpha_*faceMask_;
     fvc::surfaceIntegrate(rhoAlphaIf, rhoPhiAlphaMasked);
     
-    //TODO: Need source term in here for evaporation
-    
-    volScalarField Su = m_evap_sum(); //*cellMask_ ?;
+    volScalarField Su = m_evap_sum() * cellMask_;
     
     forAll(rhoAlphaIf, cellI)
     {
@@ -913,9 +970,16 @@ scalar Foam::phase::solveSubSpecies
     
    
     // Loop through phase's subspecies
+    scalar dTsrc = mesh().time().deltaTValue();
+    
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
         volScalarField& Yi = specieI().Yp();
+        
+        tmp<volScalarField> SuEvap = Su_Yi_evap( specieI() );
+        dimensionedScalar ss("ss",dimDensity/dimTime,SMALL);
+        scalar mindT = Foam::min(0.02 * rho(p,T) / (Foam::mag(SuEvap())+ss)).value();
+        dTsrc = (mindT < dTsrc) ? mindT : dTsrc;
         
         fvScalarMatrix YiEqn
         (
@@ -924,7 +988,7 @@ scalar Foam::phase::solveSubSpecies
           - fvm::laplacian(D_, Yi)
          ==
             combustionPtr_->R(Yi)
-          + Su_Yi_evap( specieI() )
+          + SuEvap
           - fvm::Sp(Sp, Yi)
         );
 
@@ -938,15 +1002,30 @@ scalar Foam::phase::solveSubSpecies
             << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;
             
-    }
         
-    return MaxFo;
+            
+    }
+       
+    Info<< "Min source dT = " << dTsrc << endl;
+     
+    return DiNum;
 }
 
 void Foam::phase::setPhaseMasks(scalar maskTol)
 {
     const volScalarField& alpha = *this;
-    cellMask_ = pos(alpha - maskTol);
+    
+    tmp<volScalarField> Ai = Foam::mag(fvc::grad(alpha));
+    volScalarField::DimensionedInternalField Amin = Foam::pow(mesh().V(),-1.0/3.0)/100.0;
+    
+    Ai().internalField() *= pos
+    (
+        Ai().internalField() - Amin
+    );
+    
+    dimensionedScalar Abase("Abase",dimLength,1.0);
+    
+    cellMask_ = pos(alpha - maskTol + Ai*Abase);
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
 }
 

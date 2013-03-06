@@ -74,6 +74,32 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
         alphaL.mesh(),
         dimensionedScalar("xL",dimless,0.0)
     ),
+    area_
+    (
+        IOobject
+        (
+            "area_" + vapor_specie_,
+            alphaL.mesh().time().timeName(),
+            alphaL.mesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        alphaL.mesh(),
+        dimensionedScalar("area",dimless/dimLength,0.0)
+    ),
+    coeff_
+    (
+        IOobject
+        (
+            "coeff_" + vapor_specie_,
+            alphaL.mesh().time().timeName(),
+            alphaL.mesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        alphaL.mesh(),
+        dimensionedScalar("coeff",dimless/dimLength,0.0)
+    ),
     p_vap_
     (
         IOobject
@@ -123,18 +149,65 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     x_ = alphaV_.x(vapor_specie_);
     xL_ = alphaL_.x(vapor_specie_+"L");
+    area_ = area();
     
     scalar pi = constant::mathematical::pi;
+    tmp<volScalarField> coeff = area() * Foam::sqrt(W_/(2*pi*R_*T_));
     
-    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_*T_))
-             * (p_vap_*xL_ - p_*x_);
+    coeffC_ = 0.0*coeff()*neg(p_vap_ - p_*x_);
+    coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_ - p_*x_);
     
+    //m_evap_ = coeff_ * (p_vap_ - p_*x_);
+
     //no condensation
-    m_evap_.max(0.0);
+    //m_evap_.max(0.0);
     
-    Foam::Info << "Min,max evaporation source for " << vapor_specie_ << " = "
-               << Foam::gMin(m_evap_) << ", " 
-               << Foam::gMax(m_evap_) << " kg/m3/s" << Foam::endl;
+    //Foam::Info << "Min,max evaporation source for " << vapor_specie_ << " = "
+    //           << Foam::gMin(m_evap_) << ", " 
+    //           << Foam::gMax(m_evap_) << " kg/m3/s" << Foam::endl;
 }
+
+
+// get the explicit and implicit source terms for pressure
+Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::pS() const
+{
+    volScalarField pCoeff(1.0/alphaV_.rho(p_,T_) - 1.0/alphaL_.rho(p_,T_)));
+    
+    //S = pCoeff*mDotVnet 
+    //  = pCoeff*( mDotv - mDotc )
+    //  = pCoeff*(coeffV*alpha + coeffC*(1-alpha))*(pSat-x*p)
+    //
+    //  implicit = -pCoeff*x*( coeffV*alpha + coeffC*(1-alpha) )
+    //  explicit = pCoeff*pSat*( coeffV*alpha + coeffC*(1-alpha) )
+    //
+    //S = explicit + implicit*p
+    
+    return Pair<tmp<volScalarField> >
+    (
+        -pCoeff*x_*(coeffV_*alphaL_ + coeffC_*alphaV_),
+        pCoeff*p_vap_*(coeffV_*alphaL_ + coeffC_*alphaV_)
+    );
+    
+}
+
+// get the explicit and implicit source terms for alphaL
+Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::alphaS() const
+{
+    volScalarField alphaCoeff(alphaV_/alphaL_.rho(p_,T_) + alphaL_/alphaV_.rho(p_,T_)));
+    
+    //S = explicit + implicit*alpha
+    //
+    // implicit = aC*(coeffV - coeffC)*(pSat - x*p)
+    // explicit = aC*coeffC*(pSat - x*p)
+    
+    return Pair<tmp<volScalarField> >
+    (
+        alphaCoeff*coeffC_*(p_vap_ - x_*p_),
+        alphaCoeff*(coeffV_ - coeffC_)*(p_vap_ - x_*p_)
+    );
+    
+}
+
+
 
 // ************************************************************************* //

@@ -55,6 +55,7 @@ class HertzKnudsenPressure
     //model-specific stuff
         volScalarField x_;
         volScalarField xL_;
+        volScalarField area_;
         volScalarField p_vap_;
         
         dimensionedScalar Pc_;

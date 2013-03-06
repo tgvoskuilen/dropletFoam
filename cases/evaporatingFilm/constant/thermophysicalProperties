@@ -24,7 +24,7 @@ foamChemistryFile "$FOAM_CASE/constant/reactions";
 foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
 // Phase volume fraction tolerance for diffusion mask
-phaseMaskTol 0.001;
+phaseMaskTol 0.01;
 
 Vapor
 {
@@ -54,10 +54,10 @@ Liquid
             Tc           Tc   [ 0 0 0 1 0 0 0]   647.1;
             kappa        kappa [1 1 -3 -1 0 0 0] 0.68;
             
-            sigma0       sigma0 [ 1 0 -2 0 0 0 0] 0.13;
+            sigma0       sigma0 [ 1 0 -2 0 0 0 0] 0.0; //13;
             sigmaa       1.0;
                
-            evaporationModel HertzKnudsenPressure;
+            evaporationModel HertzKnudsenTemperature;
             
             HertzKnudsenPressureCoeffs
             {
@@ -65,11 +65,21 @@ Liquid
                Lb              Lb [ 1 2 -2 0 -1 0 0] 40626000.0;
                Tb              Tb [ 0 0 0 1 0 0 0] 373.15;
                La              0.38;
-               betaM           0.03;
+               betaM           0.6;
 
                Tc              Tc [ 0 0 0 1 0 0 0] 647.3;
                Pc              Pc [ 1 -1 -2 0 0 0 0] 22120000;
                PvCoeffs        (10.9988 2.9728e3 4.1643e5);
+            }
+            
+            HertzKnudsenTemperatureCoeffs
+            {
+               vapor           H2O;
+               Lb              Lb [ 1 2 -2 0 -1 0 0] 40626000.0;
+               Tb              Tb [ 0 0 0 1 0 0 0] 373.15;
+               La              0.38;
+               betaM           0.6;
+               Tc              Tc [ 0 0 0 1 0 0 0] 647.3;
             }
         }
    );

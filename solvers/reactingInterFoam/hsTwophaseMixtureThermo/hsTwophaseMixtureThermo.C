@@ -389,6 +389,17 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::Sh() const
     return combustionPtr_->Sh() + alphaLiquid_.Sh_evap();
 }
 
+template<class MixtureType> 
+Foam::tmp<Foam::volScalarField> 
+Foam::hsTwophaseMixtureThermo<MixtureType>::dQ_evap() const
+{    
+    tmp<volScalarField> dQ = alphaLiquid_.Sh_evap();
+
+    dQ().dimensionedInternalField() *= mesh_.V();
+    dQ().correctBoundaryConditions();
+
+    return dQ;
+}
 
 
 // Used for alphaCourant number calculations
@@ -501,7 +512,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
     tRefinementField().internalField() = max
     (
         tRefinementField().internalField(), 
-        20.0 * mag(fvc::grad(alphaLiquid_)) * Foam::pow(mesh_.V(),1.0/3.0)
+        1000.0 * mag(fvc::grad(alphaLiquid_)) * Foam::pow(mesh_.V(),1.0/3.0)
     );
 
 /*
