@@ -554,6 +554,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     liquid_.updateRho( interface_ );
     vapor_.updateRho( interface_ );
             
+    Info<< "Updating phiGlobal" << endl;
     phiGlobal = vapor_.phi() + liquid_.phi();
     
     

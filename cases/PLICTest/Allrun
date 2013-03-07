@@ -3,7 +3,7 @@
 import os
 import sys
 
-sys.path.append('../../python')
+sys.path.append('../../../foamTools/python')
 import pyOpenFOAM
 
 # The inputs for this case builder are
@@ -50,7 +50,7 @@ for i in range(0,2):
 """
 
 pyOpenFOAM.run('VOFSetFields')
-
+os.system('rm 0/phi*')
 
 
 if np > 1:
@@ -61,34 +61,8 @@ if np > 1:
 
 
 # Run the problem
-if np > 1:
-    # Redistribute the mesh - NOT CURRENTLY WORKING
-    #  this needs ptscotch while decomposePar needs scotch
-    #print "Redistributing the mesh"
-    #pyOpenFOAM.set_decompose_par(np,"ptscotch")
-    #pyOpenFOAM.run('redistributePar',np,'-overwrite')
-
-    # Renumber mesh
-    #print "Renumbering the mesh"
-    #pyOpenFOAM.run('renumberMesh',np,'-overwrite')
-
-    # Begin parallel run
-    print "Running the problem"
-    pyOpenFOAM.run('reactingInterFoam',np,hide=False)
-
-    # Reconstruct the decomposed solution
-    #for time_folder in pyOpenFOAM.get_sorted_time_folders():
-    #    print "Reconstructing parallel mesh for time %s" % time_folder
-    #    pyOpenFOAM.run('reconstructParMesh',args='-time '+time_folder)
-
-    #    print "Reconstructing solution for time %s" % time_folder
-    #    pyOpenFOAM.run('reconstructPar',args='-time '+time_folder)
-
-else:
-    print "Running the problem"
-    pyOpenFOAM.run('reactingInterFoam',hide=False)
-
-
+print "Running the problem"
+pyOpenFOAM.run('reactingInterFoam',np,hide=False)
 
 
 print "Finished!"

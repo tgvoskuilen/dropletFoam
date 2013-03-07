@@ -1,7 +1,7 @@
 EXE_INC = \
     -IlnInclude \
     -I../../../utilities/PLICInterface/lnInclude \
-    -I../../../utilities/geometryTools/lnInclude \
+    -I../../../../foamTools/geometryTools/lnInclude \
     -I$(LIB_SRC)/transportModels \
     -I$(LIB_SRC)/turbulenceModels/compressible/turbulenceModel \
     -I$(LIB_SRC)/transportModels/incompressible/lnInclude \

@@ -20,12 +20,15 @@ defaultSpecies
     N2   1.0
 );
 
+liquidPhaseName  alphaLiquid;
+vaporPhaseName   alphaVapor;
+
 droplets
 (
     DropMMH
     {
         center   (0 0.0015 0.0015);
-        radius   (0 0.001 0.0005);
+        radius   (0 0.001 0.001);
         delVapor 1e-4;
         U        (0 0 0);
         liquidSpecies
@@ -34,7 +37,7 @@ droplets
         );
         vaporSpecies
         (
-            CH3NHNH2   0.05
+            CH3NHNH2   0.0
         );
     }
 );

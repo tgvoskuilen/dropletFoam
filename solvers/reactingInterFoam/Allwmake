@@ -2,8 +2,7 @@
 cd ${0%/*} || exit 1    # run from this directory
 set -x
 
-wmake ../../utilities/VOFSetFields
-wmake libso ../../utilities/geometryTools
+wmake libso ../../../foamTools/geometryTools
 wmake libso ../../utilities/PLICInterface
 wmake libso hsTwophaseMixtureThermo
 wmake

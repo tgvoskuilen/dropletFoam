@@ -40,14 +40,20 @@
       //+ fvc::ddtPhiCorr(rAUL, rhoL, UL, phiL) //TODO: Fix near interface
     );
     
-    phiL += 
+    /*phiL += 
     (
         (mixture.interface().stf())*rhorAULf*mesh.magSf()
-    );
+    );*/
     
     
 // -- SOLUTION LOOP ------
     Info<< "Starting pressure solution loop" << endl;
+    
+    tmp<volScalarField> vSu = vapor.p_Su(interface, pL, rAUv);
+    tmp<volScalarField> vSp = vapor.p_Sp(interface, rAUv);
+    tmp<volScalarField> LSu = liquid.p_Su(interface, pv, rhorAUL);
+    tmp<volScalarField> LSp = liquid.p_Sp(interface, rhorAUL);
+    
     while (pimple.correctNonOrthogonal())
     {
         fvScalarMatrix pEqnv
@@ -55,8 +61,16 @@
             fvm::ddt(psiv*vapor.alphaCorr(interface), pv)
           + fvc::div(phiv) // <- Really phivEst
           - fvm::laplacian(rhorAUvf*alphafv, pv)
-          - vapor.p_Su(interface, pL, rAUv)              //<- rAUv not used
-          + fvm::Sp( vapor.p_Sp(interface, rAUv), pv )   //<- rAUv not used
+          - vSu()
+          + fvm::Sp( vSp(), pv )
+        );
+
+        fvScalarMatrix pEqnL
+        (
+            fvc::div(phiL) // <- Really phiLEst
+          - fvm::laplacian(rhorAULf*alphafL, pL)
+          - LSu()
+          + fvm::Sp( LSp() , pL )
         );
         
         solve
@@ -65,14 +79,6 @@
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
-        fvScalarMatrix pEqnL
-        (
-            fvc::div(phiL) // <- Really phiLEst
-          - fvm::laplacian(rhorAULf*alphafL, pL)
-          - liquid.p_Su(interface, pv, rhorAUL)
-          + fvm::Sp( liquid.p_Sp(interface, rhorAUL), pL )
-        );
-          
         solve
         (
             pEqnL,

@@ -525,7 +525,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::p_Su
     else
     {
         //TODO: TEMPORARY CONSTANT
-        dimensionedScalar sigmaT("sigma",dimPressure*dimLength,0.00); //no surface tension here, try it as a body force
+        dimensionedScalar sigmaT("sigma",dimPressure*dimLength,0.07);
         
         dimensionedScalar psirDT
         (

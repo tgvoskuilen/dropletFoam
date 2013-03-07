@@ -19,6 +19,9 @@ defaultSpecies
 (
 );
 
+liquidPhaseName  alpha1;
+vaporPhaseName   none;
+
 droplets
 (
     WaterDrop

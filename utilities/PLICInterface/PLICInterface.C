@@ -429,8 +429,8 @@ void Foam::PLICInterface::update()
 void Foam::PLICInterface::calculateInterfaceNormal()
 {    
     alphaLsmooth_ = alphaLiquid_;
-    scalar dx = 6e-5;
-    dimensionedScalar dTau("dTau",dimArea,dx*dx/4.0);
+    scalar dx = 3e-5;
+    dimensionedScalar dTau("dTau",dimArea,dx*dx/10.0);
     
     for(label i = 0; i < 2; i++)
     {
@@ -567,15 +567,16 @@ tmp<surfaceScalarField> Foam::PLICInterface::stf() const
 
 void Foam::PLICInterface::updateKappaTest(bool changeNormals)
 {
+    dimensionedScalar s("s",dimless/dimLength,SMALL);
+    
     //alphaLsmooth is calculated when the normals are calculated    
-    //smoothN_ = fvc::grad(alphaLsmooth_) / (mag(fvc::grad(alphaLsmooth_)) + s);
+    smoothN_ = fvc::grad(alphaLsmooth_) / (mag(fvc::grad(alphaLsmooth_)) + s);
     
     //kappaTest_ = -fvc::div(fvc::interpolate(smoothN_) & mesh_.Sf());
 
-    dimensionedScalar s("s",dimless/dimLength,SMALL);
-    smoothN_ = fvc::grad(alphaLiquid_) / (mag(fvc::grad(alphaLiquid_)) + s);
+    //smoothN_ = fvc::grad(alphaLiquid_) / (mag(fvc::grad(alphaLiquid_)) + s);
     
-    kappaTest_ = fvc::div(fvc::interpolate(smoothN_) & mesh_.Sf());
+    kappaTest_ = -fvc::div(fvc::interpolate(smoothN_) & mesh_.Sf());
 
 /*
     tmp<surfaceVectorField> nf
@@ -1098,8 +1099,8 @@ void Foam::PLICInterface::updateKappa(bool changeNormals)
     
     
     
-    //kappaI_ = dimensionedScalar("k",dimless/dimLength,1.0/0.00101) * pos(mag(iNormal_)-SMALL);
-    kappaI_ = kappaTest_;
+    kappaI_ = dimensionedScalar("k",dimless/dimLength,1.0/0.00101) * pos(mag(iNormal_)-SMALL);
+    //kappaI_ = kappaTest_;
 }
 
 
