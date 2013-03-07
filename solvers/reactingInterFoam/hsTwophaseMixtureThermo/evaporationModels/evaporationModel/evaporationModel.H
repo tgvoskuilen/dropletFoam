@@ -175,13 +175,8 @@ public:
         void setMask(const volScalarField& evapMask);
         
         //- 
-        virtual Pair<tmp<volScalarField> > pS() const = 0;
+        virtual Pair<tmp<volScalarField> > YSuSp() const = 0;
 
-        //- 
-        virtual Pair<tmp<volScalarField> > alphaS() const = 0;
-
-       
-        const volScalarField() pSat() const = 0;
 };
 
 

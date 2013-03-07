@@ -16,14 +16,14 @@ FoamFile
 
 dimensions      [0 0 0 1 0 0 0];
 
-internalField   uniform 370;
+internalField   uniform 300;
 
 boundaryField
 {
     atmosphere
     {
         type            fixedValue;
-        value           uniform 370;
+        value           uniform 300;
     }
     
     sides

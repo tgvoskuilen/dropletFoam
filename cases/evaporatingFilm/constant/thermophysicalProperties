@@ -57,7 +57,7 @@ Liquid
             sigma0       sigma0 [ 1 0 -2 0 0 0 0] 0.0; //13;
             sigmaa       1.0;
                
-            evaporationModel HertzKnudsenTemperature;
+            evaporationModel HertzKnudsenPressure;
             
             HertzKnudsenPressureCoeffs
             {

@@ -88,4 +88,17 @@ void Foam::evaporationModels::HertzKnudsenTemperature::calculate
                << Foam::gMax(m_evap_) << " mg/m3/s" << Foam::endl;
 }
 
+Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenTemperature::YSuSp() const
+{
+    //S_Yv = explicit - implicit*Yv
+    // This casts the evaporation in the form C*(Ysat - Y)
+        
+    return Pair<tmp<volScalarField> >
+    (
+        m_evap_,
+        0.0*m_evap_
+    );
+    
+}
+
 // ************************************************************************* //

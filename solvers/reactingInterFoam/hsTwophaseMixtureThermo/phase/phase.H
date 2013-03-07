@@ -196,6 +196,7 @@ public:
         tmp<volScalarField> Yp() const;
         tmp<volScalarField> Ypp() const;
         tmp<volScalarField> Np() const;
+        tmp<volScalarField> Npp() const;
         
         //- Get phase molar mass field
         tmp<volScalarField> W() const;
@@ -248,6 +249,11 @@ public:
         ) const;
         
         tmp<volScalarField> m_evap_sum() const;
+        
+        Pair<tmp<volScalarField> > YiSuSp
+        (
+            const subSpecie& specieI
+        ) const;
                         
         void calculateDs(const volScalarField& muEff);
 

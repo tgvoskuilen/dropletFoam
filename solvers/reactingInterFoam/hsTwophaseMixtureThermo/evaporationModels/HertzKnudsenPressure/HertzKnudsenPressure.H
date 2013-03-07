@@ -56,6 +56,8 @@ class HertzKnudsenPressure
         volScalarField x_;
         volScalarField xL_;
         volScalarField area_;
+        volScalarField coeffC_;
+        volScalarField coeffV_;
         volScalarField p_vap_;
         
         dimensionedScalar Pc_;
@@ -92,6 +94,8 @@ public:
         (
             const volScalarField& evapMask
         );
+        
+        virtual Pair<tmp<volScalarField> > YSuSp() const;
 
 };
 

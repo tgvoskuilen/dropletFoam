@@ -9,14 +9,13 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       uniformDimensionedVectorField;
+    class       dictionary;
     location    "constant";
-    object      g;
+    object      turbulenceProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 1 -2 0 0 0 0];
-value           ( -9.81 0 0 );
+simulationType  laminar; //LESModel; //laminar;
 
 
 // ************************************************************************* //

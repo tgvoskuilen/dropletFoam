@@ -9,14 +9,35 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       uniformDimensionedVectorField;
-    location    "constant";
-    object      g;
+    class       volScalarField;
+    location    "0";
+    object      alphaLiquid;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 1 -2 0 0 0 0];
-value           ( -9.81 0 0 );
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0.0;
+
+boundaryField
+{
+    atmosphere
+    {
+        type            inletOutlet;
+        inletValue      uniform 0.0;
+        value           uniform 0.0;
+    }
+        
+    frontAndBack
+    {
+        type            symmetryPlane;
+    }
+    
+    defaultFaces
+    {
+        type            symmetryPlane;
+    }
+}
 
 
 // ************************************************************************* //

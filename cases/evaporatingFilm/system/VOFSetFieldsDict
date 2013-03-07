@@ -38,7 +38,7 @@ droplets
         );
         vaporSpecies
         (
-            H2O   1.0
+            H2O   0.1
         );
     }
 );

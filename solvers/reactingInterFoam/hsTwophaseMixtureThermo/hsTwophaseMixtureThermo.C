@@ -303,6 +303,12 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     rhoPhi_ = phi_ * fvc::interpolate(rho_);
     rho_.oldTime();
     
+    // Define phase boundary masks to prevent artificial cross-phase mixing
+    //  Masks are based on current values of alphas
+    alphaLiquid_.setPhaseMasks(phaseMaskTol_);
+    alphaVapor_.setPhaseMasks(phaseMaskTol_);
+    
+    //Set Yp values and allow slight diffusion to expand to phase mask boundary
     alphaVapor_.setSpecies( rho_ );
     alphaLiquid_.setSpecies( rho_ );
 }
@@ -766,7 +772,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             0
         );
         
-        alphaLiquid_.max(0.0);
+        //alphaLiquid_.max(0.0);
                 
         // WARNING:
         //   This solution provides a rho and rhoPhi pair that do not satisfy
@@ -784,7 +790,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
 
         alphaVapor_ == scalar(1) - alphaLiquid_;
-        alphaVapor_.max(0.0);
+        //alphaVapor_.max(0.0);
     }
     
     
