@@ -53,7 +53,6 @@ class HertzKnudsenTemperature
 {
     
     //model-specific stuff
-        volScalarField area_;
         scalar betaM_;
 
 public:

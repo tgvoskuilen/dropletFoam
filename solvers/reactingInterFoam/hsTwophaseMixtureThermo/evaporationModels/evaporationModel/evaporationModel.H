@@ -68,6 +68,7 @@ class evaporationModel
 
         volScalarField m_evap_;
         volScalarField mask_;
+        volScalarField area_;
         
         //- Heat of vaporization (J/kmol)
         //  L = Lb * ((Tc-T)/(Tc-Tb))^La
@@ -161,18 +162,17 @@ public:
         virtual void calculate
         (
             const volScalarField& evapMask
-        ) = 0;
+        );
         
         //- Calculate enthalpy source due to evaporation
         virtual tmp<volScalarField> Sh() const;
         
+        virtual tmp<volScalarField> rho_evap() const;
+        
         //- Calculate latent heat of vaporization (function of T)
         virtual tmp<volScalarField> L() const;
         
-        //- Calculate interface area/volume
-        virtual tmp<volScalarField> area() const;
-        
-        void setMask(const volScalarField& evapMask);
+        virtual tmp<volVectorField> U_evap() const;
         
         //- 
         virtual Pair<tmp<volScalarField> > YSuSp() const = 0;

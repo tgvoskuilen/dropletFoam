@@ -74,19 +74,6 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
         alphaL.mesh(),
         dimensionedScalar("xL",dimless,0.0)
     ),
-    area_
-    (
-        IOobject
-        (
-            "area_" + vapor_specie_,
-            alphaL.mesh().time().timeName(),
-            alphaL.mesh(),
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        alphaL.mesh(),
-        dimensionedScalar("area",dimless/dimLength,0.0)
-    ),
     coeffC_
     (
         IOobject
@@ -98,7 +85,7 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
             IOobject::AUTO_WRITE
         ),
         alphaL.mesh(),
-        dimensionedScalar("coeffC",dimTime/dimArea,0.0)
+        dimensionedScalar("coeffC",dimTime/dimLength,0.0)
     ),
     coeffV_
     (
@@ -111,7 +98,7 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
             IOobject::AUTO_WRITE
         ),
         alphaL.mesh(),
-        dimensionedScalar("coeffV",dimTime/dimArea,0.0)
+        dimensionedScalar("coeffV",dimTime/dimLength,0.0)
     ),
     p_vap_
     (
@@ -138,7 +125,7 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     const volScalarField& evapMask
 )
 {
-    setMask( evapMask );
+    evaporationModel::calculate(evapMask);
     
     //Calculate the vapor pressure
     dimensionedScalar p0("p0",dimPressure,101325);
@@ -162,19 +149,21 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     x_ = alphaV_.x(vapor_specie_);
     xL_ = alphaL_.x(vapor_specie_+"L");
-    area_ = area();
     
     scalar pi = constant::mathematical::pi;
-    tmp<volScalarField> coeff = area() * Foam::sqrt(W_/(2*pi*R_*T_));
+    dimensionedScalar sA("sA",dimless/dimLength,SMALL);
+    
+    tmp<volScalarField> coeff = Foam::sqrt(W_/(2*pi*R_*T_))*pos(area_-sA);
     
     coeffC_ = 0.0*coeff()*neg(p_vap_ - p_*x_); //no condensation
     coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_ - p_*x_);
     
     m_evap_ = (coeffC_ + coeffV_) * (p_vap_ - p_*x_);
     
-    Foam::Info << "Min,max evaporation source for " << vapor_specie_ << " = "
-               << Foam::gMin(m_evap_) << ", " 
-               << Foam::gMax(m_evap_) << " kg/m3/s" << Foam::endl;
+    volScalarField rhoE = rho_evap(); //m_evap_ * area_
+    Foam::Info<< "Min,max evaporation source for " << vapor_specie_ << " = "
+              << Foam::min(rhoE).value() << ", " 
+              << Foam::max(rhoE).value() << " kg/m3/s" << Foam::endl;
 }
 
 
@@ -189,10 +178,9 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::YSuSp(
         
     return Pair<tmp<volScalarField> >
     (
-        (coeffC_+coeffV_)*p_vap_,
-        (coeffC_+coeffV_)*xByY*p_
+        area_*(coeffC_+coeffV_)*p_vap_,
+        area_*(coeffC_+coeffV_)*xByY*p_
     );
-    
 }
 
 

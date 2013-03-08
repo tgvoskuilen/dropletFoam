@@ -727,7 +727,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     // Face unit interface normal
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
 
-    surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
+    surfaceScalarField phiRecoil(fvc::interpolate(alphaVapor_.URecoil()) & mesh_.Sf());
+
+    surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()) + phiRecoil);
     
     for (int gCorr=0; gCorr<nAlphaCorr; gCorr++)
     {
@@ -772,7 +774,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             0
         );
         
-        //alphaLiquid_.max(0.0);
+        alphaLiquid_.max(0.0);
                 
         // WARNING:
         //   This solution provides a rho and rhoPhi pair that do not satisfy
@@ -790,7 +792,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
 
         alphaVapor_ == scalar(1) - alphaLiquid_;
-        //alphaVapor_.max(0.0);
+        alphaVapor_.max(0.0);
     }
     
     

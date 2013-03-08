@@ -48,19 +48,6 @@ Foam::evaporationModels::HertzKnudsenTemperature::HertzKnudsenTemperature
 )
 :
     evaporationModel(typeName, specieDict, p, T, alphaL, alphaV),
-    area_
-    (
-        IOobject
-        (
-            "area_" + vapor_specie_,
-            alphaL.mesh().time().timeName(),
-            alphaL.mesh(),
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        alphaL.mesh(),
-        dimensionedScalar("area",dimless/dimLength,0.0)
-    ),
     betaM_(readScalar(evapDict_.lookup("betaM")))
 {
 }
@@ -71,21 +58,21 @@ void Foam::evaporationModels::HertzKnudsenTemperature::calculate
     const volScalarField& evapMask
 )
 {
-    setMask( evapMask );
+    evaporationModel::calculate(evapMask);
         
     scalar pi = constant::mathematical::pi;
     tmp<volScalarField> rhoV = p_*W_/(R_*T_);
     
     //TODO: Calculate Tb at current p, rather than assume 1 atm
-    area_ = area();
-    m_evap_ = area() * 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_))
+    m_evap_ = 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_))
               * L()*rhoV*(T_ - Tb_)/Foam::pow(Tb_,1.5);
               
     m_evap_.max(0.0);
     
+    volScalarField rhoE = rho_evap(); //m_evap_ * area_
     Foam::Info << "Min,max evaporation source for " << vapor_specie_ << " = "
-               << Foam::gMin(m_evap_) << ", " 
-               << Foam::gMax(m_evap_) << " mg/m3/s" << Foam::endl;
+               << Foam::min(rhoE) << ", " 
+               << Foam::max(rhoE) << " kg/m3/s" << Foam::endl;
 }
 
 Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenTemperature::YSuSp() const
@@ -95,8 +82,8 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenTemperature::YSu
         
     return Pair<tmp<volScalarField> >
     (
-        m_evap_,
-        0.0*m_evap_
+        area_*m_evap_,
+        0.0*m_evap_*area_
     );
     
 }

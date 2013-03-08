@@ -25,7 +25,7 @@ FoamFile
     }
     sides
     {
-        type            patch;
+        type            symmetryPlane;
         nFaces          4000;
         startFace       28000;
     }

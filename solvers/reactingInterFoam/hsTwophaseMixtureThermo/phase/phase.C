@@ -284,7 +284,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::S_evap
         {
             dimensionedScalar Wv = specieI().W();
             
-            tS_evap() += specieI().evapModel().m_evap()*(Ru*T/(p*Wv) - 1/rho0);
+            tS_evap() += specieI().evapModel().rho_evap()*(Ru*T/(p*Wv) - 1/rho0);
         }
     }
     
@@ -324,7 +324,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::m_evap_sum() const
                 {
                     if (specieLI().evapModel().vaporName() == specieI().Y().name())
                     {
-                        tS_evap() += specieLI().evapModel().m_evap();
+                        tS_evap() += specieLI().evapModel().rho_evap();
                         break;
                     }
                 }
@@ -334,7 +334,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::m_evap_sum() const
         {
             if (specieI().hasEvaporation())
             {
-                tS_evap() -= specieI().evapModel().m_evap();
+                tS_evap() -= specieI().evapModel().rho_evap();
             }
         }
     }
@@ -467,7 +467,7 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::YiSuSp
         if (specieI.hasEvaporation())
         {
             //tSuSp = specieI.evapModel().YSuSp();
-            tSuSp.first() = -specieI.evapModel().m_evap();
+            tSuSp.first() = -specieI.evapModel().rho_evap();
         }
     }
     
@@ -509,7 +509,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Su_Yi_evap
             {
                 if (specieLI().evapModel().vaporName() == specieI.Y().name())
                 {
-                    tSu_evap() += specieLI().evapModel().m_evap();
+                    tSu_evap() += specieLI().evapModel().rho_evap();
                     break;
                 }
             }
@@ -519,7 +519,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Su_Yi_evap
     {
         if (specieI.hasEvaporation())
         {
-            tSu_evap() -= specieI.evapModel().m_evap();
+            tSu_evap() -= specieI.evapModel().rho_evap();
         }
     }
     
@@ -678,7 +678,50 @@ Foam::tmp<volScalarField> Foam::phase::Ypp() const
 }
 
 
-// Volumetric sink term from evaporation = m_evap/rhoL (only applicable to
+Foam::tmp<volVectorField> Foam::phase::URecoil() const
+{
+    tmp<volVectorField> tUr
+    (
+        new volVectorField
+        (
+            IOobject
+            (
+                "tUr"+name_,
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedVector("tUr"+name_, dimVelocity, vector::zero)
+        )
+    );
+
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        forAllConstIter
+        (
+            PtrDictionary<subSpecie>, 
+            otherPhase_->subSpecies(), 
+            specieLI
+        )
+        {
+            if (specieLI().hasEvaporation())
+            {
+                if (specieLI().evapModel().vaporName() == specieI().Y().name())
+                {
+                    tUr() -= specieLI().evapModel().U_evap();
+                    break;
+                }
+            }
+        }
+    }
+    
+    Info<<"Max recoil velocity = " << Foam::max(Foam::mag(tUr())).value() << endl;
+
+    return tUr;
+}
+
+
+// Volumetric sink term from evaporation = rho_evap/rhoL (only applicable to
 //  liquid phase, used in the alpha equation in the source term)
 Foam::tmp<volScalarField> Foam::phase::Sv_evap() const
 {
@@ -701,7 +744,7 @@ Foam::tmp<volScalarField> Foam::phase::Sv_evap() const
     {
         if( specieI().hasEvaporation() )
         {
-            tSv() += specieI().evapModel().m_evap() / specieI().rho0();
+            tSv() += specieI().evapModel().rho_evap() / specieI().rho0();
         }
     }
 
@@ -1063,18 +1106,20 @@ scalar Foam::phase::solveSubSpecies
     surfaceScalarField rhoPhiAlphaMasked = rhoPhiAlpha_*faceMask_;
     fvc::surfaceIntegrate(rhoAlphaIf, rhoPhiAlphaMasked);
     
-    volScalarField Su = m_evap_sum(); // * cellMask_;
+    volScalarField Su = m_evap_sum() * cellMask_;
     
     forAll(rhoAlphaIf, cellI)
     {
-        //new amount = old amount + (source - outflux) * dt
-        rhoAlphaIf[cellI] = rhoAlpha0[cellI] + (Su[cellI] - rhoAlphaIf[cellI])*deltaT;
-        
         if( cellMask_[cellI] < SMALL && mag(Su[cellI]) > SMALL )
         {
             Info<<"WARNING: evaporation outside mask region: "<<Su[cellI]
                 <<" at "<<mesh().C()[cellI]<<endl;
         }
+        
+        //new amount = old amount + (source - outflux) * dt
+        rhoAlphaIf[cellI] = rhoAlpha0[cellI] + (Su[cellI] - rhoAlphaIf[cellI])*deltaT;
+        
+
     }
     rhoAlpha_.correctBoundaryConditions();
     

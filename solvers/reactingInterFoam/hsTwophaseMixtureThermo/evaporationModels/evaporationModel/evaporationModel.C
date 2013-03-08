@@ -62,7 +62,7 @@ Foam::evaporationModel::evaporationModel
             IOobject::AUTO_WRITE
         ),
         alphaL.mesh(),
-        dimensionedScalar("m_evap",dimDensity/dimTime,0.0)
+        dimensionedScalar("m_evap",dimMass/dimArea/dimTime,0.0)
     ),
     mask_
     (
@@ -76,6 +76,19 @@ Foam::evaporationModel::evaporationModel
         ),
         alphaL.mesh(),
         dimensionedScalar("mask",dimless,0.0)
+    ),
+    area_
+    (
+        IOobject
+        (
+            "area_" + vapor_specie_,
+            alphaL.mesh().time().timeName(),
+            alphaL.mesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        alphaL.mesh(),
+        dimensionedScalar("area",dimless/dimLength,0.0)
     ),
     Lb_(evapDict_.lookup("Lb")),
     Tb_(evapDict_.lookup("Tb")),
@@ -118,32 +131,50 @@ tmp<volScalarField> Foam::evaporationModel::L() const
     return tL;
 }
 
-void Foam::evaporationModel::setMask(const volScalarField& evapMask)
+void Foam::evaporationModel::calculate(const volScalarField& evapMask)
 {
     mask_ = (evapMask * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9))
      * pos(alphaV_.Yp() - 1e-3);  
+
+    area_ = Foam::mag(fvc::grad(alphaL_));
+    const volScalarField::DimensionedInternalField& V = alphaL_.mesh().V();
+    
+    area_.dimensionedInternalField() *= pos
+    (
+        area_.dimensionedInternalField()
+      - Foam::pow(V,-1.0/3.0)/100.0
+    );
+    area_.correctBoundaryConditions();
 }
+
 
 tmp<volScalarField> Foam::evaporationModel::Sh() const
 {
-    return -L() * m_evap_;
+    return -L() * m_evap_ * area_;
 }
 
-tmp<volScalarField> Foam::evaporationModel::area() const
+tmp<volScalarField> Foam::evaporationModel::rho_evap() const
 {
-    //const volScalarField& YL = alphaL_.Y(vapor_specie_+"L");
-    
-    tmp<volScalarField> A0 = Foam::mag(fvc::grad(alphaL_));
-    const volScalarField::DimensionedInternalField& V = alphaL_.mesh().V();
-    
-    A0().dimensionedInternalField() *= pos(A0().dimensionedInternalField() - Foam::pow(V,-1.0/3.0)/100.0);
-    A0().correctBoundaryConditions();
-    
-    // The mask excludes areas where two liquids have begun to coalesce
-    //return Foam::mag(fvc::grad(alphaL_)); // * pos(YL - SMALL) * mask_;
-    return A0;
+    return m_evap_ * area_;
 }
 
+tmp<volVectorField> Foam::evaporationModel::U_evap() const
+{
+    tmp<volScalarField> rhov = p_*W_/(R_*T_);
+    
+    dimensionedScalar deltaN
+    (
+        "deltaN",
+        1e-8/pow(average(alphaL_.mesh().V()), 1.0/3.0)
+    );
+    
+    tmp<volVectorField> gradAlpha = -fvc::grad(alphaL_);
+    gradAlpha() /= (mag(gradAlpha()) + deltaN);
+    
+    tmp<volVectorField> Ur = m_evap_ / rhov * gradAlpha;
+    
+    return Ur;
+}
 
 // ************************************************************************* //
 

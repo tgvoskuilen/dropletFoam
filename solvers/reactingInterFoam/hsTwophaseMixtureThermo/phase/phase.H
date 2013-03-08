@@ -267,6 +267,8 @@ public:
         
         tmp<volScalarField> x(const word& name) const;
         tmp<volScalarField> xByY(const word& name) const;
+        
+        tmp<volVectorField> URecoil() const;
 };
 
 
