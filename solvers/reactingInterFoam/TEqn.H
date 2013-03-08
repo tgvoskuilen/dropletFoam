@@ -1,41 +1,51 @@
-{
-    // For this to work I need to pull T out of thermo, since thermo only
-    //  allows const access to T
-    //  Te is the external temperature field (external to thermo)
-    
-    tmp<volScalarField> Sh = mixture.Sh();
-    
-    Info<< "Min,max Sh = " << Foam::min(Sh()).value() 
-        << ", " << Foam::max(Sh()).value() << endl;
-    
-    //Te = thermo.T();
-    
-    divU = fvc::div(phi);
+volScalarField SpL = (1.0 - liquid.cellMask())*liquid.rho(p)/runTime.deltaT();
+volScalarField SpV = (1.0 - vapor.cellMask())*vapor.rho(p)/runTime.deltaT();
 
-    fvScalarMatrix TEqn
+{
+    word divScheme("div(rho*phi,T)");
+
+    fvScalarMatrix TEqnL
     (
-        fvm::ddt(rho, T)
-      + fvc::div(mixture.rhoPhi(), T)
-      - fvm::laplacian(mixture.kByCv(turbulence->muEff()), T)
-      + p*divU*mixture.rCv()
+        fvm::ddt(rhoL, TL)
+      + fvc::div(rhoPhiL, TL, divScheme)
+      - fvm::Sp(fvc::div(rhoPhiL) - liquid.m_evap_sum(), TL)
+      - fvm::laplacian(liquid.kByCp(), TL)
+      //+ p*divU*mixture.rCv()
      ==
-       Sh()*mixture.rCv()
+        SpL*TV
+      - fvm::Sp(SpL, TL)
+     //  Sh()*mixture.rCv()
+    );
+    
+    fvScalarMatrix TEqnV
+    (
+        fvm::ddt(rhoV, TV)
+      + fvc::div(rhoPhiV, TV, divScheme)
+      - fvm::Sp(fvc::div(rhoPhiV) - vapor.m_evap_sum(), TV)
+      - fvm::laplacian(vapor.kByCp() + turbulence->muEff(), TV)
+      //+ p*divU*mixture.rCv()
+     ==
+        SpV*TL
+      - fvm::Sp(SpV, TV)
+     //  Sh()*mixture.rCv()
     );
 
-    TEqn.relax();
-    TEqn.solve();
+    TEqnL.relax();
+    TEqnL.solve();
     
-    Info<< "T min/max   = "
-        << gMin(T) << ", "
-        << gMax(T) << endl;
-        
-        
-    //Update hs with the newly calculated temperature field (Te)
-    T.max(200.0);
-    T.min(3500.0);
+    TEqnV.relax();
+    TEqnV.solve();
     
+    Info<< "TL min/max   = "
+        << gMin(TL) << ", "
+        << gMax(TL) << endl;
+        
+    Info<< "TV min/max   = "
+        << gMin(TV) << ", "
+        << gMax(TV) << endl;
+            
+    //Combine TL and TV into thermo.T and update hs accordingly
     mixture.setHs();
-    //hs = thermo.hs();
     
     //Then update other thermo properties at new temperature
     thermo.correct();

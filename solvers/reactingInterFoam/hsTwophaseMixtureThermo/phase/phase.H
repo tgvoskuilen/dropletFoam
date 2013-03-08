@@ -74,10 +74,17 @@ class phase
         //- Phase dictionary (in thermophysicalProperties::phases)
         dictionary phaseDict_;
         
-        //- Volume flux field for this phase
-        surfaceScalarField rhoPhiAlpha_;
+        //- Mass flux field for this phase
+        surfaceScalarField rhoPhi_;
         
-        volScalarField rhoAlpha_;
+        //- Velocity field for this phase
+        volVectorField U_;
+        
+        volScalarField T_;
+        
+        surfaceScalarField phi_;
+        
+        volScalarField rho_;
         
         const phase* otherPhase_;
         
@@ -148,19 +155,59 @@ public:
             return subSpecies_;
         }
                 
-        surfaceScalarField& rhoPhiAlpha()
+        surfaceScalarField& rhoPhi()
         {
-            return rhoPhiAlpha_;
+            return rhoPhi_;
         }
         
-        const surfaceScalarField& rhoPhiAlpha() const
+        const surfaceScalarField& phi() const
         {
-            return rhoPhiAlpha_;
+            return phi_;
+        }
+        
+        surfaceScalarField& phi()
+        {
+            return phi_;
+        }
+        
+        const volVectorField& U() const
+        {
+            return U_;
+        }
+        
+        volVectorField& U()
+        {
+            return U_;
+        }
+        
+        const volScalarField& cellMask() const
+        {
+            return cellMask_;
+        }
+        
+        const volScalarField& T() const
+        {
+            return T_;
+        }
+        
+        volScalarField& T()
+        {
+            return T_;
+        }
+        
+        const volScalarField& alpha() const
+        {
+            return *this;
+        }
+        
+        const surfaceScalarField& rhoPhi() const
+        {
+            return rhoPhi_;
         }
                 
-        const volScalarField& rhoAlpha() const
+        const volScalarField& rho() const
         {
-            return rhoAlpha_;
+            return rho_;
         }
         
         void setOtherPhase(const phase* other)
@@ -173,26 +220,21 @@ public:
         //- Return the phase density
         tmp<volScalarField> rho
         (
-            const volScalarField& p, 
-            const volScalarField& T
+            const volScalarField& p
         ) const;
 
         //- Return the viscosity of the phase
         tmp<volScalarField> mu
         (
-            const volScalarField& p, 
-            const volScalarField& T
+            const volScalarField& p
         ) const;
+        
+        tmp<volScalarField> kByCp() const;
         
         tmp<volScalarField> Sv_evap() const;
                        
         //- Return the phase compressibility
-        tmp<volScalarField> psi
-        (
-            const volScalarField& T
-        ) const;
-                
-
+        tmp<volScalarField> psi() const;
         tmp<volScalarField> Yp() const;
         tmp<volScalarField> Ypp() const;
         tmp<volScalarField> Np() const;
@@ -208,7 +250,7 @@ public:
         tmp<volScalarField> Cv(const volScalarField& T) const;
                 
         //- Correct the phase properties
-        void correct(const volScalarField& p, const volScalarField& T);
+        void correct(const volScalarField& p);
         
         //- Read base transportProperties dictionary
         bool read(const dictionary& phaseDict);
@@ -259,8 +301,7 @@ public:
 
         scalar solveSubSpecies
         (
-            const volScalarField& p,
-            const volScalarField& T
+            const volScalarField& p
         );
         
         void updateGlobalYs(const volScalarField& rhoE);

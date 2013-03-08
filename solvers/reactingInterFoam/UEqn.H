@@ -1,31 +1,29 @@
 
-    Info<< "Building UEqn" << endl;
+    Info<< "Building UEqns" << endl;
     
-    fvVectorMatrix UEqn
+    word divSchemeU("div(rho*phi,U)");
+    
+    fvVectorMatrix UEqnL
     (
-        fvm::ddt(rho, U)
-      + fvm::div(mixture.rhoPhi(), U)
-      + turbulence->divDevRhoReff(U)
+        fvm::ddt(rhoL, UL)
+      + fvm::div(rhoPhiL, UL, divSchemeU)
+      - fvm::Sp(fvc::div(rhoPhiL) - liquid.m_evap_sum(), UL)
+      - fvm::laplacian(liquid.mu(p), UL)
+      + fvm::Sp(SpL, UL)
+      //+ turbulence->divDevRhoReff(U)
+    );
+    
+    
+    fvVectorMatrix UEqnV
+    (
+        fvm::ddt(rhoV, UV)
+      + fvm::div(rhoPhiV, UV, divSchemeU)
+      - fvm::Sp(fvc::div(rhoPhiV) - vapor.m_evap_sum(), UV)
+      - fvm::laplacian(vapor.mu(p), UV)
+      + fvm::Sp(SpV, UV)
+      //+ turbulence->divDevRhoReff(UV)
     );
 
-    UEqn.relax();
-
-    if (pimple.momentumPredictor())
-    {
-        Info<< "Doing momentum predictor step" << endl;
-        
-        solve
-        (
-            UEqn
-         ==
-            fvc::reconstruct
-            (
-                (
-                    mixture.surfaceTensionForce()
-                  - ghf*fvc::snGrad(rho)
-                  - fvc::snGrad(p)
-                ) * mesh.magSf()
-            )
-        );
-    }
+    UEqnL.relax();
+    UEqnV.relax();
 

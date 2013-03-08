@@ -31,11 +31,10 @@ divSchemes
     
     div(rho*phi,U)  Gauss upwind;
     div(phi,alpha)  Gauss vanLeer;
-    div(phirb,alpha) Gauss interfaceCompression;
+    div(phir,alpha) Gauss interfaceCompression;
     
     div(phi,Yi_h)   Gauss limitedLinear01 1;
-    div(rho*phi*alpha,Yi)   Gauss upwind;
-    div(rho*phi,hs)   Gauss limitedLinear01 1;
+    div(rho*phi,Yi)   Gauss limitedLinear01 1;
     div(phi,h)      Gauss limitedLinear 1;
     div(phi,K)      Gauss limitedLinear 1;
     div(rho*phi,K)  Gauss limitedLinear 1;

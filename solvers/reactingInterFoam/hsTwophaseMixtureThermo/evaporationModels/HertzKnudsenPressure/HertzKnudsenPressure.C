@@ -42,12 +42,11 @@ Foam::evaporationModels::HertzKnudsenPressure::HertzKnudsenPressure
 (
     dictionary specieDict,
     const volScalarField& p,
-    const volScalarField& T,
     const phase& alphaL,
     const phase& alphaV
 )
 :
-    evaporationModel(typeName, specieDict, p, T, alphaL, alphaV),
+    evaporationModel(typeName, specieDict, p, alphaL, alphaV),
     x_
     (
         IOobject
@@ -132,14 +131,14 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     p_vap_ = p0*exp
      (
-        (-Lb_/R_*(1.0/T_ - 1.0/Tb_))*neg(T_ - Tb_)
+        (-Lb_/R_*(1.0/TL_ - 1.0/Tb_))*neg(TL_ - Tb_)
 
       + (
            PvCoeffs_[0]
-         - dimensionedScalar("B",dimTemperature,PvCoeffs_[1])/T_
+         - dimensionedScalar("B",dimTemperature,PvCoeffs_[1])/TL_
          - dimensionedScalar("C",dimTemperature*dimTemperature,PvCoeffs_[2])
-         / (T_*T_)
-        )*pos(T_ - Tb_)
+         / (TL_*TL_)
+        )*pos(TL_ - Tb_)
      );
     
     p_vap_.min(Pc_);
@@ -153,7 +152,7 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     scalar pi = constant::mathematical::pi;
     dimensionedScalar sA("sA",dimless/dimLength,SMALL);
     
-    tmp<volScalarField> coeff = Foam::sqrt(W_/(2*pi*R_*T_))*pos(area_-sA);
+    tmp<volScalarField> coeff = Foam::sqrt(W_/(2*pi*R_*TL_))*pos(area_-sA);
     
     coeffC_ = 0.0*coeff()*neg(p_vap_ - p_*x_); //no condensation
     coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_ - p_*x_);

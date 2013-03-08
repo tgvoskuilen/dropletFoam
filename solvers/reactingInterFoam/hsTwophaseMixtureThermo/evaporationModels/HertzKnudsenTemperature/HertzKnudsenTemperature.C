@@ -42,12 +42,11 @@ Foam::evaporationModels::HertzKnudsenTemperature::HertzKnudsenTemperature
 (
     dictionary specieDict,
     const volScalarField& p,
-    const volScalarField& T,
     const phase& alphaL,
     const phase& alphaV
 )
 :
-    evaporationModel(typeName, specieDict, p, T, alphaL, alphaV),
+    evaporationModel(typeName, specieDict, p, alphaL, alphaV),
     betaM_(readScalar(evapDict_.lookup("betaM")))
 {
 }
@@ -61,11 +60,11 @@ void Foam::evaporationModels::HertzKnudsenTemperature::calculate
     evaporationModel::calculate(evapMask);
         
     scalar pi = constant::mathematical::pi;
-    tmp<volScalarField> rhoV = p_*W_/(R_*T_);
+    tmp<volScalarField> rhoV = p_*W_/(R_*TV_);
     
     //TODO: Calculate Tb at current p, rather than assume 1 atm
     m_evap_ = 2.0*betaM_/(2.0-betaM_)*Foam::sqrt(W_/(2*pi*R_))
-              * L()*rhoV*(T_ - Tb_)/Foam::pow(Tb_,1.5);
+              * L()*rhoV*(TL_ - Tb_)/Foam::pow(Tb_,1.5);
               
     m_evap_.max(0.0);
     

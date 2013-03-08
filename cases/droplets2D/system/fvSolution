@@ -132,7 +132,7 @@ solvers
         relTol          0;
     }
 
-    T
+    "(T_Liquid|T_Vapor)"
     {
         solver          PCG;
         preconditioner  DIC;
@@ -140,7 +140,7 @@ solvers
         relTol          0.1;
     }
     
-    TFinal
+    "(T_LiquidFinal|T_VaporFinal)"
     {
         solver          PCG;
         preconditioner  DIC;

@@ -32,7 +32,6 @@ Foam::evaporationModel::New
 (
     dictionary specieDict,
     const volScalarField& p,
-    const volScalarField& T,
     const phase& alphaL,
     const phase& alphaV
 )
@@ -61,7 +60,7 @@ Foam::evaporationModel::New
             << exit(FatalError);
     }
 
-    return autoPtr<evaporationModel>(cstrIter()(specieDict, p, T, alphaL, alphaV));
+    return autoPtr<evaporationModel>(cstrIter()(specieDict, p, alphaL, alphaV));
 }
 
 

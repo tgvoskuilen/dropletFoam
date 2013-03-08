@@ -67,7 +67,6 @@ public:
         (
             dictionary specieDict,
             const volScalarField& p,
-            const volScalarField& T,
             const phase& alphaL,
             const phase& alphaV
         );

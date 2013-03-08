@@ -13,9 +13,21 @@
         ),
         mesh
     );
-    U.oldTime();
 
     #include "createPhi.H"
+    
+    /*surfaceScalarField phi
+    (
+        IOobject
+        (
+            "phi",
+            runTime.timeName(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        linearInterpolate(U) & mesh.Sf()
+    );*/
     
     
     Info<< "Creating combustion model\n" << endl;
@@ -44,7 +56,24 @@
     Info<< "Setting mixture pointers" << endl;
 	mixture.setPtrs( combustion.operator->() );
 
-    //volScalarField& rho = mixture.rho();
+    const volScalarField& rho = mixture.rho();
+    
+    phase& liquid = mixture.liquid();
+    volVectorField& UL = liquid.U();
+    surfaceScalarField& phiL = liquid.phi();
+    const surfaceScalarField& rhoPhiL = liquid.rhoPhi();
+    const volScalarField& alphaL = liquid.alpha();
+    volScalarField& TL = liquid.T();
+    const volScalarField& rhoL = liquid.rho();
+    
+    phase& vapor = mixture.vapor();
+    volVectorField& UV = vapor.U();
+    surfaceScalarField& phiV = vapor.phi();
+    const surfaceScalarField& rhoPhiV = vapor.rhoPhi();
+    const volScalarField& alphaV = vapor.alpha();
+    volScalarField& TV = vapor.T();
+    const volScalarField& rhoV = vapor.rho();
+    
     
     volScalarField refinementField
     (
@@ -60,7 +89,7 @@
         dimensionedScalar("refinementField",dimless,0)
     );
     
-    volScalarField rho
+    /*volScalarField rho
     (
         IOobject
         (
@@ -71,16 +100,16 @@
             IOobject::AUTO_WRITE
         ),
         mixture.rho()
-    );
+    );*/
     
-    // Construct turbulence model
+    // Construct turbulence model for gas phase
     autoPtr<compressible::turbulenceModel> turbulence
     (
         compressible::turbulenceModel::New
         (
-            rho,
-            U, 
-            mixture.rhoPhi(), 
+            rhoV,
+            UV, 
+            rhoPhiV, 
             mixture
         )
     );
@@ -97,10 +126,10 @@
 
     //volScalarField& hs = thermo.hs();
     //const volScalarField& T = mixture.T();
-    volScalarField& T = mixture.T();
-    T.oldTime(); //needed?
+    //volScalarField& T = mixture.T();
+    //T.oldTime(); //needed?
     volScalarField& p = mixture.p();
-    p.oldTime(); //needed?
+    //p.oldTime(); //needed?
  
     /*volScalarField hs
     (

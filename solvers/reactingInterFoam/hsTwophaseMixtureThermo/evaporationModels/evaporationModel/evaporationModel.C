@@ -40,7 +40,6 @@ Foam::evaporationModel::evaporationModel
     const word& type,
     dictionary specieDict,
     const volScalarField& p,
-    const volScalarField& T,
     const phase& alphaL,
     const phase& alphaV
 )
@@ -48,7 +47,8 @@ Foam::evaporationModel::evaporationModel
     alphaL_(alphaL),
     alphaV_(alphaV),
     p_(p),
-    T_(T),
+    TL_(alphaL.T()),
+    TV_(alphaV.T()),
     evapDict_(specieDict.subDict(type + "Coeffs")),
     vapor_specie_(evapDict_.lookup("vapor")),
     m_evap_
@@ -125,7 +125,7 @@ tmp<volScalarField> Foam::evaporationModel::L() const
         
     if( La_ > 0.0 )
     {
-        tL() *= Foam::pow(Foam::mag(Tc_ - T_)/(Tc_ - Tb_),La_)*pos(Tc_ - T_);
+        tL() *= Foam::pow(Foam::mag(Tc_ - TL_)/(Tc_ - Tb_),La_)*pos(Tc_ - TL_);
     }
     
     return tL;
@@ -133,7 +133,7 @@ tmp<volScalarField> Foam::evaporationModel::L() const
 
 void Foam::evaporationModel::calculate(const volScalarField& evapMask)
 {
-    mask_ = (evapMask * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9))
+    mask_ = (evapMask * neg(TL_ - Tc_*0.9) +  pos(TL_ - Tc_*0.9))
      * pos(alphaV_.Yp() - 1e-3);  
 
     area_ = Foam::mag(fvc::grad(alphaL_));
@@ -160,7 +160,7 @@ tmp<volScalarField> Foam::evaporationModel::rho_evap() const
 
 tmp<volVectorField> Foam::evaporationModel::U_evap() const
 {
-    tmp<volScalarField> rhov = p_*W_/(R_*T_);
+    tmp<volScalarField> rhov = p_*W_/(R_*TV_);
     
     dimensionedScalar deltaN
     (

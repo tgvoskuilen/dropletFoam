@@ -1,14 +1,64 @@
 {
-    const volScalarField& alphaV = mixture.alphaVapor();
-    rho = thermo.rho();
+    surfaceScalarField alphaLf(fvc::interpolate(alphaL));
+    surfaceScalarField alphaVf(fvc::interpolate(alphaV));
     
-    // First part of density update, only changes compressible regions
-    //  since psi is psiV*alphaV and is zero in the liquid regions
-    thermo.rho() -= thermo.psi() * p;
+    surfaceScalarField rhoLf(fvc::interpolate(rhoL));
+    surfaceScalarField rhoVf(fvc::interpolate(rhoV));
+      
+    volScalarField rAUL(1.0/UEqnL.A());
+    volScalarField rAUV(1.0/UEqnV.A());
     
-    volScalarField rAU(1.0/UEqn.A());
-    surfaceScalarField rAUf(fvc::interpolate(rAU));
+    surfaceScalarField rAlphaAULf(fvc::interpolate(alphaL*rAUL));
+    surfaceScalarField rAlphaAUVf(fvc::interpolate(alphaV*rAUV));
+    
+    // Estimate U with no force terms
+    UL = rAUL*UEqnL.H();
+    UV = rAUV*UEqnV.H();
+    
+    // Create flux estimates
+    surfaceScalarField phiEstL
+    (
+        "phiEstL",
+        (fvc::interpolate(UL) & mesh.Sf())
+      + fvc::ddtPhiCorr(rAUL, rhoL, UL, phiL)
+    );
+    
+    surfaceScalarField phiEstV
+    (
+        "phiEstV",
+        (fvc::interpolate(UV) & mesh.Sf())
+      + fvc::ddtPhiCorr(rAUV, rhoV, UV, phiV)
+    );
 
+    // Add surface tension and gravity forces to flux estimates
+    phiEstL +=
+    (
+        (
+            mixture.surfaceTensionForce()
+          - ghf*fvc::snGrad(rhoL)
+        )*rAlphaAULf*mesh.magSf()
+    );
+    
+    phiEstV +=
+    (
+        (
+          - ghf*fvc::snGrad(rhoV)
+        )*rAlphaAUVf*mesh.magSf()
+    );
+    
+    //Get total estimated volume flux
+    surfaceScalarField phiEst(phiEstL*alphaLf + phiEstV*alphaVf);
+    
+    surfaceScalarField Dp
+    (
+        "Dp",
+        mag
+        (
+            alphaLf*rAlphaAULf/rhoLf
+          + alphaVf*rAlphaAUVf/rhoVf
+        )
+    );
+    
     // Dp/Dt term
     //   compressibleInterFoam uses DrhoDt here, fully explicit, rather than
     //   separate out the compressibility factor and make time-implicit.
@@ -16,36 +66,17 @@
     fvScalarMatrix p_DpDt = 
     (
         fvm::ddt(p)
-      + fvc::div(phi, p)
-      - fvc::Sp(fvc::div(phi), p)
+      + fvc::div(phiV, p)
+      - fvc::Sp(fvc::div(phiV), p)
     );
-
-    // Estimate U with no force terms
-    U = rAU*UEqn.H();
     
-    surfaceScalarField phiEst
-    (
-        "phiEst",
-        (fvc::interpolate(U) & mesh.Sf())
-      + fvc::ddtPhiCorr(rAU, rho, U, phi)
-    );
-
-    // Add surface tension and gravity forces to flux estimate
-    phi = phiEst +
-    (
-        (
-            mixture.surfaceTensionForce()
-          - ghf*fvc::snGrad(rho)
-        )*rAUf*mesh.magSf()
-    );
-        
     // Solve for pressure to enforce continuity (based on phi)
     while (pimple.correctNonOrthogonal())
     {
         fvScalarMatrix p_IC
         (
-            fvc::div(phi)
-          - fvm::laplacian(rAUf, p)
+            fvc::div(phiEst)
+          - fvm::laplacian(Dp, p)
           - mixture.S_evap()
         );
 
@@ -54,28 +85,31 @@
             alphaV/p*p_DpDt + p_IC,
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
-        
-        //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
 
         if (pimple.finalNonOrthogonalIter())
         {
-            // Second part of thermodynamic density update
-            thermo.rho() += thermo.psi()*p;
+            surfaceScalarField mSfGradp(p_IC.flux()/Dp);
+            
+            phiL = phiEstL + rAlphaAULf/rhoLf*mSfGradp;
+            phiV = phiEstV + rAlphaAUVf/rhoVf*mSfGradp;
+            phi = alphaLf*phiL + alphaVf*phiV;
 
-            phi += p_IC.flux();
+            p.relax();
+            mSfGradp = p_IC.flux()/Dp;
+            
+            UL += fvc::reconstruct((g & mesh.Sf()) + rAlphaAULf/rhoLf*mSfGradp);
+            UL.correctBoundaryConditions();
+            
+            UV += fvc::reconstruct((g & mesh.Sf()) + rAlphaAUVf/rhoVf*mSfGradp);
+            UV.correctBoundaryConditions();
+            
+            U = alphaL*UL + alphaV*UV;
         }
     }
-    
-    // Continuity error check checks whether thermo.rho satisfies continuity
-    // with rhoPhi field
-    // However, since we aren't updated rhoPhi, this would not make sense
-    // so we don't check, and we instead just update thermo.rho with psi*dp
-    
-    U += rAU*fvc::reconstruct((phi - phiEst)/rAUf);
-    U.correctBoundaryConditions();    
+        
+    //Update stored properties with new pressure
+    thermo.correct();
             
-    //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
-
     Info<< "min,max p = " << gMin(p)/1e5 << ", " 
         << gMax(p)/1e5 << " bar" << endl;
         

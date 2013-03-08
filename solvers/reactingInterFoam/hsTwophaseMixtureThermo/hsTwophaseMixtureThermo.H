@@ -95,10 +95,10 @@ private:
         combustionModels::rhoChemistryCombustionModel* combustionPtr_;
 
         //- Vapor phase
-        phase alphaVapor_;
+        phase vapor_;
         
         //- Liquid phase
-        phase alphaLiquid_;
+        phase liquid_;
         
         //- Total mass flux
         surfaceScalarField rhoPhi_;
@@ -251,14 +251,14 @@ public:
         
         
         // Multiphase specific methods
-            const volScalarField& alphaLiquid() const
+            phase& liquid()
             {
-                return alphaLiquid_;
+                return liquid_;
             }
             
-            const volScalarField& alphaVapor() const
+            phase& vapor()
             {
-                return alphaVapor_;
+                return vapor_;
             }
             
             volScalarField& T()
@@ -272,8 +272,8 @@ public:
                 return rhoPhi_;
             }
 
-            //- Solve reaction chemistry, evaporation, and phase transport       
-            scalar solve(volScalarField& rho);
+            //- Solve reaction chemistry, evaporation, phase and specie transport       
+            scalar solve();
             
             //- Calculate the surface tension force field
             tmp<surfaceScalarField> surfaceTensionForce();
@@ -302,9 +302,6 @@ public:
             //- Get the total reaction and evaporation enthalpy source
             tmp<volScalarField> Sh() const;
             tmp<volScalarField> dQ_evap() const;
-            
-            tmp<volScalarField> kByCv(const volScalarField& muEff) const;
-            tmp<volScalarField> rCv() const;
             
             void setHs();
             

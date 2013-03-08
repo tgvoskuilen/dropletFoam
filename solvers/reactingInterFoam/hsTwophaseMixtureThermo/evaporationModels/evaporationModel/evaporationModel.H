@@ -61,7 +61,9 @@ class evaporationModel
         const phase& alphaL_;
         const phase& alphaV_;
         const volScalarField& p_;
-        const volScalarField& T_;
+        const volScalarField& TL_;
+        const volScalarField& TV_;
+        
         dictionary evapDict_;
 
         word vapor_specie_;
@@ -107,11 +109,10 @@ public:
             (
                 dictionary specieDict,
                 const volScalarField& p,
-                const volScalarField& T,
                 const phase& alphaL,
                 const phase& alphaV
             ),
-            (specieDict, p, T, alphaL, alphaV)
+            (specieDict, p, alphaL, alphaV)
         );
 
 
@@ -122,7 +123,6 @@ public:
         (
             dictionary specieDict,
             const volScalarField& p,
-            const volScalarField& T,
             const phase& alphaL,
             const phase& alphaV
         );
@@ -134,7 +134,6 @@ public:
             const word& type,
             dictionary specieDict,
             const volScalarField& p,
-            const volScalarField& T,
             const phase& alphaL,
             const phase& alphaV
         );
