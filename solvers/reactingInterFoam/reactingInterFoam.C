@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
             Info<<"Solving alpha transport equations"<<endl;
             MaxFo = mixture.solve();
-
+            
             dQ = combustion->dQ() + mixture.dQ_evap();
             
             #include "TEqn.H"

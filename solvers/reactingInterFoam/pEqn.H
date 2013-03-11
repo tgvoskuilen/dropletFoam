@@ -1,9 +1,12 @@
 {
+    Info<< "Building pEqn" << endl;
+    rho = mixture.rho();
+    
     surfaceScalarField alphaLf(fvc::interpolate(alphaL));
     surfaceScalarField alphaVf(fvc::interpolate(alphaV));
     
-    surfaceScalarField rhoLf(fvc::interpolate(rhoL));
-    surfaceScalarField rhoVf(fvc::interpolate(rhoV));
+    surfaceScalarField rhoLf(fvc::interpolate(liquid.rho(p)));
+    surfaceScalarField rhoVf(fvc::interpolate(vapor.rho(p)));
       
     volScalarField rAUL(1.0/UEqnL.A());
     volScalarField rAUV(1.0/UEqnV.A());
@@ -49,6 +52,7 @@
     //Get total estimated volume flux
     surfaceScalarField phiEst(phiEstL*alphaLf + phiEstV*alphaVf);
     
+    Info<<"Calc Dp"<<endl;
     surfaceScalarField Dp
     (
         "Dp",
@@ -63,16 +67,21 @@
     //   compressibleInterFoam uses DrhoDt here, fully explicit, rather than
     //   separate out the compressibility factor and make time-implicit.
     //   Transonic cases make this fully implicit.
+    word phiDivScheme("div(phi,p)");
     fvScalarMatrix p_DpDt = 
     (
         fvm::ddt(p)
-      + fvc::div(phiV, p)
+      + fvc::div(phiV, p, phiDivScheme)
       - fvc::Sp(fvc::div(phiV), p)
     );
     
     // Solve for pressure to enforce continuity (based on phi)
+    Info<< "Solving pEqn" << endl;
+    Info<<" phiEst dims = " << phiEst.dimensions() << endl;
+    Info<<" Dp dims = " << Dp.dimensions() << endl;
     while (pimple.correctNonOrthogonal())
     {
+        Info<<"Making p_IC"<<endl;
         fvScalarMatrix p_IC
         (
             fvc::div(phiEst)
@@ -80,6 +89,7 @@
           - mixture.S_evap()
         );
 
+        Info<<"doing solve"<<endl;
         solve
         (
             alphaV/p*p_DpDt + p_IC,

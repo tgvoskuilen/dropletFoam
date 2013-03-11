@@ -163,7 +163,7 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("faceMask_"+name, dimless, 0.0)
     )
-{  
+{
     rho_.oldTime();
     U_.oldTime();
     T_.oldTime();
@@ -237,16 +237,20 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
     if( name_ == "Vapor")
     {
         tmu() = dimensionedScalar("mu",dimArea*dimDensity/dimTime,2e-5);
+        tmu().correctBoundaryConditions();
     }
     else
     {
-        forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+        tmu() = dimensionedScalar("mu",dimArea*dimDensity/dimTime,9.2e-4);
+        tmu().correctBoundaryConditions();
+        /*forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
         {   
             if( specieI().hasNuModel() )
             {
                 tmu() += specieI().nuModel().nu() * specieI().Yp() * rho(p);
             }
         }
+        Info<<"max muL = " << Foam::max(tmu()).value() << endl;*/
     }
     
     return tmu;
@@ -1149,7 +1153,7 @@ scalar Foam::phase::solveSubSpecies
         (
             fvm::ddt(rho_, Yi)
           + fvm::div(rhoPhi_, Yi, divScheme)
-          - fvm::Sp(fvc::div(rhoPhi_) - m_evap_sum(), Yi)
+          - fvm::Sp(fvc::ddt(rho_) + fvc::div(rhoPhi_) - m_evap_sum(), Yi)
           - fvm::laplacian(D_, Yi)
          ==
             combustionPtr_->R(Yi)

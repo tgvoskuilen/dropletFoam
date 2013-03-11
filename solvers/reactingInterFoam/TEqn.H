@@ -7,8 +7,8 @@ volScalarField SpV = (1.0 - vapor.cellMask())*vapor.rho(p)/runTime.deltaT();
     fvScalarMatrix TEqnL
     (
         fvm::ddt(rhoL, TL)
-      + fvc::div(rhoPhiL, TL, divScheme)
-      - fvm::Sp(fvc::div(rhoPhiL) - liquid.m_evap_sum(), TL)
+      + fvm::div(rhoPhiL, TL, divScheme)
+      - fvm::Sp(fvc::ddt(rhoL) + fvc::div(rhoPhiL) - liquid.m_evap_sum(), TL)
       - fvm::laplacian(liquid.kByCp(), TL)
       //+ p*divU*mixture.rCv()
      ==
@@ -20,8 +20,8 @@ volScalarField SpV = (1.0 - vapor.cellMask())*vapor.rho(p)/runTime.deltaT();
     fvScalarMatrix TEqnV
     (
         fvm::ddt(rhoV, TV)
-      + fvc::div(rhoPhiV, TV, divScheme)
-      - fvm::Sp(fvc::div(rhoPhiV) - vapor.m_evap_sum(), TV)
+      + fvm::div(rhoPhiV, TV, divScheme)
+      - fvm::Sp(fvc::ddt(rhoV) + fvc::div(rhoPhiV) - vapor.m_evap_sum(), TV)
       - fvm::laplacian(vapor.kByCp() + turbulence->muEff(), TV)
       //+ p*divU*mixture.rCv()
      ==

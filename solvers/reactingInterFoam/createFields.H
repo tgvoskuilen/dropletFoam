@@ -56,7 +56,7 @@
     Info<< "Setting mixture pointers" << endl;
 	mixture.setPtrs( combustion.operator->() );
 
-    const volScalarField& rho = mixture.rho();
+    //const volScalarField& rho = mixture.rho();
     
     phase& liquid = mixture.liquid();
     volVectorField& UL = liquid.U();
@@ -89,7 +89,7 @@
         dimensionedScalar("refinementField",dimless,0)
     );
     
-    /*volScalarField rho
+    volScalarField rho
     (
         IOobject
         (
@@ -100,7 +100,7 @@
             IOobject::AUTO_WRITE
         ),
         mixture.rho()
-    );*/
+    );
     
     // Construct turbulence model for gas phase
     autoPtr<compressible::turbulenceModel> turbulence

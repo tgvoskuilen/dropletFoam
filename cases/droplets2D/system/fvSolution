@@ -134,16 +134,16 @@ solvers
 
     "(T_Liquid|T_Vapor)"
     {
-        solver          PCG;
-        preconditioner  DIC;
+        solver          PBiCG;
+        preconditioner  DILU;
         tolerance       1e-06;
         relTol          0.1;
     }
     
     "(T_LiquidFinal|T_VaporFinal)"
     {
-        solver          PCG;
-        preconditioner  DIC;
+        solver          PBiCG;
+        preconditioner  DILU;
         tolerance       1e-06;
         relTol          0;
     }

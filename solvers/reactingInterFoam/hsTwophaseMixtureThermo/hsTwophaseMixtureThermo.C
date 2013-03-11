@@ -652,6 +652,7 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve()
     correct();
     
 
+
     // Update density field to satisfy continuity with new mass flux field
     //Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     
@@ -661,7 +662,14 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve()
     // Define phase boundary masks to prevent artificial cross-phase mixing
     liquid_.setPhaseMasks( phaseMaskTol_ );
     vapor_.setPhaseMasks( phaseMaskTol_ );
-
+    
+    
+    volScalarField SpLL = 1.0 - liquid_.cellMask();
+    dimensionedScalar one("one",dimless/dimDensity,1.0);
+    Info<<"min rhoL+SpL = " << Foam::min(Foam::mag(liquid_.rho()*one+SpLL)).value() << endl;
+    Info<<"min rho(p) = " << Foam::min(Foam::mag(liquid_.rho(p_))).value() << endl;
+    
+    
     // Calculate diffusion coefficient for each phase
     liquid_.calculateDs( combustionPtr_->turbulence().muEff() );
     vapor_.calculateDs( combustionPtr_->turbulence().muEff() );
@@ -681,6 +689,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve()
     
     Info<< "Min,Max Ysum = " << Foam::min(YSum_).value() 
         << ", " << Foam::max(YSum_).value() << endl;
+        
+
     
     return 0.0; //MaxFo; //TODO: Use DiNum from cht
 }
