@@ -257,6 +257,14 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
 }
 
 
+Foam::tmp<Foam::surfaceScalarField> Foam::phase::muf
+(
+    const volScalarField& p
+) const
+{
+    return fvc::interpolate(mu(p))*faceMask_;
+}
+
 
 Foam::volScalarField& Foam::phase::Y(const word& specie)
 {
@@ -1046,28 +1054,32 @@ void Foam::phase::calculateDs
     return tUc;
 }*/
 
-
-// Calculate phase specific heat using subspecie Cv model, which calls the
-// underlying thermo model for each specie (Janaf table)
-// Where the phase is trace (Yp < 1e-4) the Cv is just the average of the
-// phase's subspecies, otherwise it is weighted by mass fraction
-Foam::tmp<Foam::volScalarField> Foam::phase::Cv
+Foam::tmp<Foam::volScalarField> Foam::phase::rhoCp
 (
-    const volScalarField& T
+    const volScalarField& p
 ) const
 {
-    tmp<volScalarField> tCv
+    return Cp() * rho(p);
+}
+
+// Calculate phase specific heat using subspecie Cp model, which calls the
+// underlying thermo model for each specie (Janaf table)
+// Where the phase is trace (Yp < 1e-4) the Cp is just the average of the
+// phase's subspecies, otherwise it is weighted by mass fraction
+Foam::tmp<Foam::volScalarField> Foam::phase::Cp() const
+{
+    tmp<volScalarField> tCp
     (
         new volScalarField
         (
             IOobject
             (
-                "tCv"+name_,
+                "tCp"+name_,
                 mesh().time().timeName(),
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("Cv",dimEnergy/dimMass/dimTemperature,SMALL)
+            dimensionedScalar("Cp",dimEnergy/dimMass/dimTemperature,SMALL)
         )
     );
     
@@ -1080,12 +1092,12 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Cv
     
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
-        tCv() += ( mask1()*specieI().Y() + mask2() )*specieI().Cv(T);
+        tCp() += ( mask1()*specieI().Y() + mask2() )*specieI().Cp(T_);
     }
     
-    tCv().correctBoundaryConditions();
+    tCp().correctBoundaryConditions();
     
-    return tCv;
+    return tCp;
 }
 
 // Returns a sharpened version of the phase volume fraction
@@ -1120,7 +1132,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::sharp
 
 tmp<volScalarField> Foam::phase::kByCp() const
 {
-    return alpha() * k() / Cv(T_);    
+    return alpha() * k() / Cp();    
 }
 
         

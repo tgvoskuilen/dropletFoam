@@ -229,6 +229,11 @@ public:
             const volScalarField& p
         ) const;
         
+        tmp<surfaceScalarField> muf
+        (
+            const volScalarField& p
+        ) const;
+        
         tmp<volScalarField> kByCp() const;
         
         tmp<volScalarField> Sv_evap() const;
@@ -247,7 +252,8 @@ public:
         tmp<volScalarField> Sh_evap() const;
         
         tmp<volScalarField> k() const;
-        tmp<volScalarField> Cv(const volScalarField& T) const;
+        tmp<volScalarField> Cp() const;
+        tmp<volScalarField> rhoCp(const volScalarField& p) const;
                 
         //- Correct the phase properties
         void correct(const volScalarField& p);

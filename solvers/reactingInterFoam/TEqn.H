@@ -3,18 +3,30 @@ volScalarField SpV = (1.0 - vapor.cellMask())*vapor.rho(p)/runTime.deltaT();
 
 {
     word divScheme("div(rho*phi,T)");
-
+    word KdivScheme("div(rho*phi,K)");
+    
+    volScalarField heatTransferCoeff = 
+    (
+        alphaL*liquid.cellMask()*liquid.k()
+      + alphaV*vapor.cellMask()*vapor.k()
+    ) * mag(fvc::grad(alphaL));
+    
+    heatTransferCoeff.dimensionedInternalField() /= Foam::pow(mesh.V(),1.0/3.0);
+    
+    
     fvScalarMatrix TEqnL
     (
         fvm::ddt(rhoL, TL)
       + fvm::div(rhoPhiL, TL, divScheme)
       - fvm::Sp(fvc::ddt(rhoL) + fvc::div(rhoPhiL) - liquid.m_evap_sum(), TL)
       - fvm::laplacian(liquid.kByCp(), TL)
-      //+ p*divU*mixture.rCv()
      ==
-        SpL*TV
-      - fvm::Sp(SpL, TL)
-     //  Sh()*mixture.rCv()
+        heatTransferCoeff*TV/liquid.Cp()
+      - fvm::Sp(heatTransferCoeff/liquid.Cp(), TL)
+      + SpL*TV
+      - fvm::Sp(SpL,TL)
+      - alphaL*(fvc::ddt(rhoL,KL) + fvc::div(rhoPhiL,KL,KdivScheme))/liquid.Cp()
+     //+ Sh()*mixture.rCv()
     );
     
     fvScalarMatrix TEqnV
@@ -23,11 +35,17 @@ volScalarField SpV = (1.0 - vapor.cellMask())*vapor.rho(p)/runTime.deltaT();
       + fvm::div(rhoPhiV, TV, divScheme)
       - fvm::Sp(fvc::ddt(rhoV) + fvc::div(rhoPhiV) - vapor.m_evap_sum(), TV)
       - fvm::laplacian(vapor.kByCp() + turbulence->muEff(), TV)
-      //+ p*divU*mixture.rCv()
      ==
-        SpV*TL
-      - fvm::Sp(SpV, TV)
-     //  Sh()*mixture.rCv()
+        heatTransferCoeff*TL/vapor.Cp()
+      - fvm::Sp(heatTransferCoeff/vapor.Cp(), TV)
+      + SpV*TL
+      - fvm::Sp(SpV,TV)
+      + alphaV*
+        (
+          dpdt
+        - (fvc::ddt(rhoV,KV) + fvc::div(rhoPhiV,KV,KdivScheme))
+        )/vapor.Cp()
+     //+ Sh()*mixture.rCv()
     );
 
     TEqnL.relax();

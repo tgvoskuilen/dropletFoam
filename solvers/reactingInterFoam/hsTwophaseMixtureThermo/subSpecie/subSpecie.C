@@ -159,61 +159,61 @@ tmp<volScalarField> Foam::subSpecie::hs
     return ths;
 }*/
 
-Foam::tmp<Foam::scalarField> Foam::subSpecie::Cv
+Foam::tmp<Foam::scalarField> Foam::subSpecie::Cp
 (
     const scalarField& T,
     const label patchi
 ) const
 {
-    tmp<scalarField> tCv(new scalarField(T.size()));
+    tmp<scalarField> tCp(new scalarField(T.size()));
 
-    scalarField& cv = tCv();
+    scalarField& cp = tCp();
 
     forAll(T, facei)
     {
-        cv[facei] = thermo_.Cv( T[facei] );
+        cp[facei] = thermo_.Cp( T[facei] );
     }
 
-    return tCv;
+    return tCp;
 }
 
-tmp<volScalarField> Foam::subSpecie::Cv
+tmp<volScalarField> Foam::subSpecie::Cp
 (
     const volScalarField& T
 ) const
 {
-    tmp<volScalarField> tCv
+    tmp<volScalarField> tCp
     (
         new volScalarField
         (
             IOobject
             (
-                "tCv"+name_,
+                "tCp"+name_,
                 T.mesh().time().timeName(),
                 T.mesh()
             ),
             T.mesh(),
-            dimensionedScalar("tCv"+name_,dimEnergy/dimMass/dimTemperature,0.0)
+            dimensionedScalar("tCp"+name_,dimEnergy/dimMass/dimTemperature,0.0)
         )
     );        
         
-    volScalarField& cv = tCv();
+    volScalarField& cp = tCp();
 
-    scalarField& cvCells = cv.internalField();
+    scalarField& cpCells = cp.internalField();
     const scalarField& TCells = T.internalField();
 
     forAll(TCells, celli)
     {
-        cvCells[celli] = thermo_.Cv(TCells[celli]);
+        cpCells[celli] = thermo_.Cp(TCells[celli]);
     }
 
     forAll(T.boundaryField(), patchi)
     {
-        cv.boundaryField()[patchi] = Cv(T.boundaryField()[patchi], patchi);
+        cp.boundaryField()[patchi] = Cp(T.boundaryField()[patchi], patchi);
     }
         
         
-    return tCv;
+    return tCp;
 }
 
 tmp<volScalarField> Foam::subSpecie::sigma

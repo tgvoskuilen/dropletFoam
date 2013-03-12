@@ -24,7 +24,7 @@ foamChemistryFile "$FOAM_CASE/constant/reactions";
 foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
 // Phase volume fraction tolerance for diffusion mask
-phaseMaskTol 0.001;
+phaseMaskTol 0.01;
 
 Vapor
 {

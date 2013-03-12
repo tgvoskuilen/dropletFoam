@@ -173,6 +173,11 @@
         dimensionedScalar("dQ", dimPower, 0.0)
     );
 
+    Info<< "Creating field dpdt\n" << endl;
+    volScalarField dpdt("dpdt", fvc::ddt(p));
 
+    Info<< "Creating field kinetic energy K\n" << endl;
+    volScalarField KL("KL", 0.5*magSqr(UL));
+    volScalarField KV("KV", 0.5*magSqr(UV));
 
 

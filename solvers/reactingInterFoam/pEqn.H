@@ -1,5 +1,4 @@
 {
-    Info<< "Building pEqn" << endl;
     rho = mixture.rho();
     
     surfaceScalarField alphaLf(fvc::interpolate(alphaL));
@@ -17,6 +16,16 @@
     // Estimate U with no force terms
     UL = rAUL*UEqnL.H();
     UV = rAUV*UEqnV.H();
+    
+    bool is2D = true;
+    if (is2D)
+    {
+        forAll(UL, cellI)
+        {
+            UL[cellI].x() = 0.0;
+            UV[cellI].x() = 0.0;
+        }
+    }
     
     // Create flux estimates
     surfaceScalarField phiEstL
@@ -51,15 +60,14 @@
     
     //Get total estimated volume flux
     surfaceScalarField phiEst(phiEstL*alphaLf + phiEstV*alphaVf);
-    
-    Info<<"Calc Dp"<<endl;
+
     surfaceScalarField Dp
     (
         "Dp",
         mag
         (
-            alphaLf*rAlphaAULf/rhoLf
-          + alphaVf*rAlphaAUVf/rhoVf
+            alphaLf*rAlphaAULf
+          + alphaVf*rAlphaAUVf
         )
     );
     
@@ -76,12 +84,8 @@
     );
     
     // Solve for pressure to enforce continuity (based on phi)
-    Info<< "Solving pEqn" << endl;
-    Info<<" phiEst dims = " << phiEst.dimensions() << endl;
-    Info<<" Dp dims = " << Dp.dimensions() << endl;
     while (pimple.correctNonOrthogonal())
     {
-        Info<<"Making p_IC"<<endl;
         fvScalarMatrix p_IC
         (
             fvc::div(phiEst)
@@ -89,7 +93,6 @@
           - mixture.S_evap()
         );
 
-        Info<<"doing solve"<<endl;
         solve
         (
             alphaV/p*p_DpDt + p_IC,
@@ -98,19 +101,20 @@
 
         if (pimple.finalNonOrthogonalIter())
         {
+            p.max(dimensionedScalar("pMin",p.dimensions(),1000));
             surfaceScalarField mSfGradp(p_IC.flux()/Dp);
-            
-            phiL = phiEstL + rAlphaAULf/rhoLf*mSfGradp;
-            phiV = phiEstV + rAlphaAUVf/rhoVf*mSfGradp;
+
+            phiL = phiEstL + rAlphaAULf*mSfGradp;
+            phiV = phiEstV + rAlphaAUVf*mSfGradp;
             phi = alphaLf*phiL + alphaVf*phiV;
 
             p.relax();
             mSfGradp = p_IC.flux()/Dp;
             
-            UL += fvc::reconstruct((g & mesh.Sf()) + rAlphaAULf/rhoLf*mSfGradp);
+            UL += fvc::reconstruct(rAlphaAULf*(rhoLf*(g & mesh.Sf()) + mSfGradp));
             UL.correctBoundaryConditions();
             
-            UV += fvc::reconstruct((g & mesh.Sf()) + rAlphaAUVf/rhoVf*mSfGradp);
+            UV += fvc::reconstruct(rAlphaAUVf*(rhoVf*(g & mesh.Sf()) + mSfGradp));
             UV.correctBoundaryConditions();
             
             U = alphaL*UL + alphaV*UV;
@@ -119,7 +123,11 @@
         
     //Update stored properties with new pressure
     thermo.correct();
-            
+    
+    dpdt = fvc::ddt(p);
+    KL = 0.5*magSqr(UL);
+    KV = 0.5*magSqr(UV);
+         
     Info<< "min,max p = " << gMin(p)/1e5 << ", " 
         << gMax(p)/1e5 << " bar" << endl;
         

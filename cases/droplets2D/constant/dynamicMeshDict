@@ -64,6 +64,8 @@ dynamicRefineFvMeshCoeffs
         (rhoPhi_Vapor U_Vapor)
         (phi_Liquid U_Liquid)
         (phi_Vapor U_Vapor)
+        (phi_Liquid_0 U_Liquid_0)
+        (phi_Vapor_0 U_Vapor_0)
         (faceMask_Liquid none)
         (faceMask_Vapor none)
         (D_Liquid none)
