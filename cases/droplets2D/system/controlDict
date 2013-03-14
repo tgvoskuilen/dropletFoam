@@ -27,9 +27,9 @@ endTime         1e-3;
 
 deltaT          1e-8;
 
-writeControl    timeStep; //adjustableRunTime; //timeStep
+writeControl    adjustableRunTime; //timeStep
 
-writeInterval   1; //1e-6;
+writeInterval   1e-6;
 
 purgeWrite      0;
 
