@@ -155,10 +155,10 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     tmp<volScalarField> coeff = Foam::sqrt(W_/(2*pi*R_*T_))*pos(area_-sA);
     
-    coeffC_ = 0.0*coeff()*neg(p_vap_ - p_*x_); //no condensation
-    coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_ - p_*x_);
+    coeffC_ = 0.0*coeff()*neg(p_vap_*xL_ - p_*x_); //no condensation
+    coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_*xL_ - p_*x_);
     
-    m_evap_ = (coeffC_ + coeffV_) * (p_vap_ - p_*x_);
+    m_evap_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_);
     
     volScalarField rhoE = rho_evap(); //m_evap_ * area_
     Foam::Info<< "Min,max evaporation source for " << vapor_specie_ << " = "
@@ -178,12 +178,21 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::YSuSp(
         
     return Pair<tmp<volScalarField> >
     (
-        area_*(coeffC_+coeffV_)*p_vap_,
+        area_*(coeffC_+coeffV_)*p_vap_*xL_,
         area_*(coeffC_+coeffV_)*xByY*p_
     );
 }
 
+// get the explicit and implicit source terms for pressure
+Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::pSuSp() const
+{
 
+    return Pair<tmp<volScalarField> >
+    (
+        area_*(coeffC_+coeffV_)*p_vap_*xL_,
+        area_*(coeffC_+coeffV_)*x_
+    );
+}
 
 
 

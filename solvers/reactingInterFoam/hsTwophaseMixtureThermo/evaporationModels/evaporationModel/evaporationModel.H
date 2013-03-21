@@ -176,7 +176,7 @@ public:
         
         //- 
         virtual Pair<tmp<volScalarField> > YSuSp() const = 0;
-
+        virtual Pair<tmp<volScalarField> > pSuSp() const = 0;
 };
 
 

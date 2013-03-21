@@ -17,7 +17,7 @@ FoamFile
 
 rhoChemistryModel  ODEChemistryModel<gasThermoPhysics>;
 
-chemistry           off;
+chemistry           on;
 
 chemistrySolver     ode;
 

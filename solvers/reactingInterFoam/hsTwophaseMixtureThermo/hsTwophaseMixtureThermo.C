@@ -693,6 +693,16 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::S_evap() const
     return alphaLiquid_.S_evap(p_,T_);
 }
 
+
+template<class MixtureType>
+Foam::Pair<Foam::tmp<Foam::volScalarField> >
+Foam::hsTwophaseMixtureThermo<MixtureType>::SuSp_evap() const
+{
+    return alphaLiquid_.pSuSp(p_,T_);
+}
+
+
+
 template<class MixtureType>
 void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 (
@@ -727,9 +737,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     // Face unit interface normal
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
 
-    surfaceScalarField phiRecoil(fvc::interpolate(alphaVapor_.URecoil()) & mesh_.Sf());
+    //surfaceScalarField phiRecoil(fvc::interpolate(alphaVapor_.URecoil()) & mesh_.Sf());
 
-    surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()) + phiRecoil);
+    surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
     
     for (int gCorr=0; gCorr<nAlphaCorr; gCorr++)
     {

@@ -21,4 +21,40 @@ reactions
         beta            0;
         Ta              2616.59;
     }
+    /*
+    un-named-reaction-1
+    {
+        type            reversibleArrheniusLindemannFallOffReaction;
+        reaction        "N2O4 = NO2 + NO2";
+        k0
+        {
+            A               1.96e+25;
+            beta            -3.8;
+            Ta              6440.85;
+        }
+        kInf
+        {
+            A               4.05e+18;
+            beta            -1.1;
+            Ta              6460.98;
+        }
+        F
+        {
+        }
+        thirdBodyEfficiencies
+        {
+            coeffs          
+7
+(
+(CH3NHNH2 1)
+(N2 1)
+(NO2 1)
+(N2O4 1)
+(CH3NHNH2L 0)
+(N2O4L 0)
+(MMHNTOL 0)
+)
+;
+        }
+    }*/
 }

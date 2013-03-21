@@ -42,11 +42,15 @@
     // Solve for pressure to enforce continuity (based on phi)
     while (pimple.correctNonOrthogonal())
     {
+        Pair<tmp<volScalarField> > pSuSp = mixture.SuSp_evap();
+        
         fvScalarMatrix p_IC
         (
             fvc::div(phi)
           - fvm::laplacian(rAUf, p)
-          - mixture.S_evap()
+          - pSuSp.first()
+          + fvm::Sp(pSuSp.second(), p)
+          //- mixture.S_evap()
         );
 
         solve

@@ -298,6 +298,8 @@ public:
             
             //- Get the total volume source (for pEqn and deltaT)
             tmp<volScalarField> S_evap() const;
+            
+            Pair<tmp<volScalarField> > SuSp_evap() const;
                                     
             //- Get the total reaction and evaporation enthalpy source
             tmp<volScalarField> Sh() const;

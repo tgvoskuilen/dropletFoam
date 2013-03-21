@@ -179,7 +179,7 @@ public:
         {
             return name_;
         }
-
+        
         const word& keyword() const
         {
             return name();

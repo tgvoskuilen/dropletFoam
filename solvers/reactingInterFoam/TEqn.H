@@ -19,7 +19,7 @@
       - fvm::laplacian(mixture.kByCv(turbulence->muEff()), T)
       + p*divU*mixture.rCv()
      ==
-       Sh()*mixture.rCv()
+        Sh()*mixture.rCv()
     );
 
     TEqn.relax();

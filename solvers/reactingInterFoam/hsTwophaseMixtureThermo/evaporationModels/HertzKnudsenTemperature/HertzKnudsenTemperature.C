@@ -88,4 +88,16 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenTemperature::YSu
     
 }
 
+
+// get the explicit and implicit source terms for pressure
+Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenTemperature::pSuSp() const
+{
+
+    return Pair<tmp<volScalarField> >
+    (
+        area_*m_evap_,
+        0.0*m_evap_*area_
+    );
+}
+
 // ************************************************************************* //

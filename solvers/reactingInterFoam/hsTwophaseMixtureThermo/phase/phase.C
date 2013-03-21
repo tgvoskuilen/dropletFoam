@@ -406,6 +406,67 @@ Foam::tmp<Foam::volScalarField> Foam::phase::xByY(const word& specie) const
 }
 
 
+Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
+(
+    const volScalarField& p,
+    const volScalarField& T
+) const
+{
+    Pair<tmp<volScalarField> > tSuSp
+    (
+        tmp<volScalarField>
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "tpSu",
+                    mesh().time().timeName(),
+                    mesh()
+                ),
+                mesh(),
+                dimensionedScalar("pSu", dimless/dimTime, 0.0)
+            )
+        ),
+        tmp<volScalarField>
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "tpSp",
+                    mesh().time().timeName(),
+                    mesh()
+                ),
+                mesh(),
+                dimensionedScalar("pSp", dimless/dimTime/dimPressure, 0.0)
+            )
+        )
+    );
+    
+    dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
+    
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies(), specieI)
+    {
+        dimensionedScalar rho0 = specieI().rho0();
+        
+        if (specieI().hasEvaporation() && rho0.value() > SMALL )
+        {
+            dimensionedScalar Wv = specieI().W();
+            
+            Pair<tmp<volScalarField> > tpSuSp = specieI().evapModel().pSuSp();
+            
+            tSuSp.first()()  += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
+            tSuSp.second()() += tpSuSp.second()*(Ru*T/(p*Wv) - 1/rho0);
+        }
+    }
+        
+    return tSuSp;
+}
+
+
+
+
 Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::YiSuSp
 (
     const subSpecie& specieI
@@ -1147,13 +1208,19 @@ scalar Foam::phase::solveSubSpecies
         //scalar mindT = Foam::min(0.02 * rho(p,T) / (Foam::mag(SuEvap())+ss)).value();
         //dTsrc = (mindT < dTsrc) ? mindT : dTsrc;
         
+        const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
+        const volScalarField kappa = mesh().lookupObject<volScalarField>("PaSR::kappa");
+        
+        tmp<volScalarField> R = kappa * chemistry.RR( specieI().idx() );
+        
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoAlpha_, Yi)
           + fvm::div(rhoPhiAlphaMasked, Yi, divScheme)
           - fvm::laplacian(D_, Yi)
          ==
-            combustionPtr_->R(Yi)
+            R()
+            //combustionPtr_->R(Yi)
           + YSuSp.first()
           - fvm::Sp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
@@ -1198,6 +1265,7 @@ void Foam::phase::updateGlobalYs(const volScalarField& rhoAlphaOther)
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
         specieI().Y() = specieI().Yp()*rhoAlpha_/(rhoAlpha_+rhoAlphaOther);
+        specieI().Y().max(0.0);
         specieI().Y().correctBoundaryConditions();
     }
 }

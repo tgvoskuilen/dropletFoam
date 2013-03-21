@@ -254,6 +254,12 @@ public:
         (
             const subSpecie& specieI
         ) const;
+        
+        Pair<tmp<volScalarField> > pSuSp
+        (
+            const volScalarField& p,
+            const volScalarField& T
+        ) const;
                         
         void calculateDs(const volScalarField& muEff);
 

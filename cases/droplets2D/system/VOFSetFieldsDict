@@ -35,7 +35,7 @@ shapes
             radius   (0 0.001 0.001);
         }
         
-        delVapor 1e-4;
+        delVapor 3e-4;
         U        (0 0 -1);
         
         liquidSpecies
@@ -59,7 +59,7 @@ shapes
             radius   (0 0.001 0.001);
         }
         
-        delVapor 1e-4;
+        delVapor 3e-4;
         U        (0 0 1);
         
         liquidSpecies
@@ -69,8 +69,8 @@ shapes
         
         vaporSpecies
         (
-            N2O4   0.8
-            //NO2    0.09
+            N2O4   0.9
+            NO2    0.08
         );
     }
 

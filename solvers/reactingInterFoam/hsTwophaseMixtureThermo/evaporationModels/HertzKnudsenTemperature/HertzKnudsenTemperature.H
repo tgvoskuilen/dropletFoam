@@ -83,7 +83,7 @@ public:
         );
         
         virtual Pair<tmp<volScalarField> > YSuSp() const;
-
+        virtual Pair<tmp<volScalarField> > pSuSp() const;
 };
 
 
