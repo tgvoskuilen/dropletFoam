@@ -145,10 +145,14 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     p_vap_.min(Pc_);
                               
     //Calculate the mole fractions
-    //x_ = alphaV_.Y(vapor_specie_) / (W_ * alphaV_.Np()); // * mask_;
-    
-    x_ = alphaV_.x(vapor_specie_);
+
     xL_ = alphaL_.x(vapor_specie_+"L");
+    
+    tmp<volScalarField> xSat = p_vap_/p_*xL_;
+    xSat().min(1.0);
+    x_ = alphaV_.x(vapor_specie_)*pos(alphaV_.Yp() - 1e-4) + xSat*neg(alphaV_.Yp() - 1e-4);
+    
+    //x_ = alphaV_.x(vapor_specie_);
     
     scalar pi = constant::mathematical::pi;
     dimensionedScalar sA("sA",dimless/dimLength,SMALL);
@@ -165,7 +169,6 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
               << Foam::min(rhoE).value() << ", " 
               << Foam::max(rhoE).value() << " kg/m3/s" << Foam::endl;
 }
-
 
 
 // get the explicit and implicit source terms for Yvapor
@@ -187,10 +190,16 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::YSuSp(
 Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::pSuSp() const
 {
 
-    return Pair<tmp<volScalarField> >
+    /*return Pair<tmp<volScalarField> >
     (
         area_*(coeffC_+coeffV_)*p_vap_*xL_,
         area_*(coeffC_+coeffV_)*x_
+    );*/
+    
+    return Pair<tmp<volScalarField> >
+    (
+        area_*(coeffC_+coeffV_)*(p_vap_*xL_ - p_*x_),
+        area_*(coeffC_+coeffV_)*x_*0.0
     );
 }
 

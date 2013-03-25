@@ -39,53 +39,41 @@ os.system('cp -r 0.org 0')
 print "Generating blockMesh"
 pyOpenFOAM.run('blockMesh')
 
-for i in range(0,3):
-    print "Pre-Refinement loop", i
-    pyOpenFOAM.run('VOFSetFields')
-    pyOpenFOAM.run('initDynamicMesh')
-    lasttime = pyOpenFOAM.get_sorted_time_folders(False).pop()
-    os.system('rm '+lasttime+'/alphaVapor*')
-    os.system('cp 0.org/* '+lasttime+'/')
-
-pyOpenFOAM.run('VOFSetFields')
-
-
-
 if np > 1:
     # For parallel runs, decompose the problem
     print "Decomposing problem"
     pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
     pyOpenFOAM.run('decomposePar',args='-cellDist')
+    for p in range(0,np):
+        os.system('cp -r processor%1d/0 processor%1d/0.org' % (p,p))
+
+
+n_adapts = 3
+    
+    
+for i in range(0,n_adapts):
+    print "Pre-Refinement loop", i
+    pyOpenFOAM.run('VOFSetFields',np)
+    pyOpenFOAM.run('initDynamicMesh',np)
+    if np > 1:
+        lasttime = pyOpenFOAM.get_sorted_time_folders(True).pop()
+        for p in range(0,np):
+            proc_folder = 'processor'+str(p)
+            os.system('cp '+proc_folder+'/0.org/* '+proc_folder+'/'+lasttime+'/')
+    else:
+        lasttime = pyOpenFOAM.get_sorted_time_folders(False).pop()
+        os.system('rm '+lasttime+'/alphaVapor*')
+        os.system('cp 0.org/* '+lasttime+'/')
+
+
+print "Setting final field values"
+pyOpenFOAM.run('VOFSetFields',np)
+
 
 
 # Run the problem
-if np > 1:
-    # Redistribute the mesh - NOT CURRENTLY WORKING
-    #  this needs ptscotch while decomposePar needs scotch
-    #print "Redistributing the mesh"
-    #pyOpenFOAM.set_decompose_par(np,"ptscotch")
-    #pyOpenFOAM.run('redistributePar',np,'-overwrite')
-
-    # Renumber mesh
-    #print "Renumbering the mesh"
-    #pyOpenFOAM.run('renumberMesh',np,'-overwrite')
-
-    # Begin parallel run
-    print "Running the problem"
-    pyOpenFOAM.run('reactingInterFoam',np,hide=False)
-
-    # Reconstruct the decomposed solution
-    #for time_folder in pyOpenFOAM.get_sorted_time_folders():
-    #    print "Reconstructing parallel mesh for time %s" % time_folder
-    #    pyOpenFOAM.run('reconstructParMesh',args='-time '+time_folder)
-
-    #    print "Reconstructing solution for time %s" % time_folder
-    #    pyOpenFOAM.run('reconstructPar',args='-time '+time_folder)
-
-else:
-    print "Running the problem"
-    pyOpenFOAM.run('reactingInterFoam',hide=False)
-
+print "Running the problem"
+pyOpenFOAM.run('reactingInterFoam',np,hide=False)
 
 
 

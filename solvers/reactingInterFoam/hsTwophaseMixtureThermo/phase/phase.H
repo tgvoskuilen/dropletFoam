@@ -79,6 +79,8 @@ class phase
         
         volScalarField rhoAlpha_;
         
+        volScalarField Ypsum_;
+        
         const phase* otherPhase_;
         
         //- Pointer to the top-level combustion model
@@ -269,7 +271,12 @@ public:
             const volScalarField& T
         );
         
-        void updateGlobalYs(const volScalarField& rhoE);
+        void updateGlobalYs
+        (
+            const volScalarField& rhoE,
+            const volScalarField& p,
+            const volScalarField& T
+        );
         
         tmp<volScalarField> x(const word& name) const;
         tmp<volScalarField> xByY(const word& name) const;

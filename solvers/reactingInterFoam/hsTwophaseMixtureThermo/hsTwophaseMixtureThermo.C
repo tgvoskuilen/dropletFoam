@@ -85,12 +85,13 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     
     alphaVapor_.correct(p_,T_);
     alphaLiquid_.correct(p_,T_);
-    
+        
     mu_ = alphaVapor_*muV() + alphaLiquid_*alphaLiquid_.mu(p_, T_);
     mu_.correctBoundaryConditions();
     
     psi_ = alphaVapor_*alphaVapor_.psi(T_);
     psi_.correctBoundaryConditions();
+    psiE_ = psi_;
     
     rho_ = alphaLiquid_*alphaLiquid_.rho(p_,T_) + 
             alphaVapor_*alphaVapor_.rho(p_,T_);
@@ -267,6 +268,18 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         ),
         mesh,
         dimensionedScalar("Ysum", dimless, 0.0)
+    ),
+    psiE_
+    (
+        IOobject
+        (
+            "psiE",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        psi_
     ),
     deltaN_
     (
@@ -655,15 +668,24 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
     // Update density field to satisfy continuity with new mass flux field
     //Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
+    // Define phase boundary masks to prevent artificial cross-phase mixing
+    alphaLiquid_.setPhaseMasks( phaseMaskTol_ );
+    alphaVapor_.setPhaseMasks( phaseMaskTol_ );
+    
     correct();
     rho = rho_;
-    
     Info<< "Min,max rho = " << Foam::min(rho_).value() << ", " 
         << Foam::max(rho_).value() << endl;
+        
+        
+    YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
+    
+    Info<< "Min,Max Ysum = " << Foam::min(YSum_).value() 
+        << ", " << Foam::max(YSum_).value() << endl;
+    
 
-    // Define phase boundary masks to prevent artificial cross-phase mixing
-    alphaLiquid_.setPhaseMasks(phaseMaskTol_);
-    alphaVapor_.setPhaseMasks(phaseMaskTol_);
+
+
 
     // Calculate diffusion coefficient for each phase
     alphaLiquid_.calculateDs( combustionPtr_->turbulence().muEff() );
@@ -674,8 +696,9 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_ );
 
     // Update global mass fractions based on phase-based mass fractions
-    alphaLiquid_.updateGlobalYs( rho_ );
-    alphaVapor_.updateGlobalYs( rho_ );
+    correct();
+    alphaLiquid_.updateGlobalYs( rho_, p_, T_ );
+    alphaVapor_.updateGlobalYs( rho_, p_, T_ );
     
     scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     

@@ -136,9 +136,29 @@ void Foam::evaporationModel::calculate(const volScalarField& evapMask)
     mask_ = (evapMask * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9))
      * pos(alphaV_.Yp() - 1e-3);  
 
+
+/*
     area_ = Foam::mag(fvc::grad(alphaL_))*neg(alphaL_ - 0.8);
     const volScalarField::DimensionedInternalField& V = alphaL_.mesh().V();
     
+    area_.dimensionedInternalField() *= pos
+    (
+        area_.dimensionedInternalField()
+      - Foam::pow(V,-1.0/3.0)/100.0
+    );
+    area_.correctBoundaryConditions();
+    */
+    
+    //hardt method, no smoothing
+    scalar Cpc = 0.01;
+    tmp<volScalarField> C = (Foam::min(Foam::max(alphaL_, 0.5*Cpc),1.0-0.5*Cpc) - 0.5*Cpc)/(1.0-Cpc);
+    
+    tmp<volScalarField> Cp = Foam::mag(fvc::grad(C()));
+    dimensionedScalar N = fvc::domainIntegrate(Cp()) / fvc::domainIntegrate(C()*Cp());
+
+    area_ = N*C*Cp;
+    
+    const volScalarField::DimensionedInternalField& V = alphaL_.mesh().V();
     area_.dimensionedInternalField() *= pos
     (
         area_.dimensionedInternalField()

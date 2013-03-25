@@ -34,6 +34,7 @@ Vapor
    (
        CH3NHNH2 {}
        NO2      {}
+       N2O4     {}
        N2       {}
    );
 }
@@ -100,7 +101,7 @@ Liquid
              
             HertzKnudsenPressureCoeffs
             {
-                vapor           NO2;
+                vapor           N2O4;
                 Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
                 La              0.38;
@@ -113,7 +114,7 @@ Liquid
             
             HertzKnudsenTemperatureCoeffs
             {
-                vapor           NO2;
+                vapor           N2O4;
                 Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
                 Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
