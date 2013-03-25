@@ -69,8 +69,7 @@ shapes
         
         vaporSpecies
         (
-            N2O4   0.9
-            NO2    0.08
+            NO2    0.5
         );
     }
 

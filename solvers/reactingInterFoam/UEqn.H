@@ -5,6 +5,7 @@
     (
         fvm::ddt(rho, U)
       + fvm::div(mixture.rhoPhi(), U)
+      - fvm::Sp(fvc::ddt(rho) + fvc::div(mixture.rhoPhi()), U)
       + turbulence->divDevRhoReff(U)
     );
 

@@ -654,10 +654,12 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     calculateSurfaceTension();
 
     // Update density field to satisfy continuity with new mass flux field
-    Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
+    //Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
+    correct();
+    rho = rho_;
     
-    Info<< "Min,max rho = " << Foam::min(rho).value() << ", " 
-        << Foam::max(rho).value() << endl;
+    Info<< "Min,max rho = " << Foam::min(rho_).value() << ", " 
+        << Foam::max(rho_).value() << endl;
 
     // Define phase boundary masks to prevent artificial cross-phase mixing
     alphaLiquid_.setPhaseMasks(phaseMaskTol_);
@@ -672,8 +674,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_ );
 
     // Update global mass fractions based on phase-based mass fractions
-    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
-    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
+    alphaLiquid_.updateGlobalYs( rho_ );
+    alphaVapor_.updateGlobalYs( rho_ );
     
     scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     

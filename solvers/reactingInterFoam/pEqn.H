@@ -4,7 +4,7 @@
     
     // First part of density update, only changes compressible regions
     //  since psi is psiV*alphaV and is zero in the liquid regions
-    thermo.rho() -= thermo.psi() * p;
+    //thermo.rho() -= thermo.psi() * p;
     
     volScalarField rAU(1.0/UEqn.A());
     surfaceScalarField rAUf(fvc::interpolate(rAU));
@@ -49,7 +49,7 @@
             fvc::div(phi)
           - fvm::laplacian(rAUf, p)
           - pSuSp.first()
-          + fvm::Sp(pSuSp.second(), p)
+          + fvm::SuSp(pSuSp.second(), p)
           //- mixture.S_evap()
         );
 
@@ -64,9 +64,10 @@
         if (pimple.finalNonOrthogonalIter())
         {
             // Second part of thermodynamic density update
-            thermo.rho() += thermo.psi()*p;
+            //thermo.rho() += thermo.psi()*p;
 
             phi += p_IC.flux();
+            p.relax(); //from Euler solver...
         }
     }
     
@@ -75,11 +76,14 @@
     // However, since we aren't updated rhoPhi, this would not make sense
     // so we don't check, and we instead just update thermo.rho with psi*dp
     
+    
     U += rAU*fvc::reconstruct((phi - phiEst)/rAUf);
     U.correctBoundaryConditions();    
             
     //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
-
+    
+    thermo.correct();
+    
     Info<< "min,max p = " << gMin(p)/1e5 << ", " 
         << gMax(p)/1e5 << " bar" << endl;
         

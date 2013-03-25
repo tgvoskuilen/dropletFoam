@@ -1,10 +1,9 @@
 species
-7
+6
 (
 CH3NHNH2
 N2
 NO2
-N2O4
 CH3NHNH2L
 N2O4L
 MMHNTOL
@@ -17,7 +16,7 @@ reactions
     {
         type            irreversibleArrheniusReaction;
         reaction        "CH3NHNH2L + N2O4L = MMHNTOL";
-        A               6e+06;
+        A               6e+04;
         beta            0;
         Ta              2616.59;
     }

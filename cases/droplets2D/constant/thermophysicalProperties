@@ -24,7 +24,7 @@ foamChemistryFile "$FOAM_CASE/constant/reactions";
 foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
 // Phase volume fraction tolerance for diffusion mask
-phaseMaskTol 0.001;
+phaseMaskTol 0.05;
 
 Vapor
 {
@@ -33,7 +33,6 @@ Vapor
    subspecies
    (
        CH3NHNH2 {}
-       N2O4     {}
        NO2      {}
        N2       {}
    );
@@ -67,7 +66,7 @@ Liquid
                 Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
                 Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
                 La              0.38;
-                betaM           0.6;
+                betaM           0.0;
 
                 Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
                 Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
@@ -101,11 +100,11 @@ Liquid
              
             HertzKnudsenPressureCoeffs
             {
-                vapor           N2O4;
+                vapor           NO2;
                 Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
                 La              0.38;
-                betaM           0.6;
+                betaM           0.0;
 
                 Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
                 Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
@@ -114,7 +113,7 @@ Liquid
             
             HertzKnudsenTemperatureCoeffs
             {
-                vapor           N2O4;
+                vapor           NO2;
                 Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
                 Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
                 Tc              Tc [ 0 0 0 1 0 0 0] 431.35;

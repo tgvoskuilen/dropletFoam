@@ -16,6 +16,7 @@
     (
         fvm::ddt(rho, T)
       + fvc::div(mixture.rhoPhi(), T)
+      - fvm::Sp(fvc::ddt(rho) + fvc::div(mixture.rhoPhi()), T)
       - fvm::laplacian(mixture.kByCv(turbulence->muEff()), T)
       + p*divU*mixture.rCv()
      ==

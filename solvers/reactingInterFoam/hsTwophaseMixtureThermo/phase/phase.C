@@ -456,8 +456,12 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
             
             Pair<tmp<volScalarField> > tpSuSp = specieI().evapModel().pSuSp();
             
-            tSuSp.first()()  += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
-            tSuSp.second()() += tpSuSp.second()*(Ru*T/(p*Wv) - 1/rho0);
+            //full source term linearization, including density relationship
+            tmp<volScalarField> tSp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
+            tmp<volScalarField> tSu = (tpSuSp.first()() - tpSuSp.second()()*p)*(Ru*T/(p*Wv) - 1/rho0) - tSp()*p;
+            
+            tSuSp.first()() += tSu;
+            tSuSp.second()() += tSp;
         }
     }
         
@@ -1159,7 +1163,7 @@ scalar Foam::phase::solveSubSpecies
         << name_ << endl;
         
     //solve ddt(rhoAlpha) + div(rhoPhiAlpha) == 0
-    scalarField& rhoAlphaIf = rhoAlpha_;
+    /*scalarField& rhoAlphaIf = rhoAlpha_;
     const scalarField& rhoAlpha0 = rhoAlpha_.oldTime();
     const scalar deltaT = mesh().time().deltaTValue();
 
@@ -1182,13 +1186,14 @@ scalar Foam::phase::solveSubSpecies
         
 
     }
-    rhoAlpha_.correctBoundaryConditions();
+    rhoAlpha_.correctBoundaryConditions();*/
     
     //Arbitrary diagonal term for cells outside normal region
     volScalarField Sp = (1.0 - cellMask_)*rho(p,T)/mesh().time().deltaT();
     
     //Zero mass outside region
     rhoAlpha_ *= cellMask_;
+    rhoPhiAlpha_ *= faceMask_;
     
    
     // Loop through phase's subspecies
@@ -1209,14 +1214,15 @@ scalar Foam::phase::solveSubSpecies
         //dTsrc = (mindT < dTsrc) ? mindT : dTsrc;
         
         const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
-        const volScalarField kappa = mesh().lookupObject<volScalarField>("PaSR::kappa");
+        const volScalarField& kappa = mesh().lookupObject<volScalarField>("PaSR::kappa");
         
         tmp<volScalarField> R = kappa * chemistry.RR( specieI().idx() );
         
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoAlpha_, Yi)
-          + fvm::div(rhoPhiAlphaMasked, Yi, divScheme)
+          + fvm::div(rhoPhiAlpha_, Yi, divScheme)
+          - fvm::Sp(fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - m_evap_sum(), Yi)
           - fvm::laplacian(D_, Yi)
          ==
             R()
@@ -1246,7 +1252,9 @@ void Foam::phase::setPhaseMasks(scalar maskTol)
 {
     const volScalarField& alpha = *this;
     
-    tmp<volScalarField> Ai = Foam::mag(fvc::grad(alpha));
+    const volScalarField& alphaL = (name_ == "Vapor") ? *otherPhase_ : alpha;
+    
+    tmp<volScalarField> Ai = Foam::mag(fvc::grad(alpha))*neg(alphaL - 0.8);
     volScalarField::DimensionedInternalField Amin = Foam::pow(mesh().V(),-1.0/3.0)/100.0;
     
     Ai().internalField() *= pos
@@ -1260,11 +1268,11 @@ void Foam::phase::setPhaseMasks(scalar maskTol)
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
 }
 
-void Foam::phase::updateGlobalYs(const volScalarField& rhoAlphaOther)
+void Foam::phase::updateGlobalYs(const volScalarField& rhoTotal)
 {
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
-        specieI().Y() = specieI().Yp()*rhoAlpha_/(rhoAlpha_+rhoAlphaOther);
+        specieI().Y() = specieI().Yp()*rhoAlpha_/rhoTotal;
         specieI().Y().max(0.0);
         specieI().Y().correctBoundaryConditions();
     }
