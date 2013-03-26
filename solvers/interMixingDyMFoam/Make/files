@@ -1,0 +1,6 @@
+incompressibleThreePhaseMixture/threePhaseMixture.C
+threePhaseInterfaceProperties/threePhaseInterfaceProperties.C
+interMixingDyMFoam.C
+
+EXE = $(FOAM_USER_APPBIN)/interMixingDyMFoam
+
