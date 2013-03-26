@@ -17,5 +17,17 @@ FoamFile
 
 alphaName   alpha1;
 
+volScalarFields //don't put "alphaName" in here
+(
+    alpha2
+    alpha3
+    p_rgh
+);
+
+volVectorFields
+(
+    U
+);
+
 
 // ************************************************************************* //

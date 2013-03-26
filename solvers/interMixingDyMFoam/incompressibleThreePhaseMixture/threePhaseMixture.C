@@ -38,7 +38,8 @@ void Foam::threePhaseMixture::calcNu()
     nuModel3_->correct();
 
     // Average kinematic viscosity calculated from dynamic viscosity
-    nu_ = mu()/(alpha1_*rho1_ + alpha2_*rho2_ + alpha3_*rho3_);
+    dimensionedScalar rhoSmall("rs",dimDensity,SMALL);
+    nu_ = mu()/(alpha1_*rho1_ + alpha2_*rho2_ + alpha3_*rho3_ + rhoSmall);
 }
 
 

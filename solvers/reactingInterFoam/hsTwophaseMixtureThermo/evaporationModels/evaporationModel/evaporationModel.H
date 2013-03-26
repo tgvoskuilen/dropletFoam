@@ -172,12 +172,14 @@ public:
         
         //- Calculate latent heat of vaporization (function of T)
         virtual tmp<volScalarField> L() const;
+        virtual tmp<volScalarField> dLdT() const;
         
         virtual tmp<volVectorField> U_evap() const;
         
         //- 
         virtual Pair<tmp<volScalarField> > YSuSp() const = 0;
         virtual Pair<tmp<volScalarField> > pSuSp() const = 0;
+        virtual Pair<tmp<volScalarField> > TSuSp() const = 0;
 };
 
 

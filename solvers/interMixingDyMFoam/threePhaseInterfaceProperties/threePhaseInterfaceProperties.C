@@ -189,6 +189,7 @@ Foam::threePhaseInterfaceProperties::threePhaseInterfaceProperties
 
     nHatf_
     (
+        "nHatf",
         (
             fvc::interpolate(fvc::grad(mixture.alpha1()))
            /(mag(fvc::interpolate(fvc::grad(mixture.alpha1()))) + deltaN_)

@@ -400,14 +400,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::mu
 }
 
 
-// Total enthalpy source/sink, including reactions and evaporation
-template<class MixtureType> 
-Foam::tmp<Foam::volScalarField> 
-Foam::hsTwophaseMixtureThermo<MixtureType>::Sh() const
-{
-    return combustionPtr_->Sh() + alphaLiquid_.Sh_evap();
-}
-
 template<class MixtureType> 
 Foam::tmp<Foam::volScalarField> 
 Foam::hsTwophaseMixtureThermo<MixtureType>::dQ_evap() const
@@ -697,8 +689,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
     // Update global mass fractions based on phase-based mass fractions
     correct();
-    alphaLiquid_.updateGlobalYs( rho_, p_, T_ );
-    alphaVapor_.updateGlobalYs( rho_, p_, T_ );
+    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
+    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
     
     scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     
@@ -724,6 +716,19 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> >
 Foam::hsTwophaseMixtureThermo<MixtureType>::SuSp_evap() const
 {
     return alphaLiquid_.pSuSp(p_,T_);
+}
+
+
+template<class MixtureType>
+Foam::Pair<Foam::tmp<Foam::volScalarField> >
+Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
+{
+    Pair<tmp<volScalarField> > tTSuSp = alphaLiquid_.TSuSp();
+    
+    tTSuSp.first()() *= rCv();
+    tTSuSp.second()() *= rCv();
+    
+    return tTSuSp;
 }
 
 

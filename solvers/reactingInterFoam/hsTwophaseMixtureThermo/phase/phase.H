@@ -262,6 +262,8 @@ public:
             const volScalarField& p,
             const volScalarField& T
         ) const;
+        
+        Pair<tmp<volScalarField> > TSuSp() const;
                         
         void calculateDs(const volScalarField& muEff);
 
@@ -273,9 +275,7 @@ public:
         
         void updateGlobalYs
         (
-            const volScalarField& rhoE,
-            const volScalarField& p,
-            const volScalarField& T
+            const volScalarField& rhoAlphaOther
         );
         
         tmp<volScalarField> x(const word& name) const;

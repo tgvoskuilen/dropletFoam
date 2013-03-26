@@ -131,6 +131,31 @@ tmp<volScalarField> Foam::evaporationModel::L() const
     return tL;
 }
 
+tmp<volScalarField> Foam::evaporationModel::dLdT() const
+{
+    tmp<volScalarField> tdLdT
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tdLdT",
+                alphaL_.mesh().time().timeName(),
+                alphaL_.mesh()
+            ),
+            alphaL_.mesh(),
+            dimensionedScalar("dLdT",dimEnergy/dimMass/dimTemperature,0.0)
+        )
+    );
+        
+    if( La_ > 0.0 )
+    {
+        tdLdT() = -Lb_/W_*La_/(Tc_-Tb_)*Foam::pow(Foam::mag(Tc_ - T_)/(Tc_ - Tb_),La_-1.0)*pos(Tc_ - T_);
+    }
+    
+    return tdLdT;
+}
+
 void Foam::evaporationModel::calculate(const volScalarField& evapMask)
 {
     mask_ = (evapMask * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9))

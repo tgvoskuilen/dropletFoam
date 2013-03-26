@@ -94,9 +94,11 @@ public:
             const volScalarField& evapMask
         );
         
+        tmp<volScalarField> dPvdT() const;
         
         virtual Pair<tmp<volScalarField> > YSuSp() const;
         virtual Pair<tmp<volScalarField> > pSuSp() const;
+        virtual Pair<tmp<volScalarField> > TSuSp() const;
 };  
 
 

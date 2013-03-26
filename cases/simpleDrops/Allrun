@@ -25,11 +25,11 @@ if np > 1:
     # For parallel runs, decompose the problem
     print "Decomposing problem"
     pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+    pyOpenFOAM.set_balance_par(np)
     pyOpenFOAM.run('decomposePar',args='-cellDist')
     for p in range(0,np):
         os.system('cp -r processor%1d/0 processor%1d/0.org' % (p,p))
         os.system('touch processor%1d/test.foam' % p )
-
 
 n_adapts = 4
     
@@ -37,15 +37,6 @@ for i in range(0,n_adapts):
     print "Pre-Refinement loop", i
     pyOpenFOAM.run('VOFSetFields',np)
     pyOpenFOAM.run('initDynamicMesh',np)
-    if np > 1:
-        lasttime = pyOpenFOAM.get_sorted_time_folders(True).pop()
-        for p in range(0,np):
-            proc_folder = 'processor'+str(p)
-            os.system('cp '+proc_folder+'/0.org/* '+proc_folder+'/'+lasttime+'/')
-    else:
-        lasttime = pyOpenFOAM.get_sorted_time_folders(False).pop()
-        os.system('rm '+lasttime+'/alpha*')
-        os.system('cp 0.org/* '+lasttime+'/')
 
 
 print "Setting final field values"

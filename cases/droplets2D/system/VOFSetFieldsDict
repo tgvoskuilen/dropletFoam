@@ -20,13 +20,14 @@ defaultSpecies
     N2   1.0
 );
 
-liquidPhaseName  alphaLiquid;
 vaporPhaseName   alphaVapor;
 
 shapes
 (
     DropMMH
     {
+        alphaName alphaLiquid;
+        
         shape    ellipsoid;
         
         ellipsoidCoeffs
@@ -51,6 +52,8 @@ shapes
     
     DropNTO
     {
+        alphaName alphaLiquid;
+        
         shape    ellipsoid;
                 
         ellipsoidCoeffs

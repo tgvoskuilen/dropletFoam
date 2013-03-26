@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
             Info<< "Execution time for mesh.update() = "
                 << runTime.elapsedCpuTime() - timeBeforeMeshUpdate
                 << " s" << endl;
-
+                
             gh = g & mesh.C();
             ghf = g & mesh.Cf();
             turbulence->correct();

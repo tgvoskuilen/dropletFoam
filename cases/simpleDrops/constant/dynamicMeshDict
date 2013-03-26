@@ -61,11 +61,13 @@ dynamicRefineFvMeshCoeffs
     correctFluxes
     (
         (phi Urel)
+        (phi_0 Urel_0)
         (phiAbs U)
         (phiAbs_0 U_0)
         (nHatf none)
         (rho*phi none)
         (ghf none)
+        (nHatf none)
     );
 
     // Write the refinement level as a volScalarField

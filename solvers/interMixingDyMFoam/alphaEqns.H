@@ -133,6 +133,7 @@
 
         // Solve for alpha1
         solve(fvm::ddt(alpha1) + fvc::div(phiAlpha1));
+        alpha1.max(0.0);
 
         // Create the diffusion coefficients for alpha2<->alpha3
         volScalarField Dc23(D23*max(alpha3, scalar(0))*pos(alpha2));
@@ -149,6 +150,7 @@
           - fvm::laplacian(Dc23 + Dc32, alpha2)
         );
         alpha2Eqn.solve();
+        alpha2.max(0.0);
 
         // Construct the complete mass flux
         rhoPhi =
@@ -157,6 +159,19 @@
             + phi*rho3;
 
         alpha3 = 1.0 - alpha1 - alpha2;
+        alpha3.max(0.0);
+        
+        volScalarField sumAlpha = alpha1 + alpha2 + alpha3;
+        alpha1 /= sumAlpha;
+        alpha2 /= sumAlpha;
+        alpha3 /= sumAlpha;
+        
+        Info<< "Total phase volume fraction = "
+            << sumAlpha.weightedAverage(mesh.V()).value()
+            << "  Min(sumAlpha) = " << min(sumAlpha).value()
+            << "  Max(sumAlpha) = " << max(sumAlpha).value()
+            << endl;
+
     }
 
     Info<< "Air phase volume fraction = "

@@ -1,16 +1,8 @@
 {
-    // For this to work I need to pull T out of thermo, since thermo only
-    //  allows const access to T
-    //  Te is the external temperature field (external to thermo)
-    
-    tmp<volScalarField> Sh = mixture.Sh();
-    
-    Info<< "Min,max Sh = " << Foam::min(Sh()).value() 
-        << ", " << Foam::max(Sh()).value() << endl;
-    
-    //Te = thermo.T();
     
     divU = fvc::div(phi);
+    
+    Pair<tmp<volScalarField> > TSuSp = mixture.TSuSp(); //<- includes rCv, linearized evaporation enthalpy sink
 
     fvScalarMatrix TEqn
     (
@@ -20,7 +12,9 @@
       - fvm::laplacian(mixture.kByCv(turbulence->muEff()), T)
       + p*divU*mixture.rCv()
      ==
-        Sh()*mixture.rCv()
+        combustion->Sh()*mixture.rCv()
+      + TSuSp.first()
+      - fvm::Sp(TSuSp.second(), T)
     );
 
     TEqn.relax();

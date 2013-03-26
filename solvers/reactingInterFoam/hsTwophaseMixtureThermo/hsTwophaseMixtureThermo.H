@@ -302,9 +302,9 @@ public:
             tmp<volScalarField> S_evap() const;
             
             Pair<tmp<volScalarField> > SuSp_evap() const;
+            Pair<tmp<volScalarField> > TSuSp() const;
                                     
             //- Get the total reaction and evaporation enthalpy source
-            tmp<volScalarField> Sh() const;
             tmp<volScalarField> dQ_evap() const;
             
             tmp<volScalarField> kByCv(const volScalarField& muEff) const;

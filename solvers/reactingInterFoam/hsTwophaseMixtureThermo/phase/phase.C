@@ -483,6 +483,54 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
 }
 
 
+Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::TSuSp() const
+{
+    Pair<tmp<volScalarField> > tSuSp
+    (
+        tmp<volScalarField>
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "tTSu",
+                    mesh().time().timeName(),
+                    mesh()
+                ),
+                mesh(),
+                dimensionedScalar("TSu", dimTemperature*dimDensity/dimTime, 0.0)
+            )
+        ),
+        tmp<volScalarField>
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "tTSp",
+                    mesh().time().timeName(),
+                    mesh()
+                ),
+                mesh(),
+                dimensionedScalar("TSp", dimDensity/dimTime, 0.0)
+            )
+        )
+    );
+    
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies(), specieI)
+    {
+        if( specieI().hasEvaporation() )
+        {
+            Pair<tmp<volScalarField> > tTSuSp = specieI().evapModel().TSuSp();
+            tSuSp.first()() += tTSuSp.first();
+            tSuSp.second()() += tTSuSp.second();
+        }
+    }
+        
+    return tSuSp;
+}
+
+
 
 
 Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::YiSuSp
@@ -1257,8 +1305,8 @@ scalar Foam::phase::solveSubSpecies
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;  
     }
     
-    /*
-    tmp<volScalarField> Ysum = Ypp() + SMALL;
+    
+    /*tmp<volScalarField> Ysum = Ypp() + SMALL;
     
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
@@ -1269,8 +1317,8 @@ scalar Foam::phase::solveSubSpecies
         Info<< Yi.name() << " min,max,avg = " 
             << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;  
-    }
-    */
+    }*/
+    
     //Info<< "Min source dT = " << dTsrc << endl;
      
     return DiNum;
@@ -1318,15 +1366,12 @@ void Foam::phase::setPhaseMasks(scalar maskTol)
 
 void Foam::phase::updateGlobalYs
 (
-    const volScalarField& rhoTotal,
-    const volScalarField& p,
-    const volScalarField& T
+    const volScalarField& rhoAlphaOther
 )
 {
-    const volScalarField& alpha = *this;
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
-        specieI().Y() = specieI().Yp()*rho(p,T)*alpha/rhoTotal;
+        specieI().Y() = specieI().Yp()*rhoAlpha_/(rhoAlpha_ + rhoAlphaOther);
         specieI().Y().max(0.0);
         specieI().Y().correctBoundaryConditions();
     }

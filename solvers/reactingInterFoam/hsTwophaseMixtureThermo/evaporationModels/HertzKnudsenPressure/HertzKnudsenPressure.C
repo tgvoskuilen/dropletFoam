@@ -203,6 +203,59 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::pSuSp(
     );
 }
 
+tmp<volScalarField> Foam::evaporationModels::HertzKnudsenPressure::dPvdT() const
+{
+    tmp<volScalarField> tdPvdT
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tdPvdT",
+                alphaL_.mesh().time().timeName(),
+                alphaL_.mesh()
+            ),
+            alphaL_.mesh(),
+            dimensionedScalar("dPdT",dimPressure/dimTemperature,0.0)
+        )
+    );
+
+    tdPvdT() = p_vap_/T_/T_*
+               (
+                   Lb_/R_*neg(T_ - Tb_)
+                 + (
+                       dimensionedScalar("B",dimTemperature,PvCoeffs_[1])
+                     + 2*dimensionedScalar("C",dimTemperature*dimTemperature,PvCoeffs_[2])/T_
+                   )*pos(T_ - Tb_)
+               );
+
+    return tdPvdT;
+}
+
+Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::TSuSp() const
+{
+
+    //Sh = -m_evap_*L()*area_
+    //
+    //Sh = explicit - implicit * T
+    //
+    //  implicit = -dSh/dT = (dm/dT*L() + m_evap*dL/dT)*area_
+    //    dm/dT = dcoeff/dT*(pv*xL-p*x) + coeff*xL*dpv/dT
+    //    dcoeff/dT = -coeff/(2*T)
+    //    dpv/dT = pv * L / (R*T^2)
+
+    tmp<volScalarField> tL = L();
+    tmp<volScalarField> dmdT = -m_evap_/(2*T_) + (coeffC_+coeffV_)*xL_*dPvdT();
+    tmp<volScalarField> Sp = dmdT*tL() + m_evap_*dLdT();
+    tmp<volScalarField> Su = -m_evap_*tL() + Sp()*T_;
+    
+    return Pair<tmp<volScalarField> >
+    (
+        area_*Su,
+        area_*Sp
+    );
+}
+
 
 
 // ************************************************************************* //
