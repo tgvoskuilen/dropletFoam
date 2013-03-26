@@ -28,6 +28,7 @@ if np > 1:
     pyOpenFOAM.run('decomposePar',args='-cellDist')
     for p in range(0,np):
         os.system('cp -r processor%1d/0 processor%1d/0.org' % (p,p))
+        os.system('touch processor%1d/test.foam' % p )
 
 
 n_adapts = 4
@@ -49,15 +50,10 @@ for i in range(0,n_adapts):
 
 print "Setting final field values"
 pyOpenFOAM.run('VOFSetFields',np)
-"""
-
 
 # Run the problem
 print "Running the problem"
 pyOpenFOAM.run('interMixingDyMFoam',np,hide=False)
 
-
-
 print "Finished!"
 
-"""
