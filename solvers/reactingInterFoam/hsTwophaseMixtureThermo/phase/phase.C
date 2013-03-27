@@ -72,7 +72,7 @@ Foam::phase::phase
             "rhoAlpha_"+name,
             mesh.time().timeName(),
             mesh,
-            IOobject::NO_READ,
+            IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
         mesh,
@@ -122,7 +122,7 @@ Foam::phase::phase
             "cellMask_"+name,
             mesh.time().timeName(),
             mesh,
-            IOobject::NO_READ,
+            IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
         mesh,
@@ -143,6 +143,7 @@ Foam::phase::phase
     )
 {  
     rhoAlpha_.oldTime();
+    cellMask_.oldTime();
     if( phaseDict_.found("SchmidtNo") )
     {
         Sc_ = readScalar(phaseDict_.lookup("SchmidtNo"));
@@ -160,8 +161,50 @@ Foam::autoPtr<Foam::phase> Foam::phase::clone() const
     return autoPtr<phase>(NULL);
 }
 
-void Foam::phase::setSpecies( const volScalarField& rhoTotal )
+void Foam::phase::setSpecies( const volScalarField& otherRhoAlpha )
 {    
+    bool isIC = false;
+    
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        //Y == Yp and Yp != 0
+        if( Foam::max(Foam::mag(specieI().Yp() - specieI().Y())).value() < 1e-4 
+            && Foam::max(Foam::mag(specieI().Yp())).value() > 0.01 )
+        {
+            Info<<"Initializing Yp_" << specieI().name() << " from Y" << endl;
+            isIC = true;
+            
+            //only set Yp if Y == Yp (only the case if Yp not read from file)
+            //dimensionedScalar s("s",dimDensity,SMALL);
+            //specieI().Yp() = specieI().Y()*cellMask_*(rhoAlpha_+otherRhoAlpha)/(rhoAlpha_+s);
+            specieI().Yp() = specieI().Y() / (Yp() + SMALL);
+            
+            //Allow a little diffusion within masked region
+            dimensionedScalar dA = Foam::pow(Foam::min(mesh().V()),2.0/3.0)/40.0;
+        
+            for(label i = 0; i < 5; i++)
+            {
+                specieI().Yp() += dA*fvc::laplacian(faceMask_, specieI().Yp());
+            }
+            specieI().Yp().min(1.0);
+            specieI().Yp().max(0.0);
+        }
+    }
+    
+    if( isIC )
+    {
+        tmp<volScalarField> YpSum = Ypp();
+        
+        forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+        { 
+            specieI().Yp() *= cellMask_/(YpSum() + SMALL);
+            specieI().Yp().correctBoundaryConditions();
+            specieI().Yp().oldTime();
+        }
+    }
+
+
+/*
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
         specieI().Yp() = specieI().Y() / (Yp() + SMALL);
@@ -184,7 +227,7 @@ void Foam::phase::setSpecies( const volScalarField& rhoTotal )
         specieI().Yp() /= (YpSum() + SMALL);
         specieI().Yp().correctBoundaryConditions();
         specieI().Yp().oldTime();
-    }
+    }*/
 }
 
 // Only applicable for liquid phase. Vapor phase will return 0 here.
@@ -1292,6 +1335,42 @@ scalar Foam::phase::solveSubSpecies
           - fvm::Sp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
         );
+        
+        Info<<"YiEqn.A() min = " << Foam::min(YiEqn.A()) << endl;
+        
+        if( Foam::min(YiEqn.A()).value() < SMALL )
+        {
+            tmp<volScalarField> A = YiEqn.A();
+            tmp<volScalarField> ddtdiv = fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - m_evap_sum();
+            tmp<volScalarField> div = fvc::div(rhoPhiAlpha_);
+            tmp<volScalarField> ddt = fvc::ddt(rhoAlpha_);
+            tmp<volScalarField> avgFaceMask = fvc::average(faceMask_);
+            tmp<volScalarField> avgD = fvc::average(D_);
+            
+            forAll(A(), cellI)
+            {
+                if( A()[cellI] < SMALL )
+                {
+                    
+                    Info<<"A = " << A()[cellI] << " where" << endl;
+                    Info<<"  rhoAlpha = " << rhoAlpha_[cellI] << endl;
+                    Info<<"  rhoAlphaOld = " << rhoAlpha_.oldTime()[cellI] << endl;
+                    Info<<"  Sp = " << Sp[cellI] << endl;
+                    Info<<"  cellMask = " << cellMask_[cellI] << endl;
+                    Info<<"  cellMaskOld = " << cellMask_.oldTime()[cellI] << endl;
+                    Info<<"  alpha = " << this->operator[](cellI) << endl;
+                    Info<<"  alphaOld = " << this->oldTime()[cellI] << endl;
+                    Info<<"  ddtdiv = " << ddtdiv()[cellI] << endl;
+                    Info<<"  ddt = " << ddt()[cellI] << endl;
+                    Info<<"  div = " << div()[cellI] << endl;
+                    Info<<"  avgFM = " << avgFaceMask()[cellI] << endl;
+                    Info<<"  avgD = " << avgD()[cellI] << endl;
+                    Info<<"  Y = " << Yi[cellI] << endl;
+                }
+            
+            }
+        
+        }
 
         //Info<<"Doing solve, min diag = " << Foam::min(YiEqn.A()) << endl;
         YiEqn.relax();

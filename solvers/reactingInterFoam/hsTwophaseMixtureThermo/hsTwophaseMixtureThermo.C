@@ -91,7 +91,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     
     psi_ = alphaVapor_*alphaVapor_.psi(T_);
     psi_.correctBoundaryConditions();
-    psiE_ = psi_;
     
     rho_ = alphaLiquid_*alphaLiquid_.rho(p_,T_) + 
             alphaVapor_*alphaVapor_.rho(p_,T_);
@@ -269,18 +268,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         mesh,
         dimensionedScalar("Ysum", dimless, 0.0)
     ),
-    psiE_
-    (
-        IOobject
-        (
-            "psiE",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        psi_
-    ),
     deltaN_
     (
         "deltaN",
@@ -322,8 +309,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     alphaVapor_.setPhaseMasks(phaseMaskTol_);
     
     //Set Yp values and allow slight diffusion to expand to phase mask boundary
-    alphaVapor_.setSpecies( rho_ );
-    alphaLiquid_.setSpecies( rho_ );
+    alphaVapor_.setSpecies( alphaLiquid_.rhoAlpha() );
+    alphaLiquid_.setSpecies( alphaVapor_.rhoAlpha() );
 }
 
 

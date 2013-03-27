@@ -124,8 +124,6 @@ private:
         //- Sum of all mass fractions
         volScalarField YSum_;
         
-        volScalarField psiE_;
-
         //- Stabilisation for normalisation of the interface normal
         const dimensionedScalar deltaN_;
         
