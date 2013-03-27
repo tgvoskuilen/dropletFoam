@@ -39,6 +39,7 @@ Description
 #include "turbulenceModel.H"
 #include "pimpleControl.H"
 #include "IObasicSourceList.H"
+#include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -136,6 +137,9 @@ int main(int argc, char *argv[])
         }
 
         #include "continuityErrs.H"
+        
+        scalar totalMixing = fvc::domainIntegrate(alpha2*alpha3).value();
+        mixLog << runTime.value() << token::TAB << totalMixing << endl;
 
         runTime.write();
 

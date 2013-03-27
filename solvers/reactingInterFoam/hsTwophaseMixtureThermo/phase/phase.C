@@ -498,7 +498,7 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::TSuSp() const
                     mesh()
                 ),
                 mesh(),
-                dimensionedScalar("TSu", dimTemperature*dimDensity/dimTime, 0.0)
+                dimensionedScalar("TSu", dimPower/dimVolume, 0.0)
             )
         ),
         tmp<volScalarField>
@@ -512,7 +512,7 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::TSuSp() const
                     mesh()
                 ),
                 mesh(),
-                dimensionedScalar("TSp", dimDensity/dimTime, 0.0)
+                dimensionedScalar("TSp", dimPower/dimVolume/dimTemperature, 0.0)
             )
         )
     );
@@ -1288,12 +1288,12 @@ scalar Foam::phase::solveSubSpecies
           - fvm::laplacian(D_, Yi)
          ==
             R()
-            //combustionPtr_->R(Yi)
           + YSuSp.first()
           - fvm::Sp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
         );
 
+        //Info<<"Doing solve, min diag = " << Foam::min(YiEqn.A()) << endl;
         YiEqn.relax();
         YiEqn.solve(mesh().solver("Yi"));
         

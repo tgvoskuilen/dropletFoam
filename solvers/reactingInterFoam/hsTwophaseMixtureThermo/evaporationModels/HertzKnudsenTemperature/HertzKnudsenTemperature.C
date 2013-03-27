@@ -100,4 +100,14 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenTemperature::pSu
     );
 }
 
+Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenTemperature::TSuSp() const
+{
+
+    return Pair<tmp<volScalarField> >
+    (
+        -area_*m_evap_*L(),
+        0.0*m_evap_*area_*L()/Tb_
+    );
+}
+
 // ************************************************************************* //

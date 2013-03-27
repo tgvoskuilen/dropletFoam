@@ -1,7 +1,6 @@
 INTERFOAM = $(FOAM_SOLVERS)/multiphase/interFoam
 
 EXE_INC = \
-    -I$(INTERFOAM) \
     -IincompressibleThreePhaseMixture \
     -IthreePhaseInterfaceProperties \
     -I$(LIB_SRC)/transportModels/interfaceProperties/lnInclude \

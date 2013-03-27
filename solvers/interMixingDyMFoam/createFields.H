@@ -167,3 +167,7 @@
     }
 
     IObasicSourceList sources(mesh);
+    
+    OFstream mixLog(args.path()/"totalMixing.out");
+    mixLog<< "Time" << token::TAB << "Total Mixing" << endl;
+    
