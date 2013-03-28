@@ -513,12 +513,19 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
             
             Pair<tmp<volScalarField> > tpSuSp = specieI().evapModel().pSuSp();
             
+            
             //full source term linearization, including density relationship
-            tmp<volScalarField> tSp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
-            tmp<volScalarField> tSu = (tpSuSp.first()() - tpSuSp.second()()*p)*(Ru*T/(p*Wv) - 1/rho0) - tSp()*p;
+            tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
+            tmp<volScalarField> tSu = (tpSuSp.first()() - tpSuSp.second()()*p)*(Ru*T/(p*Wv) - 1/rho0) - tdSdp()*p;
             
             tSuSp.first()() += tSu;
-            tSuSp.second()() += tSp;
+            tSuSp.second()() -= tdSdp;
+            
+            
+            //fully explicit treatment
+            //tSuSp.first()() += (tpSuSp.first() - tpSuSp.second()*p)*(Ru*T/(p*Wv) - 1/rho0);
+            //tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
+            
         }
     }
         

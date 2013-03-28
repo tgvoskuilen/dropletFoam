@@ -190,17 +190,17 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::YSuSp(
 Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::pSuSp() const
 {
 
-    /*return Pair<tmp<volScalarField> >
+    return Pair<tmp<volScalarField> >
     (
         area_*(coeffC_+coeffV_)*p_vap_*xL_,
         area_*(coeffC_+coeffV_)*x_
-    );*/
-    
-    return Pair<tmp<volScalarField> >
-    (
-        area_*(coeffC_+coeffV_)*(p_vap_*xL_ - p_*x_),
-        area_*(coeffC_+coeffV_)*x_*0.0
     );
+    
+    /*return Pair<tmp<volScalarField> >
+    (
+        area_*m_evap_,
+        area_*(coeffC_+coeffV_)*x_*0.0
+    );*/
 }
 
 tmp<volScalarField> Foam::evaporationModels::HertzKnudsenPressure::dPvdT() const

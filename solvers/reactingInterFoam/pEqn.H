@@ -59,7 +59,7 @@
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
-        //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
+        p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
 
         if (pimple.finalNonOrthogonalIter())
         {
