@@ -515,16 +515,16 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
             
             
             //full source term linearization, including density relationship
-            tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
+            /*tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
             tmp<volScalarField> tSu = (tpSuSp.first()() - tpSuSp.second()()*p)*(Ru*T/(p*Wv) - 1/rho0) - tdSdp()*p;
             
             tSuSp.first()() += tSu;
-            tSuSp.second()() -= tdSdp;
+            tSuSp.second()() -= tdSdp;*/
             
             
             //fully explicit treatment
             //tSuSp.first()() += (tpSuSp.first() - tpSuSp.second()*p)*(Ru*T/(p*Wv) - 1/rho0);
-            //tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
+            tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
             
         }
     }
@@ -1434,20 +1434,24 @@ void Foam::phase::setPhaseMasks(scalar maskTol)
     cellMask_ = pos(alpha - maskTol + area*one - SMALL);
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     
-    /*
+    
     //Perform a local averaging to "fill in" newly un-masked cells
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    { 
-        tmp<volScalarField> tYpf = fvc::average(fvc::interpolate(specieI().Yp()));
+    //forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    //{ 
+        //tmp<volScalarField> tYpf = fvc::average(fvc::interpolate(specieI().Yp()));
         
+    /*if( name_ == "Liquid")
+    {
         forAll(cellMask_, cellI)
         {
-            if( cellMask_[cellI] > 0.5 && oldMask()[cellI] < 0.5 )
+            if( cellMask_[cellI] > 0.5 && cellMask_.oldTime()[cellI] < 0.5 )
             {
-                specieI().Yp()[cellI] += tYpf()[cellI];
+                //specieI().Yp()[cellI] += tYpf()[cellI];
+                rhoAlpha_.oldTime()[cellI] = rhoAlpha_[cellI]; 
             }
         }
     }*/
+    //}
 }
 
 void Foam::phase::updateGlobalYs
