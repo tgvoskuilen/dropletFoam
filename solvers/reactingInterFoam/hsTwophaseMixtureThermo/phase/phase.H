@@ -170,7 +170,12 @@ public:
             otherPhase_ = other;
         }
         
-        void setPhaseMasks(scalar maskTol);
+        void setPhaseMasks
+        (
+            scalar maskTol,
+            const volScalarField& p, 
+            const volScalarField& T
+        );
 
         //- Return the phase density
         tmp<volScalarField> rho

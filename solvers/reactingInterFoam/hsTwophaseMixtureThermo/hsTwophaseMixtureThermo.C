@@ -305,8 +305,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     
     // Define phase boundary masks to prevent artificial cross-phase mixing
     //  Masks are based on current values of alphas
-    alphaLiquid_.setPhaseMasks(phaseMaskTol_);
-    alphaVapor_.setPhaseMasks(phaseMaskTol_);
+    alphaLiquid_.setPhaseMasks(phaseMaskTol_, p_, T_ );
+    alphaVapor_.setPhaseMasks(phaseMaskTol_, p_, T_ );
     
     //Set Yp values and allow slight diffusion to expand to phase mask boundary
     alphaVapor_.setSpecies( alphaLiquid_.rhoAlpha() );
@@ -648,8 +648,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     // Update density field to satisfy continuity with new mass flux field
     //Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     // Define phase boundary masks to prevent artificial cross-phase mixing
-    alphaLiquid_.setPhaseMasks( phaseMaskTol_ );
-    alphaVapor_.setPhaseMasks( phaseMaskTol_ );
+    alphaLiquid_.setPhaseMasks( phaseMaskTol_, p_, T_ );
+    alphaVapor_.setPhaseMasks( phaseMaskTol_, p_, T_ );
     
     correct();
     rho = rho_;

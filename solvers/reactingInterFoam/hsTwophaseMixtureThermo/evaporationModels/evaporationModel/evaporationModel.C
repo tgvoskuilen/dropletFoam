@@ -158,8 +158,8 @@ tmp<volScalarField> Foam::evaporationModel::dLdT() const
 
 void Foam::evaporationModel::calculate(const volScalarField& evapMask)
 {
-    mask_ = (evapMask * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9))
-     * pos(alphaV_.Yp() - 1e-3);  
+    mask_ = (evapMask * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9));
+     //* pos(alphaV_.Yp() - 1e-3);  
 
 
 /*
@@ -187,7 +187,7 @@ void Foam::evaporationModel::calculate(const volScalarField& evapMask)
     area_.dimensionedInternalField() *= pos
     (
         area_.dimensionedInternalField()
-      - Foam::pow(V,-1.0/3.0)/100.0
+      - Foam::pow(V,-1.0/3.0)/4.0
     );
     area_.correctBoundaryConditions();
 }
@@ -205,7 +205,8 @@ tmp<volScalarField> Foam::evaporationModel::rho_evap() const
 
 tmp<volVectorField> Foam::evaporationModel::U_evap() const
 {
-    tmp<volScalarField> rhov = p_*W_/(R_*T_);
+    dimensionedScalar rho0("rho0",dimDensity,1000); //TODO read from alphaL
+    tmp<volScalarField> vLG = R_*T_/(p_*W_) - 1/rho0;
     
     dimensionedScalar deltaN
     (
@@ -213,10 +214,10 @@ tmp<volVectorField> Foam::evaporationModel::U_evap() const
         1e-8/pow(average(alphaL_.mesh().V()), 1.0/3.0)
     );
     
-    tmp<volVectorField> gradAlpha = -fvc::grad(alphaL_);
-    gradAlpha() /= (mag(gradAlpha()) + deltaN);
+    tmp<volVectorField> n = -fvc::grad(alphaL_);
+    n() /= (mag(n()) + deltaN);
     
-    tmp<volVectorField> Ur = m_evap_ / rhov * gradAlpha;
+    tmp<volVectorField> Ur = m_evap_ * vLG * n;
     
     return Ur;
 }

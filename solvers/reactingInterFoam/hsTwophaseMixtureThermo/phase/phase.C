@@ -515,16 +515,16 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
             
             
             //full source term linearization, including density relationship
-            /*tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
+            tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
             tmp<volScalarField> tSu = (tpSuSp.first()() - tpSuSp.second()()*p)*(Ru*T/(p*Wv) - 1/rho0) - tdSdp()*p;
             
             tSuSp.first()() += tSu;
-            tSuSp.second()() -= tdSdp;*/
+            tSuSp.second()() -= tdSdp;
             
             
             //fully explicit treatment
             //tSuSp.first()() += (tpSuSp.first() - tpSuSp.second()*p)*(Ru*T/(p*Wv) - 1/rho0);
-            tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
+            //tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
             
         }
     }
@@ -1412,28 +1412,45 @@ scalar Foam::phase::solveSubSpecies
 
 
 // Update the phase masks based on alpha and the evaporation area
-void Foam::phase::setPhaseMasks(scalar maskTol)
+void Foam::phase::setPhaseMasks
+(
+    scalar maskTol,
+    const volScalarField& p,
+    const volScalarField& T
+)
 {
-    const volScalarField& alpha = *this;
+    volScalarField& alpha = *this;
     
+    //TODO: Make this independent of specie type "N2O4"
     const volScalarField& area = mesh().lookupObject<volScalarField>("area_N2O4");
-    
-    /*const volScalarField& alphaL = (name_ == "Vapor") ? *otherPhase_ : alpha;
-    
-    tmp<volScalarField> Ai = Foam::mag(fvc::grad(alpha))*neg(alphaL - 0.8);
-    volScalarField::DimensionedInternalField Amin = Foam::pow(mesh().V(),-1.0/3.0)/100.0;
-    
-    Ai().internalField() *= pos
-    (
-        Ai().internalField() - Amin
-    );*/
-    
+       
     dimensionedScalar one("one",dimLength,1.0);
     
     //tmp<volScalarField> oldMask = cellMask_;
     cellMask_ = pos(alpha - maskTol + area*one - SMALL);
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     
+    //apply the current-time mask to the old-time rhoAlpha
+    // ddt(rhoAlpha) = ddt(rho*alpha*mask) 
+    //               = ddt(mask)*rho*alpha + mask*ddt(rho*alpha)
+    //
+    // The ddt(mask) term is either 0 or 1/dt, and this extremely large change
+    // in magnitude makes the mask transition unstable. The time rate of change
+    // of the mask is irrelevant to the computation, we only really want the
+    // mask*ddt(rho*alpha) term, so we remove this by retro-actively applying
+    // the mask to oldTime.
+    //
+    tmp<volScalarField> ddtM = fvc::ddt(cellMask_);
+    tmp<volScalarField> rhoOld = rho(p.oldTime(), T.oldTime());
+    forAll(ddtM(), cellI)
+    {
+        if( ddtM()[cellI] > 10. )
+        {
+            rhoAlpha_.oldTime()[cellI] = cellMask_[cellI]
+                 * alpha.oldTime()[cellI] * rhoOld()[cellI];
+        }
+    }
+    //rhoAlpha_.oldTime() = cellMask_ * alpha.oldTime() * rho(p.oldTime(), T.oldTime());
     
     //Perform a local averaging to "fill in" newly un-masked cells
     //forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
