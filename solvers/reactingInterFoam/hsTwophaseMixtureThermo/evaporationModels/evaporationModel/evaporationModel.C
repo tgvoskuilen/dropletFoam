@@ -187,7 +187,7 @@ void Foam::evaporationModel::calculate(const volScalarField& evapMask)
     area_.dimensionedInternalField() *= pos
     (
         area_.dimensionedInternalField()
-      - Foam::pow(V,-1.0/3.0)/4.0
+      - Foam::pow(V,-1.0/3.0)/50.0
     );
     area_.correctBoundaryConditions();
 }
@@ -201,6 +201,14 @@ tmp<volScalarField> Foam::evaporationModel::Sh() const
 tmp<volScalarField> Foam::evaporationModel::rho_evap() const
 {
     return m_evap_ * area_;
+}
+
+tmp<volScalarField> Foam::evaporationModel::pRecoil() const
+{
+    dimensionedScalar rho0("rho0",dimDensity,1000); //TODO read from alphaL
+    tmp<volScalarField> vLG = R_*T_/(p_*W_) - 1/rho0;
+    
+    return m_evap_ * m_evap_ * vLG;
 }
 
 tmp<volVectorField> Foam::evaporationModel::U_evap() const

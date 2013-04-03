@@ -256,6 +256,7 @@ public:
         ) const;
         
         tmp<volScalarField> m_evap_sum() const;
+        tmp<volScalarField> pRecoil() const;
         
         Pair<tmp<volScalarField> > YiSuSp
         (

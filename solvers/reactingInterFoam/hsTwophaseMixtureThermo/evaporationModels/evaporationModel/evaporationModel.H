@@ -159,6 +159,11 @@ public:
             return m_evap_;
         }
         
+        const volScalarField& area() const
+        {
+            return area_;
+        }
+        
         virtual void calculate
         (
             const volScalarField& evapMask
@@ -173,6 +178,7 @@ public:
         //- Calculate latent heat of vaporization (function of T)
         virtual tmp<volScalarField> L() const;
         virtual tmp<volScalarField> dLdT() const;
+        virtual tmp<volScalarField> pRecoil() const;
         
         virtual tmp<volVectorField> U_evap() const;
         

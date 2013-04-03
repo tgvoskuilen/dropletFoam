@@ -463,7 +463,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
 
     surfaceScalarField& stf = tstf();
 
-    stf = fvc::interpolate(sigma_ * kappaI_) * fvc::snGrad(alphaVapor_);
+    stf = fvc::interpolate(sigma_*kappaI_ + alphaLiquid_.pRecoil()) * fvc::snGrad(alphaVapor_);
 
     return tstf;
 }
@@ -754,7 +754,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     // Face unit interface normal
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
 
-    //surfaceScalarField phiRecoil(fvc::interpolate(alphaVapor_.URecoil()) & mesh_.Sf());
+    surfaceScalarField phiRecoil(fvc::interpolate(alphaVapor_.URecoil()) & mesh_.Sf());
 
     surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
     
@@ -780,6 +780,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
                 phi_,
                 alphaLiquid_,
                 alphaScheme
+            )
+          - fvc::flux
+            (
+                fvc::flux(phiRecoil, alphaVapor_, alpharScheme),
+                alphaLiquid_,
+                alpharScheme
             )
           + fvc::flux
             (

@@ -43,9 +43,7 @@ for i in range(0,2):
     print "Pre-Refinement loop", i
     pyOpenFOAM.run('VOFSetFields')
     pyOpenFOAM.run('initDynamicMesh')
-    lasttime = pyOpenFOAM.get_sorted_time_folders(False).pop()
-    os.system('rm '+lasttime+'/alphaVapor*')
-    os.system('cp 0.org/* '+lasttime+'/')
+
 
 pyOpenFOAM.run('VOFSetFields')
 

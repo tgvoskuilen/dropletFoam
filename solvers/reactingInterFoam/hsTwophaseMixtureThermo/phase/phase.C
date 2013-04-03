@@ -885,7 +885,7 @@ Foam::tmp<volVectorField> Foam::phase::URecoil() const
             {
                 if (specieLI().evapModel().vaporName() == specieI().Y().name())
                 {
-                    tUr() -= specieLI().evapModel().U_evap();
+                    tUr() += specieLI().evapModel().U_evap();
                     break;
                 }
             }
@@ -897,6 +897,45 @@ Foam::tmp<volVectorField> Foam::phase::URecoil() const
     return tUr;
 }
 
+Foam::tmp<volScalarField> Foam::phase::pRecoil() const
+{
+    tmp<volScalarField> tpR
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tpR"+name_,
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("tpR"+name_, dimPressure, 0.0)
+        )
+    );
+
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        forAllConstIter
+        (
+            PtrDictionary<subSpecie>, 
+            otherPhase_->subSpecies(), 
+            specieLI
+        )
+        {
+            if (specieLI().hasEvaporation())
+            {
+                if (specieLI().evapModel().vaporName() == specieI().Y().name())
+                {
+                    tpR() += specieLI().evapModel().pRecoil();
+                    break;
+                }
+            }
+        }
+    }
+    
+    return tpR;
+}
 
 // Volumetric sink term from evaporation = rho_evap/rhoL (only applicable to
 //  liquid phase, used in the alpha equation in the source term)
@@ -1422,7 +1461,47 @@ void Foam::phase::setPhaseMasks
     volScalarField& alpha = *this;
     
     //TODO: Make this independent of specie type "N2O4"
-    const volScalarField& area = mesh().lookupObject<volScalarField>("area_N2O4");
+    //const volScalarField& area = mesh().lookupObject<volScalarField>("area_N2O4");
+       
+       
+    const volScalarField* areaPtr = NULL;
+    if( name_ == "Vapor" )
+    {
+        forAllConstIter
+        (
+            PtrDictionary<subSpecie>, 
+            otherPhase_->subSpecies(), 
+            specieLI
+        )
+        {
+            if (specieLI().hasEvaporation())
+            {
+                areaPtr = &(specieLI().evapModel().area());
+                break;
+            }
+        }
+    }
+    else
+    {
+        forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+        {
+            if (specieI().hasEvaporation())
+            {
+                areaPtr = &(specieI().evapModel().area());
+                break;
+            }
+        }
+    }
+    
+    if( areaPtr == NULL )
+    {
+        Info<< "WARNING: NULL area pointer"<<endl;
+    }
+    
+    const volScalarField& area = *areaPtr;
+       
+       
+       
        
     dimensionedScalar one("one",dimLength,1.0);
     

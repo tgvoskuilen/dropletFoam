@@ -18,4 +18,18 @@ FoamFile
 alphaName   alphaVapor;
 
 
+volScalarFields //don't put "alphaName" in here
+(
+    alphaLiquid
+    N2
+    p
+    T
+    Ydefault
+);
+
+volVectorFields
+(
+    U
+);
+
 // ************************************************************************* //

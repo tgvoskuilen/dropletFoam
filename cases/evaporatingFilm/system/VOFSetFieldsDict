@@ -21,17 +21,25 @@ defaultSpecies
     N2   1.0
 );
 
-liquidPhaseName  alphaLiquid;
 vaporPhaseName   alphaVapor;
 
-droplets
+shapes
 (
     WaterFilm
     {
-        center   (-10 0.0005 0.0005);
-        radius   (10.001001 10.001001 10.001001);
+        alphaName  alphaLiquid;
+        
+        shape      plane;
+        
+        planeCoeffs
+        {
+            point   (0.001001 0.0005 0.0005);
+            normal   (1 0 0);
+        }
+        
         delVapor 1e-2;
         U        (0 0 0);
+        
         liquidSpecies
         (
             H2OL  1.0
