@@ -187,7 +187,7 @@ void Foam::evaporationModel::calculate(const volScalarField& evapMask)
     area_.dimensionedInternalField() *= pos
     (
         area_.dimensionedInternalField()
-      - Foam::pow(V,-1.0/3.0)/50.0
+      - Foam::pow(V,-1.0/3.0)/150.0
     );
     area_.correctBoundaryConditions();
 }

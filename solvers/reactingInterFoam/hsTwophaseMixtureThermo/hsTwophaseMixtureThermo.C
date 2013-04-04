@@ -199,6 +199,32 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     ),
     phi_( rhoPhi_.db().lookupObject<surfaceScalarField>("phi") ),
     U_( rhoPhi_.db().lookupObject<volVectorField>("U") ),
+    Urecoil_
+    (
+        IOobject
+        (
+            "Urecoil",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedVector("Urecoil", dimVelocity, vector::zero)
+    ),
+    pRecoil_
+    (
+        IOobject
+        (
+            "pRecoil",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("pRecoil", dimPressure, 0.0)
+    ),
     alphaVaporSmooth_
     (
         IOobject
@@ -463,8 +489,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
 
     surfaceScalarField& stf = tstf();
 
-    stf = fvc::interpolate(sigma_*kappaI_ + alphaLiquid_.pRecoil()) * fvc::snGrad(alphaVapor_);
-
+    stf = fvc::interpolate(sigma_*kappaI_ + alphaVapor_.pRecoil()) * fvc::snGrad(alphaVapor_);
+    //stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_);
     return tstf;
 }
 
@@ -755,7 +781,10 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
 
     surfaceScalarField phiRecoil(fvc::interpolate(alphaVapor_.URecoil()) & mesh_.Sf());
-
+    
+    Urecoil_ = alphaVapor_.URecoil();
+    pRecoil_ = alphaVapor_.pRecoil();
+    
     surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
     
     for (int gCorr=0; gCorr<nAlphaCorr; gCorr++)
@@ -783,9 +812,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             )
           - fvc::flux
             (
-                fvc::flux(phiRecoil, alphaVapor_, alpharScheme),
-                alphaLiquid_,
-                alpharScheme
+                phiRecoil,
+                alphaLiquid_*alphaVapor_,
+                alphaScheme
             )
           + fvc::flux
             (
