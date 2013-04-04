@@ -288,6 +288,13 @@ public:
         tmp<volScalarField> xByY(const word& name) const;
         
         tmp<volVectorField> URecoil() const;
+        
+        tmp<volVectorField> n() const; //normal pointing out of this phase
+        
+        tmp<volScalarField> H() const
+        {
+            return pos(*this - 0.5);
+        }
 };
 
 

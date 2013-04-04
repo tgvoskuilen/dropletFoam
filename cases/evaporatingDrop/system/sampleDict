@@ -1,0 +1,111 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sampleDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+setFormat csv;
+
+interpolationScheme cellPointFace;
+
+fields
+(
+    T
+);
+
+sets
+(
+    lineX1
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 2e-4 2e-4);
+        end         (0.01 2e-4 2e-4);
+    }
+    
+    lineX2
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 5e-4 2e-4);
+        end         (0.01 5e-4 2e-4);
+    }
+    
+    lineX3
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 8e-4 2e-4);
+        end         (0.01 8e-4 2e-4);
+    }
+    
+    lineX4
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 2e-4 5e-4);
+        end         (0.01 2e-4 5e-4);
+    }
+    
+    lineX5
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 5e-4 5e-4);
+        end         (0.01 5e-4 5e-4);
+    }
+    
+    lineX6
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 8e-4 5e-4);
+        end         (0.01 8e-4 5e-4);
+    }
+    
+    lineX7
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 2e-4 8e-4);
+        end         (0.01 2e-4 8e-4);
+    }
+    
+    lineX8
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 5e-4 8e-4);
+        end         (0.01 5e-4 8e-4);
+    }
+    
+    lineX9
+    {
+        type        midPointAndFace;
+        axis        distance;
+        
+        start       (0 8e-4 8e-4);
+        end         (0.01 8e-4 8e-4);
+    }
+);
+
+
+// ************************************************************************* //

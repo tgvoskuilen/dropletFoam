@@ -238,6 +238,8 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
     const volScalarField& T
 ) const
 {
+    scalar muValue = (name_ == "Liquid") ? 1e-3 : 2e-5;
+    
     tmp<volScalarField> tmu
     (
         new volScalarField
@@ -249,10 +251,10 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("tmu", dimArea*dimDensity/dimTime, 0.0)
+            dimensionedScalar("tmu", dimArea*dimDensity/dimTime, muValue)
         )
     );
-    
+    /*
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
         if( specieI().hasNuModel() )
@@ -260,7 +262,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
             tmu() += specieI().nuModel().nu() * specieI().Yp() * rho(p,T);
         }
     }
-    
+    */
     return tmu;
 }
 
@@ -288,7 +290,7 @@ void Foam::phase::setCombustionPtr
 
 void Foam::phase::correct(const volScalarField& p, const volScalarField& T)
 {
-    rhoAlpha_ = (*this) * rho(p,T) * cellMask_;
+    rhoAlpha_ = *this * rho(p,T);// * cellMask_;
     
     Info<< "Min,max rhoAlpha"<<name_
         <<" = " << Foam::min(rhoAlpha_).value() << ", " 
@@ -723,11 +725,11 @@ Foam::tmp<volScalarField> Foam::phase::sigma
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0)
+            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.07)
         )
     );
     
-    
+    /*
     tmp<volScalarField> tn
     (
         new volScalarField
@@ -764,7 +766,8 @@ Foam::tmp<volScalarField> Foam::phase::sigma
     
     tn() += neg(tn() - SMALL);
 
-    return tsigma/tn;
+    return tsigma/tn;*/
+    return tsigma;
 }
 
 
@@ -1000,7 +1003,7 @@ Foam::tmp<volScalarField> Foam::phase::rho
     {
         dimensionedScalar rhoBase("rhoBase",dimDensity,1000);
         
-        tmp<volScalarField> Yp_ = Ypp();
+        /*tmp<volScalarField> Yp_ = Ypp();
         tmp<volScalarField> Yvoid = 0.0001*neg(Yp_()-0.05);
         tmp<volScalarField> den = Yvoid()/rhoBase;
         
@@ -1009,7 +1012,10 @@ Foam::tmp<volScalarField> Foam::phase::rho
             den() += specieI().Yp() / specieI().rho0();
         }
         
-        return (Yvoid + Yp_)/den;
+        return (Yvoid + Yp_)/den;*/
+        trho() = rhoBase;
+        return trho;
+        
     }
 }
 
@@ -1045,7 +1051,8 @@ Foam::tmp<volScalarField> Foam::phase::psi
     if (name_ == "Vapor")
     {
         dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
-        tpsi() = W() / (Ru * T);
+        dimensionedScalar W0("W0",dimMass/dimMoles, 28);
+        tpsi() = W0 / (Ru * T);
     }
 
     return tpsi;
@@ -1449,6 +1456,21 @@ scalar Foam::phase::solveSubSpecies
     return DiNum;
 }
 
+
+// normal vector pointing outward from this phase
+Foam::tmp<Foam::volVectorField> Foam::phase::n() const
+{
+    dimensionedScalar deltaN
+    (
+        "deltaN",
+        1e-8/Foam::pow(Foam::average(mesh().V()), 1.0/3.0)
+    );
+    
+    tmp<volVectorField> nOut = -fvc::grad(*this);
+    nOut() /= (mag(nOut()) + deltaN);
+    
+    return nOut;
+}
 
 // Update the phase masks based on alpha and the evaporation area
 void Foam::phase::setPhaseMasks

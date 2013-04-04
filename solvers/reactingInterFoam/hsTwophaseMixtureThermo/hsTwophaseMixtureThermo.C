@@ -366,11 +366,11 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
                 mesh_
             ),
             mesh_,
-            dimensionedScalar("tmu", dimMass/dimTime/dimLength, 0.0)
+            dimensionedScalar("tmu", dimMass/dimTime/dimLength, 1.8e-5)
         )
     );
 
-
+/*
     scalarField& muCells = tmu().internalField();
     const scalarField& TCells = T_.internalField();
 
@@ -388,7 +388,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
             patchi
         );
     }
-
+*/
     return tmu;
 }
 
@@ -489,8 +489,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
 
     surfaceScalarField& stf = tstf();
 
-    stf = fvc::interpolate(sigma_*kappaI_ + alphaVapor_.pRecoil()) * fvc::snGrad(alphaVapor_);
-    //stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_);
+    //stf = fvc::interpolate(sigma_*kappaI_ + alphaVapor_.pRecoil()) * fvc::snGrad(alphaVapor_.H());
+    stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_);
     return tstf;
 }
 
@@ -628,7 +628,7 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 {
     //Solve for reaction rates
     Info<< "Solving combustion" << endl;
-    combustionPtr_->correct();
+    //combustionPtr_->correct();
 
     //Solve for evaporation rates
     Info<< "Solving evaporation" << endl;
@@ -674,8 +674,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     // Update density field to satisfy continuity with new mass flux field
     //Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     // Define phase boundary masks to prevent artificial cross-phase mixing
-    alphaLiquid_.setPhaseMasks( phaseMaskTol_, p_, T_ );
-    alphaVapor_.setPhaseMasks( phaseMaskTol_, p_, T_ );
+    //alphaLiquid_.setPhaseMasks( phaseMaskTol_, p_, T_ );
+    //alphaVapor_.setPhaseMasks( phaseMaskTol_, p_, T_ );
     
     correct();
     rho = rho_;
@@ -683,35 +683,35 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
         << Foam::max(rho_).value() << endl;
         
         
-    YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
+    /*YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
     
     Info<< "Min,Max Ysum = " << Foam::min(YSum_).value() 
-        << ", " << Foam::max(YSum_).value() << endl;
+        << ", " << Foam::max(YSum_).value() << endl;*/
     
 
 
 
 
     // Calculate diffusion coefficient for each phase
-    alphaLiquid_.calculateDs( combustionPtr_->turbulence().muEff() );
-    alphaVapor_.calculateDs( combustionPtr_->turbulence().muEff() );
+    //alphaLiquid_.calculateDs( combustionPtr_->turbulence().muEff() );
+    //alphaVapor_.calculateDs( combustionPtr_->turbulence().muEff() );
        
     // Solve for subspecie transport within each phase
-    scalar FoLiq = alphaLiquid_.solveSubSpecies( p_, T_ );
-    scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_ );
+    //scalar FoLiq = alphaLiquid_.solveSubSpecies( p_, T_ );
+    //scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_ );
 
     // Update global mass fractions based on phase-based mass fractions
-    correct();
-    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
-    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
+    //correct();
+    //alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
+    //alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
     
-    scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
+    //scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     
     // Calculate Ysum
-    YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
+    /*YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
     
     Info<< "Min,Max Ysum = " << Foam::min(YSum_).value() 
-        << ", " << Foam::max(YSum_).value() << endl;
+        << ", " << Foam::max(YSum_).value() << endl;*/
     
     return 0.0; //MaxFo; //TODO: Use DiNum from cht
 }
@@ -765,7 +765,13 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     word alphaScheme("div(phi,alpha)");
     word alpharScheme("div(phirb,alpha)");
     
+    /*volVectorField UL = U_ - alphaVapor_.URecoil()*alphaVapor_.H();
+    
+    surfaceScalarField phiL("phiL",linearInterpolate(UL) & mesh_.Sf());
+    
+    volScalarField divUL(fvc::div(phiL));*/
     volScalarField divU(fvc::div(phi_));
+    
 
     surfaceScalarField phic(mag(phi_/mesh_.magSf()));
     phic = min(cAlpha*phic, max(phic));
@@ -780,8 +786,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     // Face unit interface normal
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
 
-    surfaceScalarField phiRecoil(fvc::interpolate(alphaVapor_.URecoil()) & mesh_.Sf());
-    
     Urecoil_ = alphaVapor_.URecoil();
     pRecoil_ = alphaVapor_.pRecoil();
     
@@ -810,12 +814,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
                 alphaLiquid_,
                 alphaScheme
             )
-          - fvc::flux
-            (
-                phiRecoil,
-                alphaLiquid_*alphaVapor_,
-                alphaScheme
-            )
           + fvc::flux
             (
                 -fvc::flux(-phir, alphaVapor_, alpharScheme),
@@ -836,7 +834,11 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             0
         );
         
-        alphaLiquid_.max(0.0);
+        //alphaLiquid_.max(0.0);
+        
+        scalar Cpc = 0.002;
+        volScalarField& alphaL = alphaLiquid_;
+        alphaL = (Foam::min(Foam::max(alphaL, 0.5*Cpc),1.0-0.5*Cpc) - 0.5*Cpc)/(1.0-Cpc);
                 
         // WARNING:
         //   This solution provides a rho and rhoPhi pair that do not satisfy
@@ -1125,10 +1127,10 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::kappaV() const
                 mesh_
             ),
             mesh_,
-            dimensionedScalar("tkappa", dimPower/dimLength/dimTemperature, 0.0)
+            dimensionedScalar("tkappa", dimPower/dimLength/dimTemperature, 0.2)
         )
     );
-
+/*
     scalarField& kappaCells = tkappa().internalField();
     const scalarField& TCells = T_.internalField();
 
@@ -1142,7 +1144,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::kappaV() const
         tkappa().boundaryField()[patchi] = 
             kappa(T_.boundaryField()[patchi], patchi);
     }
-
+*/
     return tkappa;
 }
 

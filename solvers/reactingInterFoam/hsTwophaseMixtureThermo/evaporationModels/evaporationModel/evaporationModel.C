@@ -216,16 +216,8 @@ tmp<volVectorField> Foam::evaporationModel::U_evap() const
     dimensionedScalar rho0("rho0",dimDensity,1000); //TODO read from alphaL
     tmp<volScalarField> vLG = R_*T_/(p_*W_) - 1/rho0;
     
-    dimensionedScalar deltaN
-    (
-        "deltaN",
-        1e-8/pow(average(alphaL_.mesh().V()), 1.0/3.0)
-    );
     
-    tmp<volVectorField> n = -fvc::grad(alphaL_);
-    n() /= (mag(n()) + deltaN);
-    
-    tmp<volVectorField> Ur = m_evap_ * vLG * n;
+    tmp<volVectorField> Ur = m_evap_ * vLG * alphaL_.n();
     
     return Ur;
 }

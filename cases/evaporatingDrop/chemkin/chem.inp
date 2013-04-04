@@ -1,0 +1,11 @@
+ELEMENTS
+H O N
+END
+
+SPECIES
+H2O H2OL N2
+END
+
+REACTIONS
+N2 = N2         0.   0.   0.
+END

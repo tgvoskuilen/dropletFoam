@@ -128,7 +128,7 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     evaporationModel::calculate(evapMask);
     
     //Calculate the vapor pressure
-    dimensionedScalar p0("p0",dimPressure,101325);
+    /*dimensionedScalar p0("p0",dimPressure,101325);
     
     p_vap_ = p0*exp
      (
@@ -142,33 +142,35 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
         )*pos(T_ - Tb_)
      );
     
-    p_vap_.min(Pc_);
+    p_vap_.min(Pc_);*/
                               
     //Calculate the mole fractions
 
-    xL_ = alphaL_.x(vapor_specie_+"L");
+    //xL_ = alphaL_.x(vapor_specie_+"L");
     
-    tmp<volScalarField> xSat = p_vap_/p_*xL_;
-    xSat().min(1.0);
-    x_ = alphaV_.x(vapor_specie_)*pos(alphaV_.Yp() - 1e-4) + xSat*neg(alphaV_.Yp() - 1e-4);
+    //tmp<volScalarField> xSat = p_vap_/p_*xL_;
+    //xSat().min(1.0);
+    //x_ = alphaV_.x(vapor_specie_)*pos(alphaV_.Yp() - 1e-4) + xSat*neg(alphaV_.Yp() - 1e-4);
     
     //x_ = alphaV_.x(vapor_specie_);
     
-    scalar pi = constant::mathematical::pi;
+    //scalar pi = constant::mathematical::pi;
     dimensionedScalar sA("sA",dimless/dimLength,SMALL);
     
-    tmp<volScalarField> coeff = Foam::sqrt(W_/(2*pi*R_*T_))*pos(area_-sA)*mask_;
+    //tmp<volScalarField> coeff = Foam::sqrt(W_/(2*pi*R_*T_))*pos(area_-sA)*mask_;
     
-    dimensionedScalar sp("sp",dimPressure,1e-2);
-    coeffC_ = 0.0*coeff()*neg(p_vap_*xL_ + sp - p_*x_); //no condensation
-    coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_*xL_ - sp - p_*x_);
+    //dimensionedScalar sp("sp",dimPressure,1e-2);
+    //coeffC_ = 0.0*coeff()*neg(p_vap_*xL_ + sp - p_*x_); //no condensation
+    //coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_*xL_ - sp - p_*x_);
     
-    m_evap_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_);
+    //m_evap_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_);
     
-    volScalarField rhoE = rho_evap(); //m_evap_ * area_
-    Foam::Info<< "Min,max evaporation source for " << vapor_specie_ << " = "
-              << Foam::min(rhoE).value() << ", " 
-              << Foam::max(rhoE).value() << " kg/m3/s" << Foam::endl;
+    m_evap_ = dimensionedScalar("m0",dimMass/dimArea/dimTime,0.0)*pos(area_-sA);
+    
+    //volScalarField rhoE = rho_evap(); //m_evap_ * area_
+    Foam::Info<< "Min,max evaporation flux for " << vapor_specie_ << " = "
+              << Foam::min(m_evap_).value() << ", " 
+              << Foam::max(m_evap_).value() << " kg/m2/s" << Foam::endl;
 }
 
 
@@ -182,8 +184,8 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::YSuSp(
         
     return Pair<tmp<volScalarField> >
     (
-        area_*(coeffC_+coeffV_)*p_vap_*xL_,
-        area_*(coeffC_+coeffV_)*xByY*p_
+        area_*m_evap_, //area_*(coeffC_+coeffV_)*p_vap_*xL_,
+        area_*(coeffC_+coeffV_)*xByY*p_*0.0
     );
 }
 
@@ -191,17 +193,17 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::YSuSp(
 Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::pSuSp() const
 {
 
-    return Pair<tmp<volScalarField> >
+    /*return Pair<tmp<volScalarField> >
     (
         area_*(coeffC_+coeffV_)*p_vap_*xL_,
         area_*(coeffC_+coeffV_)*x_
-    );
+    );*/
     
-    /*return Pair<tmp<volScalarField> >
+    return Pair<tmp<volScalarField> >
     (
         area_*m_evap_,
         area_*(coeffC_+coeffV_)*x_*0.0
-    );*/
+    );
 }
 
 tmp<volScalarField> Foam::evaporationModels::HertzKnudsenPressure::dPvdT() const
@@ -245,7 +247,7 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::TSuSp(
     //    dcoeff/dT = -coeff/(2*T)
     //    dpv/dT = pv * L / (R*T^2)
 
-    tmp<volScalarField> tL = L();
+    /*tmp<volScalarField> tL = L();
     tmp<volScalarField> dmdT = -m_evap_/(2*T_) + (coeffC_+coeffV_)*xL_*dPvdT();
     tmp<volScalarField> Sp = dmdT*tL() + m_evap_*dLdT();
     tmp<volScalarField> Su = -m_evap_*tL() + Sp()*T_;
@@ -254,6 +256,12 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::TSuSp(
     (
         area_*Su,
         area_*Sp
+    );*/
+    
+    return Pair<tmp<volScalarField> >
+    (
+        -area_*m_evap_*L(),
+        -area_*m_evap_*L()/T_*0.0
     );
 }
 
