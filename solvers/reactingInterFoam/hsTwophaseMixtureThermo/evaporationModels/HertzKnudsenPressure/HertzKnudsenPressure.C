@@ -165,7 +165,7 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     //m_evap_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_);
     
-    m_evap_ = dimensionedScalar("m0",dimMass/dimArea/dimTime,0.0)*pos(area_-sA);
+    m_evap_ = dimensionedScalar("m0",dimMass/dimArea/dimTime,0.1)*pos(area_-sA);
     
     //volScalarField rhoE = rho_evap(); //m_evap_ * area_
     Foam::Info<< "Min,max evaporation flux for " << vapor_specie_ << " = "
