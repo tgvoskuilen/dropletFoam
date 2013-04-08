@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.1                                 |
+|  \\    /   O peration     | Version:  2.1.x                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -12,100 +12,101 @@ FoamFile
     class       dictionary;
     object      sampleDict;
 }
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+// Set output format : choice of
+//      xmgr
+//      jplot
+//      gnuplot
+//      raw
+//      vtk
+//      csv
 setFormat csv;
 
-interpolationScheme cellPointFace;
+// Surface output format. Choice of
+//      null        : suppress output
+//      ensight     : Ensight Gold format, one field per case file
+//      foamFile    : separate points, faces and values file
+//      dx          : DX scalar or vector format
+//      vtk         : VTK ascii format
+//      raw         : x y z value format for use with e.g. gnuplot 'splot'.
+//
+// Note:
+// other formats such as obj, stl, etc can also be written (by proxy)
+// but without any values!
+surfaceFormat vtk;
 
+
+// interpolationScheme. choice of
+//      cell          : use cell-centre value only; constant over cells (default)
+//      cellPoint     : use cell-centre and vertex values
+//      cellPointFace : use cell-centre, vertex and face values.
+//      pointMVC      : use point values only (Mean Value Coordinates)
+//      cellPatchConstrained : use cell-centre except on boundary faces where
+//        it uses the boundary value. For use with e.g. patchCloudSet.
+// 1] vertex values determined from neighbouring cell-centre values
+// 2] face values determined using the current face interpolation scheme
+//    for the field (linear, gamma, etc.)
+interpolationScheme cell;
+
+// Fields to sample.
 fields
 (
-    T
+    UL
+    U
+    alphaLiquid
+    Urecoil
+    area_H2O
+    divEvap
 );
 
+// Set sampling definition: choice of
+//      uniform             evenly distributed points on line
+//      face                one point per face intersection
+//      midPoint            one point per cell, inbetween two face intersections
+//      midPointAndFace     combination of face and midPoint
+//
+//      polyLine            specified points, not nessecary on line, uses
+//                          tracking
+//      cloud               specified points, uses findCell
+//      triSurfaceMeshPointSet  points of triSurface
+//
+// axis: how to write point coordinate. Choice of
+// - x/y/z: x/y/z coordinate only
+// - xyz: three columns
+//  (probably does not make sense for anything but raw)
+// - distance: distance from start of sampling line (if uses line) or
+//             distance from first specified sampling point
+//
+// type specific:
+//      uniform, face, midPoint, midPointAndFace : start and end coordinate
+//      uniform: extra number of sampling points
+//      polyLine, cloud: list of coordinates
+//      patchCloud: list of coordinates and set of patches to look for nearest
 sets
 (
     lineX1
     {
-        type        midPointAndFace;
+        type        midPoint;
         axis        distance;
-        
-        start       (0 2e-4 2e-4);
-        end         (0.01 2e-4 2e-4);
+
+        //- cavity. Slightly perturbed so not to align with face or edge.
+        start       (0.0085001 0.005001 0.0005001);
+        end         (0.01001 0.005001 0.0005001);
     }
-    
-    lineX2
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 5e-4 2e-4);
-        end         (0.01 5e-4 2e-4);
-    }
-    
-    lineX3
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 8e-4 2e-4);
-        end         (0.01 8e-4 2e-4);
-    }
-    
-    lineX4
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 2e-4 5e-4);
-        end         (0.01 2e-4 5e-4);
-    }
-    
-    lineX5
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 5e-4 5e-4);
-        end         (0.01 5e-4 5e-4);
-    }
-    
-    lineX6
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 8e-4 5e-4);
-        end         (0.01 8e-4 5e-4);
-    }
-    
-    lineX7
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 2e-4 8e-4);
-        end         (0.01 2e-4 8e-4);
-    }
-    
-    lineX8
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 5e-4 8e-4);
-        end         (0.01 5e-4 8e-4);
-    }
-    
-    lineX9
-    {
-        type        midPointAndFace;
-        axis        distance;
-        
-        start       (0 8e-4 8e-4);
-        end         (0.01 8e-4 8e-4);
-    }
+
 );
 
 
-// ************************************************************************* //
+// Surface sampling definition
+//
+// 1] patches are not triangulated by default
+// 2] planes are always triangulated
+// 3] iso-surfaces are always triangulated
+surfaces
+(
+
+);
+
+
+// *********************************************************************** //

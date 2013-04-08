@@ -225,6 +225,20 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         mesh,
         dimensionedVector("UL", dimVelocity, vector::zero)
     ),
+    UL2_
+    (
+        IOobject
+        (
+            "UL2",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedVector("UL2", dimVelocity, vector::zero),
+        zeroGradientFvPatchVectorField::typeName
+    ),
     pRecoil_
     (
         IOobject
@@ -237,6 +251,45 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         ),
         mesh,
         dimensionedScalar("pRecoil", dimPressure, 0.0)
+    ),
+    SuA_
+    (
+        IOobject
+        (
+            "SuA",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("SuA", dimless/dimTime, 0.0)
+    ),
+    SuB_
+    (
+        IOobject
+        (
+            "SuB",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("SuB", dimless/dimTime, 0.0)
+    ),
+    divEvap_
+    (
+        IOobject
+        (
+            "divEvap",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("divEvap", dimless/dimTime, 0.0)
     ),
     alphaVaporSmooth_
     (
@@ -314,7 +367,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     ),
     phaseMaskTol_(readScalar(lookup("phaseMaskTol")))
 {
-    
+    divEvap_.oldTime();
     alphaLiquid_.setOtherPhase( &alphaVapor_ );
     alphaVapor_.setOtherPhase( &alphaLiquid_ );
 
@@ -503,7 +556,9 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
     surfaceScalarField& stf = tstf();
 
     //stf = fvc::interpolate(sigma_*kappaI_ + alphaVapor_.pRecoil()) * fvc::snGrad(alphaVapor_.H());
-    stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_);
+    surfaceScalarField rhof = fvc::interpolate(rho_)/dimensionedScalar("rhoS",dimDensity,1001.2);
+    
+    stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_) * rhof;
     return tstf;
 }
 
@@ -778,15 +833,29 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     word alphaScheme("div(phi,alpha)");
     word alpharScheme("div(phirb,alpha)");
     
-    UL_ = U_ - alphaVapor_.URecoil()*alphaVapor_;
+    Urecoil_ = alphaVapor_.URecoil();
+
+    UL_ = U_ - Urecoil_*alphaVapor_;
+    
+    
+    UL2_ = U_;
+    
+    
+    
+    
+    
+    
     
     surfaceScalarField phiL("phiL",linearInterpolate(UL_) & mesh_.Sf());
     
     volScalarField divUL(fvc::div(phiL));
-    //volScalarField divU(fvc::div(phi_));
+    volScalarField divU(fvc::div(phi_));// - divEvap_.oldTime());
+    
+    Info<<"max divU = " << Foam::max(Foam::mag(divU)).value() << endl;
+    Info<<"max divUL = " << Foam::max(Foam::mag(divUL)).value() << endl;
     
 
-    surfaceScalarField phic(mag(phiL/mesh_.magSf()));
+    surfaceScalarField phic(mag(phi_/mesh_.magSf()));
     phic = min(cAlpha*phic, max(phic));
     
     //Calculate interface curvature field
@@ -799,11 +868,16 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     // Face unit interface normal
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
 
-    Urecoil_ = alphaVapor_.URecoil();
-    //UL_ = U_ - Urecoil_*alphaVapor_;
+    surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
+        
+    
     pRecoil_ = alphaVapor_.pRecoil();
     
-    surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
+    surfaceScalarField phiAlphaL("phiAlphaL",phi_);
+    
+    SuA_ = divU;
+    SuB_ = -alphaLiquid_.Sv_evap();
+    divEvap_ = alphaLiquid_.S_evap(p_,T_);
     
     for (int gCorr=0; gCorr<nAlphaCorr; gCorr++)
     {
@@ -817,30 +891,31 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             ),
             // Divergence term is handled explicitly to be
             // consistent with the explicit transport solution
-            divUL*min(alphaLiquid_, scalar(1)) - alphaLiquid_.Sv_evap()
+            (divU - alphaLiquid_.Sv_evap())*min(alphaLiquid_, scalar(1))
         );        
 
-        surfaceScalarField phiAlphaL
+        phiAlphaL = 
         (
             fvc::flux
             (
-                phiL,
+                phi_,
                 alphaLiquid_,
                 alphaScheme
             )
           + fvc::flux
             (
-                -fvc::flux(-phir, alphaVapor_, alpharScheme),
+                -fvc::flux(-phir, 1.0 - alphaLiquid_, alpharScheme),
                 alphaLiquid_,
                 alpharScheme
             )
         );
 
+
         MULES::explicitSolve
         (
             geometricOneField(),
             alphaLiquid_,
-            phiL,
+            phi_,
             phiAlphaL,
             zeroField(),
             Su,
@@ -848,26 +923,36 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             0
         );
         
-        alphaLiquid_.max(0.0);
-
-        surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
-        surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
-        
-        alphaLiquid_.rhoPhiAlpha() += f * phiAlphaL * rhoLf;
-        alphaVapor_.rhoPhiAlpha() += f * (phi_ - phiAlphaL) * rhoVf;
-
-        rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
-
-        alphaVapor_ == scalar(1) - alphaLiquid_;
-        alphaVapor_.max(0.0);
     }
     
+    Info<< "Liquid phase volume fraction = "
+        << alphaLiquid_.weightedAverage(mesh_.V()).value()
+        << "  Min,max alphaV = " << min(alphaVapor_).value() 
+        << ", " << max(alphaVapor_).value()
+        << "  Min,max alphaL = " << min(alphaLiquid_).value()
+        << ", " << max(alphaLiquid_).value()
+        << endl;
+        
+    alphaLiquid_.max(0.0);
+
+    surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
+    surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
+    
+    alphaLiquid_.rhoPhiAlpha() += f * phiAlphaL * rhoLf;
+    alphaVapor_.rhoPhiAlpha() += f * (phi_ - phiAlphaL) * rhoVf;
+
+    rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
+
+    alphaVapor_ == scalar(1) - alphaLiquid_;
+    alphaVapor_.max(0.0);
+        
     // Re-sharpen alpha field
     //  This is not mass conserving, but may be necessary
-    scalar Cpc = 0.0002;
+    /*scalar Cpc = 0.0002;
     volScalarField& alphaL = alphaLiquid_;
     alphaL = (Foam::min(Foam::max(alphaL, 0.5*Cpc),1.0-0.5*Cpc) - 0.5*Cpc)/(1.0-Cpc);
-    alphaVapor_ == scalar(1) - alphaLiquid_;
+    alphaVapor_ == scalar(1) - alphaLiquid_;*/
+    
     
     Info<< "Liquid phase volume fraction = "
         << alphaLiquid_.weightedAverage(mesh_.V()).value()

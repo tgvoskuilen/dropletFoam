@@ -154,7 +154,7 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     //x_ = alphaV_.x(vapor_specie_);
     
-    //scalar pi = constant::mathematical::pi;
+    scalar pi = constant::mathematical::pi;
     dimensionedScalar sA("sA",dimless/dimLength,SMALL);
     
     //tmp<volScalarField> coeff = Foam::sqrt(W_/(2*pi*R_*T_))*pos(area_-sA)*mask_;
@@ -167,7 +167,17 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     
     m_evap_ = dimensionedScalar("m0",dimMass/dimArea/dimTime,0.1)*pos(area_-sA);
     
+    dimensionedScalar totalEvap = fvc::domainIntegrate(m_evap_*area_);
+    dimensionedScalar totalArea = fvc::domainIntegrate(area_);
+    dimensionedScalar totalLiq = fvc::domainIntegrate(alphaL_);
+    
+    scalar radius = Foam::sqrt(totalLiq.value()/0.001/pi)*1000.0;
+    
     //volScalarField rhoE = rho_evap(); //m_evap_ * area_
+    Foam::Info<< "Net domain evaporation = " << totalEvap.value() << " kg/s" << endl;
+    Foam::Info<< "Total area = " << totalArea.value() << " m2" << endl;
+    Foam::Info<< "Radius = " << radius << " mm" << endl;
+    
     Foam::Info<< "Min,max evaporation flux for " << vapor_specie_ << " = "
               << Foam::min(m_evap_).value() << ", " 
               << Foam::max(m_evap_).value() << " kg/m2/s" << Foam::endl;

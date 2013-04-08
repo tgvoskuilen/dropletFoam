@@ -111,7 +111,11 @@ private:
         
         volVectorField Urecoil_;
         volVectorField UL_;
+        volVectorField UL2_;
         volScalarField pRecoil_;
+        volScalarField SuA_;
+        volScalarField SuB_;
+        volScalarField divEvap_;
                 
         //- Sharpened vapor fraction (for calculating curvature kappaI)
         volScalarField alphaVaporSmooth_;

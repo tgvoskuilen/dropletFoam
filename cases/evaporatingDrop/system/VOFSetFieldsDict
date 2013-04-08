@@ -33,12 +33,12 @@ shapes
         
         ellipsoidCoeffs
         {
-            center   (0.0025 0.005 0.0005);
+            center   (0.0075 0.005 0.0005);
             radius   (0.0015 0.0015 0);
         }
         
         delVapor 1e-2;
-        U        (0.25 0 0);
+        U        (0 0 0);
         
         liquidSpecies
         (

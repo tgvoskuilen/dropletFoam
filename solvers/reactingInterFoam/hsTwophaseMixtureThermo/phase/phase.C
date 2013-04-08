@@ -517,16 +517,16 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
             
             
             //full source term linearization, including density relationship
-            tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
+            /*tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
             tmp<volScalarField> tSu = (tpSuSp.first()() - tpSuSp.second()()*p)*(Ru*T/(p*Wv) - 1/rho0) - tdSdp()*p;
             
             tSuSp.first()() += tSu;
-            tSuSp.second()() -= tdSdp;
+            tSuSp.second()() -= tdSdp;*/
             
             
             //fully explicit treatment
             //tSuSp.first()() += (tpSuSp.first() - tpSuSp.second()*p)*(Ru*T/(p*Wv) - 1/rho0);
-            //tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
+            tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
             
         }
     }
@@ -966,6 +966,9 @@ Foam::tmp<volScalarField> Foam::phase::Sv_evap() const
             tSv() += specieI().evapModel().rho_evap() / specieI().rho0();
         }
     }
+    
+    dimensionedScalar volSink = fvc::domainIntegrate(tSv());
+    Info<<"total evaporation volume sink = " << volSink.value() << endl;
 
     return tSv;
 }
