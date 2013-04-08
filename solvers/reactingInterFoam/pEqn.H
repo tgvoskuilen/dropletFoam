@@ -67,7 +67,7 @@
             //thermo.rho() += thermo.psi()*p;
 
             phi += p_IC.flux();
-            //p.relax(); //from Euler solver...
+            p.relax(); //from Euler solver...
         }
     }
     

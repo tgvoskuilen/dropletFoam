@@ -194,8 +194,8 @@ PIMPLE
     nCorrectors     3;
     nOuterCorrectors 1;
     nNonOrthogonalCorrectors 3;
-    nAlphaCorr      3;
-    nAlphaSubCycles 1;
+    nAlphaCorr      1;
+    nAlphaSubCycles 3;
     cAlpha          1;
 
 //    pRefPoint      (0.51 0.51 0.51);
