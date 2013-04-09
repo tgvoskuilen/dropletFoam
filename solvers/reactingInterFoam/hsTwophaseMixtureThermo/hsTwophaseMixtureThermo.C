@@ -861,7 +861,19 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     word alphaScheme("div(phi,alpha)");
     word alpharScheme("div(phirb,alpha)");
     
-    Urecoil_ = alphaVapor_.URecoil();
+    // Get surface normal vectors from smoothed alpha field
+    //  normal vectors point out of liquid phases
+    // TODO Move somewhere sensible
+    dimensionedScalar one("one",dimLength,1.0);
+    nS_ = fvc::grad(alphaVaporSmooth_)*pos(alphaVaporSmooth_-0.001)*neg(alphaVaporSmooth_-0.999)*one;
+    nS_ /= mag(nS_)+SMALL;
+    forAll(nS_,cellI)
+    {
+        nS_[cellI].z() = 0.0;
+    }
+    
+    
+    Urecoil_ = alphaVapor_.URecoil(nS_);
     //surfaceScalarField phiRecoil(linearInterpolate(Urecoil_*alphaVapor_) & mesh_.Sf());
 
 
@@ -871,16 +883,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     
     
     
-    // Get surface normal vectors from smoothed alpha field
-    //  normal vectors point out of liquid phases
-    dimensionedScalar one("one",dimLength,1.0);
-    nS_ = fvc::grad(alphaVaporSmooth_)*neg(alphaLiquid_-0.99)*neg(alphaVaporSmooth_-0.999)*one;
-    nS_ /= mag(nS_)+SMALL;
+
     
-    forAll(nS_,cellI)
-    {
-        nS_[cellI].z() = 0.0;
-    }
+
     
     //surfaceVectorField nSf(fvc::interpolate(nS_));
     //nSf /= mag(nSf) + SMALL;
@@ -968,8 +973,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             ),
             // Divergence term is handled explicitly to be
             // consistent with the explicit transport solution
-            //(divUL - alphaLiquid_.Sv_evap())*min(alphaLiquid_, scalar(1))
-            -alphaLiquid_.Sv_evap()
+            divUL*min(alphaLiquid_, scalar(1)) - alphaLiquid_.Sv_evap()
+            //-alphaLiquid_.Sv_evap()
         );        
 
         phiAlphaL = 

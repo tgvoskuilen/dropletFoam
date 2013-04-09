@@ -180,7 +180,7 @@ public:
         virtual tmp<volScalarField> dLdT() const;
         virtual tmp<volScalarField> pRecoil() const;
         
-        virtual tmp<volVectorField> U_evap() const;
+        virtual tmp<volVectorField> U_evap(const volVectorField& n) const;
         
         //- 
         virtual Pair<tmp<volScalarField> > YSuSp() const = 0;

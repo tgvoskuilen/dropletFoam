@@ -211,13 +211,13 @@ tmp<volScalarField> Foam::evaporationModel::pRecoil() const
     return m_evap_ * m_evap_ * vLG;
 }
 
-tmp<volVectorField> Foam::evaporationModel::U_evap() const
+tmp<volVectorField> Foam::evaporationModel::U_evap(const volVectorField& n) const
 {
     dimensionedScalar rho0("rho0",dimDensity,1000); //TODO read from alphaL
     tmp<volScalarField> vLG = R_*T_/(p_*W_) - 1/rho0;
     
     
-    tmp<volVectorField> Ur = m_evap_ * vLG * alphaL_.n();
+    tmp<volVectorField> Ur = m_evap_ * vLG * n;
     
     return Ur;
 }

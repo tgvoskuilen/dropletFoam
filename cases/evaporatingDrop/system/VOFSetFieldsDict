@@ -33,8 +33,8 @@ shapes
         
         ellipsoidCoeffs
         {
-            center   (0.0075 0.005 0.0005);
-            radius   (0.0015 0.0015 0);
+            center   (0.005 0.005 0.0005);
+            radius   (0.002 0.001 0);
         }
         
         delVapor 1e-2;

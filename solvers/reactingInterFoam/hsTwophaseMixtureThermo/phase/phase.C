@@ -858,7 +858,7 @@ Foam::tmp<volScalarField> Foam::phase::Ypp() const
 }
 
 
-Foam::tmp<volVectorField> Foam::phase::URecoil() const
+Foam::tmp<volVectorField> Foam::phase::URecoil(const volVectorField& n) const
 {
     tmp<volVectorField> tUr
     (
@@ -888,7 +888,7 @@ Foam::tmp<volVectorField> Foam::phase::URecoil() const
             {
                 if (specieLI().evapModel().vaporName() == specieI().Y().name())
                 {
-                    tUr() += specieLI().evapModel().U_evap();
+                    tUr() += specieLI().evapModel().U_evap(n);
                     break;
                 }
             }

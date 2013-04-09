@@ -287,7 +287,7 @@ public:
         tmp<volScalarField> x(const word& name) const;
         tmp<volScalarField> xByY(const word& name) const;
         
-        tmp<volVectorField> URecoil() const;
+        tmp<volVectorField> URecoil(const volVectorField& n) const;
         
         tmp<volVectorField> n() const; //normal pointing out of this phase
         

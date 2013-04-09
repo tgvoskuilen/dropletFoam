@@ -194,7 +194,7 @@ PIMPLE
     nCorrectors     3;
     nOuterCorrectors 1;
     nNonOrthogonalCorrectors 3;
-    nAlphaCorr      1;
+    nAlphaCorr      2;
     nAlphaSubCycles 3;
     cAlpha          1;
 
