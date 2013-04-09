@@ -29,6 +29,7 @@ divSchemes
 {
     div(rho*phi,k)      Gauss vanLeer;
     
+    div(phiN,UL2)   Gauss upwind;
     div(rho*phi,U)  Gauss upwind;
     div(phi,alpha)  Gauss vanLeer;
     div(phirb,alpha) Gauss interfaceCompression;

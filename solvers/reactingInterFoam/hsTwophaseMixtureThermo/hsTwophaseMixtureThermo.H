@@ -112,6 +112,8 @@ private:
         volVectorField Urecoil_;
         volVectorField UL_;
         volVectorField UL2_;
+        volVectorField nS_;
+        volScalarField divN_;
         volScalarField pRecoil_;
         volScalarField SuA_;
         volScalarField SuB_;

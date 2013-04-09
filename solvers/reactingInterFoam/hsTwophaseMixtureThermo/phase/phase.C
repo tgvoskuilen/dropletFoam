@@ -290,7 +290,7 @@ void Foam::phase::setCombustionPtr
 
 void Foam::phase::correct(const volScalarField& p, const volScalarField& T)
 {
-    rhoAlpha_ = *this * rho(p,T);// * cellMask_;
+    rhoAlpha_ = sharp(0.0) * rho(p,T);// * cellMask_;
     
     Info<< "Min,max rhoAlpha"<<name_
         <<" = " << Foam::min(rhoAlpha_).value() << ", " 
@@ -1469,7 +1469,7 @@ Foam::tmp<Foam::volVectorField> Foam::phase::n() const
         1e-8/Foam::pow(Foam::average(mesh().V()), 1.0/3.0)
     );
     
-    tmp<volVectorField> nOut = -fvc::grad(*this);
+    tmp<volVectorField> nOut = -fvc::grad(sharp(0.01));
     nOut() /= (mag(nOut()) + deltaN);
     
     return nOut;
