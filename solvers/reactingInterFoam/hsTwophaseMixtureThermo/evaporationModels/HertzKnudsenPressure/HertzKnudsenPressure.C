@@ -171,7 +171,7 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     dimensionedScalar totalArea = fvc::domainIntegrate(area_);
     dimensionedScalar totalLiq = fvc::domainIntegrate(alphaL_);
     
-    scalar radius = Foam::sqrt(totalLiq.value()/0.001/pi)*1000.0;
+    scalar radius = Foam::sqrt(totalLiq.value()/0.0002/pi)*1000.0;
     
     //volScalarField rhoE = rho_evap(); //m_evap_ * area_
     Foam::Info<< "Net domain evaporation = " << totalEvap.value() << " kg/s" << endl;
