@@ -19,7 +19,7 @@
       + fvc::div(phi, p)
       - fvc::Sp(fvc::div(phi), p)
     );
-
+    
     // Estimate U with no force terms
     U = rAU*UEqn.H();
     
@@ -60,11 +60,11 @@
 
         solve
         (
-            alphaV/p*p_DpDt + p_IC,
+            max(alphaV,0.0)/p*p_DpDt + p_IC,
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
-        p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
+        //p.max(dimensionedScalar("pMin",p.dimensions(),1000.0));
 
         if (pimple.finalNonOrthogonalIter())
         {
@@ -72,7 +72,7 @@
             //thermo.rho() += thermo.psi()*p;
 
             phi += p_IC.flux();
-            p.relax(); //from Euler solver...
+            //p.relax(); //from Euler solver...
         }
     }
     

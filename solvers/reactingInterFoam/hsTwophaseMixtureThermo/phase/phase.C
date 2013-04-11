@@ -142,6 +142,11 @@ Foam::phase::phase
         dimensionedScalar("faceMask_"+name, dimless, 0.0)
     )
 {  
+    const volScalarField& p = mesh.lookupObject<volScalarField>("p");
+    const volScalarField& T = mesh.lookupObject<volScalarField>("T");
+    
+    rhoAlpha_ = sharp(0.0)*rho(p,T);
+    
     rhoAlpha_.oldTime();
     cellMask_.oldTime();
     if( phaseDict_.found("SchmidtNo") )
@@ -290,7 +295,15 @@ void Foam::phase::setCombustionPtr
 
 void Foam::phase::correct(const volScalarField& p, const volScalarField& T)
 {
-    rhoAlpha_ = sharp(0.0) * rho(p,T);// * cellMask_;
+    rhoAlpha_ = sharp(0.0) * rho(p,T) * cellMask_;
+    
+    /*Foam::solve
+    (
+        fvm::ddt(rhoAlpha_)
+      + fvc::div(rhoPhiAlpha_)
+      - m_evap_sum(),
+        mesh().solver("rhoFinal")
+    );*/
     
     Info<< "Min,max rhoAlpha"<<name_
         <<" = " << Foam::min(rhoAlpha_).value() << ", " 
@@ -1485,9 +1498,6 @@ void Foam::phase::setPhaseMasks
 {
     volScalarField& alpha = *this;
     
-    //TODO: Make this independent of specie type "N2O4"
-    //const volScalarField& area = mesh().lookupObject<volScalarField>("area_N2O4");
-       
        
     const volScalarField* areaPtr = NULL;
     if( name_ == "Vapor" )
@@ -1554,25 +1564,10 @@ void Foam::phase::setPhaseMasks
                  * alpha.oldTime()[cellI] * rhoOld()[cellI];
         }
     }
-    //rhoAlpha_.oldTime() = cellMask_ * alpha.oldTime() * rho(p.oldTime(), T.oldTime());
     
-    //Perform a local averaging to "fill in" newly un-masked cells
-    //forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    //{ 
-        //tmp<volScalarField> tYpf = fvc::average(fvc::interpolate(specieI().Yp()));
-        
-    /*if( name_ == "Liquid")
-    {
-        forAll(cellMask_, cellI)
-        {
-            if( cellMask_[cellI] > 0.5 && cellMask_.oldTime()[cellI] < 0.5 )
-            {
-                //specieI().Yp()[cellI] += tYpf()[cellI];
-                rhoAlpha_.oldTime()[cellI] = rhoAlpha_[cellI]; 
-            }
-        }
-    }*/
-    //}
+    
+    rhoPhiAlpha_ *= faceMask_;
+    
 }
 
 void Foam::phase::updateGlobalYs

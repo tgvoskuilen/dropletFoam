@@ -769,12 +769,23 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
     // Update density field to satisfy continuity with new mass flux field
     //Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
-    // Define phase boundary masks to prevent artificial cross-phase mixing
-    //alphaLiquid_.setPhaseMasks( phaseMaskTol_, p_, T_ );
-    //alphaVapor_.setPhaseMasks( phaseMaskTol_, p_, T_ );
     
+    // Define phase boundary masks to prevent artificial cross-phase mixing
+    // This clips rhoPhiAlpha outside the masked region
+    alphaLiquid_.setPhaseMasks( phaseMaskTol_, p_, T_ );
+    alphaVapor_.setPhaseMasks( phaseMaskTol_, p_, T_ );
+    
+    // correct() updates rho_, psi_, mu_ and calls correct() on phases
+    // Update properties and set rhoAlpha to satisfy continuity with the
+    // new rhoPhiAlpha mass flux field
     correct();
-    rho = rho_;
+    //rho = rho_;
+    
+    // Because continuity is satisfied on a per-phase basis, it should also
+    // be satisfied on a global basis with rho and rhoPhi_
+    rho = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
+    rhoPhi_ = alphaLiquid_.rhoPhiAlpha() + alphaVapor_.rhoPhiAlpha();
+    
     Info<< "Min,max rho = " << Foam::min(rho_).value() << ", " 
         << Foam::max(rho_).value() << endl;
         
@@ -1058,7 +1069,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     // Re-sharpen alpha field
     //  This is not mass conserving, but prevents excessive floatsom
     volScalarField& alphaL = alphaLiquid_;
-    alphaL = alphaLiquid_.sharp(0.001);
+    alphaL = alphaLiquid_.sharp(1e-3);
     
     
     alphaVapor_ == scalar(1) - alphaLiquid_;
