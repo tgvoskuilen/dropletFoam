@@ -164,21 +164,7 @@ void Foam::evaporationModels::HertzKnudsenPressure::calculate
     coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_*xL_ - sp - p_*x_);
     
     m_evap_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_);
-    
-    /*
-    m_evap_ = dimensionedScalar("m0",dimMass/dimArea/dimTime,0.1)*pos(area_-sA);
-    
-    dimensionedScalar totalEvap = fvc::domainIntegrate(m_evap_*area_);
-    dimensionedScalar totalArea = fvc::domainIntegrate(area_);
-    dimensionedScalar totalLiq = fvc::domainIntegrate(alphaL_);
-    
-    scalar radius = Foam::sqrt(totalLiq.value()/0.0002/pi)*1000.0;
-    
-    //volScalarField rhoE = rho_evap(); //m_evap_ * area_
-    Foam::Info<< "Net domain evaporation = " << totalEvap.value() << " kg/s" << endl;
-    Foam::Info<< "Total area = " << totalArea.value() << " m2" << endl;
-    Foam::Info<< "Radius = " << radius << " mm" << endl;
-    */
+
     Foam::Info<< "Min,max evaporation flux for " << vapor_specie_ << " = "
               << Foam::min(m_evap_).value() << ", " 
               << Foam::max(m_evap_).value() << " kg/m2/s" << Foam::endl;
@@ -235,13 +221,13 @@ tmp<volScalarField> Foam::evaporationModels::HertzKnudsenPressure::dPvdT() const
     );
 
     tdPvdT() = p_vap_/T_/T_*
-               (
-                   Lb_/R_*neg(T_ - Tb_)
-                 + (
-                       dimensionedScalar("B",dimTemperature,PvCoeffs_[1])
-                     + 2*dimensionedScalar("C",dimTemperature*dimTemperature,PvCoeffs_[2])/T_
-                   )*pos(T_ - Tb_)
-               );
+       (
+           Lb_/R_*neg(T_ - Tb_)
+         + (
+               dimensionedScalar("B",dimTemperature,PvCoeffs_[1])
+             + 2*dimensionedScalar("C",dimTemperature*dimTemperature,PvCoeffs_[2])/T_
+           )*pos(T_ - Tb_)
+       );
 
     return tdPvdT;
 }

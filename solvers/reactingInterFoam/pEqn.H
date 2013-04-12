@@ -59,7 +59,7 @@
 
         solve
         (
-            max(alphaV,0.0)/p*p_DpDt + p_IC,
+            max(alphaV,0.0)*(p_DpDt/p - fvc::DDt(phi,T)/T) + p_IC,
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
@@ -70,7 +70,7 @@
             // Second part of thermodynamic density update
             //thermo.rho() += thermo.psi()*p;
 
-            mixture.divComp() = (p_DpDt & p)/p; // - fvc::DDt(T)/T;
+            mixture.divComp() = (p_DpDt & p)/p - fvc::DDt(phi,T)/T;
 
             phi += p_IC.flux();
             //p.relax(); //from Euler solver...
