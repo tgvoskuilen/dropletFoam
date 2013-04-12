@@ -199,112 +199,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     ),
     phi_( rhoPhi_.db().lookupObject<surfaceScalarField>("phi") ),
     U_( rhoPhi_.db().lookupObject<volVectorField>("U") ),
-    Urecoil_
-    (
-        IOobject
-        (
-            "Urecoil",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedVector("Urecoil", dimVelocity, vector::zero)
-    ),
-    UL_
-    (
-        IOobject
-        (
-            "UL",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedVector("UL", dimVelocity, vector::zero)
-    ),
-    UL2_
-    (
-        IOobject
-        (
-            "UL2",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedVector("UL2", dimVelocity, vector::zero),
-        zeroGradientFvPatchVectorField::typeName
-    ),
-    nS_
-    (
-        IOobject
-        (
-            "nS",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedVector("nS", dimless, vector::zero),
-        zeroGradientFvPatchVectorField::typeName
-    ),
-    divN_
-    (
-        IOobject
-        (
-            "divN",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("divN", dimless/dimLength, 0.0)
-    ),
-    pRecoil_
-    (
-        IOobject
-        (
-            "pRecoil",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("pRecoil", dimPressure, 0.0)
-    ),
-    SuA_
-    (
-        IOobject
-        (
-            "SuA",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("SuA", dimless/dimTime, 0.0)
-    ),
-    SuB_
-    (
-        IOobject
-        (
-            "SuB",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("SuB", dimless/dimTime, 0.0)
-    ),
     divEvap_
     (
         IOobject
@@ -317,6 +211,18 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         ),
         mesh,
         dimensionedScalar("divEvap", dimless/dimTime, 0.0)
+    ),
+    divComp_
+    (
+        IOobject
+        (
+            "divComp",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        fvc::DDt(phi_,p_)/p_
     ),
     alphaVaporSmooth_
     (
@@ -395,6 +301,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     phaseMaskTol_(readScalar(lookup("phaseMaskTol")))
 {
     divEvap_.oldTime();
+    divComp_.oldTime();
     alphaLiquid_.setOtherPhase( &alphaVapor_ );
     alphaVapor_.setOtherPhase( &alphaLiquid_ );
 
@@ -583,9 +490,12 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
     surfaceScalarField& stf = tstf();
 
     //stf = fvc::interpolate(sigma_*kappaI_ + alphaVapor_.pRecoil()) * fvc::snGrad(alphaVapor_.H());
-    //surfaceScalarField rhof = fvc::interpolate(rho_)/dimensionedScalar("rhoS",dimDensity,1001.2);
     
-    stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_.sharp(0.05));// * rhof;
+    dimensionedScalar meanRho("meanRho",dimDensity,500); //TODO
+    
+    surfaceScalarField rhof = fvc::interpolate(rho_)/meanRho;
+    
+    stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_.sharp(0.01)) * rhof;
     return tstf;
 }
 
@@ -762,11 +672,10 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     {
         solveAlphas(cAlpha, nAlphaCorr);
     }
-
-    // Update interface
+    
     calculateAlphaVapor();
     calculateSurfaceTension();
-
+    
     // Update density field to satisfy continuity with new mass flux field
     //Foam::solve( fvm::ddt(rho) + fvc::div(rhoPhi_) );
     
@@ -779,7 +688,6 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     // Update properties and set rhoAlpha to satisfy continuity with the
     // new rhoPhiAlpha mass flux field
     correct();
-    //rho = rho_;
     
     // Because continuity is satisfied on a per-phase basis, it should also
     // be satisfied on a global basis with rho and rhoPhi_
@@ -790,35 +698,41 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
         << Foam::max(rho_).value() << endl;
         
         
-    /*YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
+    YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
     
     Info<< "Min,Max Ysum = " << Foam::min(YSum_).value() 
-        << ", " << Foam::max(YSum_).value() << endl;*/
+        << ", " << Foam::max(YSum_).value() << endl;
     
-
-
-
-
     // Calculate diffusion coefficient for each phase
-    //alphaLiquid_.calculateDs( combustionPtr_->turbulence().muEff() );
-    //alphaVapor_.calculateDs( combustionPtr_->turbulence().muEff() );
+    alphaLiquid_.calculateDs( combustionPtr_->turbulence().muEff() );
+    alphaVapor_.calculateDs( combustionPtr_->turbulence().muEff() );
        
     // Solve for subspecie transport within each phase
-    //scalar FoLiq = alphaLiquid_.solveSubSpecies( p_, T_ );
-    //scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_ );
+    scalar FoLiq = alphaLiquid_.solveSubSpecies( p_, T_ );
+    scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_ );
 
     // Update global mass fractions based on phase-based mass fractions
     //correct();
-    //alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
-    //alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
+    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
+    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
     
     //scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     
     // Calculate Ysum
     /*YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
+    PtrList<volScalarField>& Ys = this->Y();
+    Info<< "Min,Max Ysum = " << Foam::min(YSum_).value() 
+        << ", " << Foam::max(YSum_).value() << endl;
+        
+    forAll(Ys, i)
+    {   
+        Ys[i] /= YSum_;
+    }*/
+    
+    YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
     
     Info<< "Min,Max Ysum = " << Foam::min(YSum_).value() 
-        << ", " << Foam::max(YSum_).value() << endl;*/
+        << ", " << Foam::max(YSum_).value() << endl;
     
     return 0.0; //MaxFo; //TODO: Use DiNum from cht
 }
@@ -872,80 +786,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     word alphaScheme("div(phi,alpha)");
     word alpharScheme("div(phirb,alpha)");
     
-    // Get surface normal vectors from smoothed alpha field
-    //  normal vectors point out of liquid phases
-    // TODO Move somewhere sensible
-    /*dimensionedScalar one("one",dimLength,1.0);
-    nS_ = fvc::grad(alphaVaporSmooth_)*pos(alphaVaporSmooth_-0.001)*neg(alphaVaporSmooth_-0.999)*one;
-    nS_ /= mag(nS_)+SMALL;
-    forAll(nS_,cellI)
-    {
-        nS_[cellI].z() = 0.0;
-    }*/
-    
-    
-    Urecoil_ = alphaVapor_.URecoil(nS_);
-    //surfaceScalarField phiRecoil(linearInterpolate(Urecoil_*alphaVapor_) & mesh_.Sf());
-
-
-    //UL_ = U_ - Urecoil_*alphaVapor_;
-    
-    
-    
-    
-    
-
-    
-
-    
-    //surfaceVectorField nSf(fvc::interpolate(nS_));
-    //nSf /= mag(nSf) + SMALL;
-    /*
-    surfaceScalarField phiN("phiN",fvc::interpolate(nS_) & mesh_.Sf());
-    
-    //surfaceScalarField phiN("phiN",fvc::snGrad(alphaVapor_));
-    //volScalarField divN(fvc::div(phiN));
-    divN_ = fvc::div(phiN);
-    
-    scalar dx = Foam::pow(Foam::min(mesh_.V()),1.0/3.0).value();
-    
-    dimensionedScalar dtau("dtau",dimLength,dx/5.0); //Co = 0.2 should be sufficient for just upwind advection
-    
-    UL2_ = U_;
-    
-    //smoothing of UL2
-    surfaceVectorField Uf = fvc::interpolate(UL2_);
-    UL2_ = 0.8*UL2_ + 0.2*fvc::average(Uf);
-    for(label i = 0; i < 3; i++)
-    {
-        Uf = fvc::interpolate(UL2_);
-        UL2_ = 0.8*UL2_ + 0.2*fvc::average(Uf);
-    }
-    
-    Info<<"Constructing liquid velocity field UL2" << endl;
-    for(label i = 0; i < 20; ++i)
-    {
-        tmp<volVectorField> dU = dtau*(UL2_*divN_ - fvc::div(phiN,UL2_));
-        //Info<<"  Max dU = " << Foam::max(Foam::mag(dU())).value() << endl;
-        UL2_ += dU;
-    }
-    
-    forAll(UL2_,cellI)
-    {
-        UL2_[cellI].z() = 0.0;
-    }*/
-    
-    
-    
-    //Construct flux field using projected liquid velocity
-    //surfaceScalarField phiL("phiL",linearInterpolate(UL2_) & mesh_.Sf());
-    
-    //volScalarField divUL(fvc::div(phiL)*alphaLiquid_);
     volScalarField divU(fvc::div(phi_));// - divEvap_.oldTime());
-    
-    Info<<"max divU = " << Foam::max(Foam::mag(divU)).value() << endl;
-    //Info<<"max divUL = " << Foam::max(Foam::mag(divUL)).value() << endl;
-    
 
     surfaceScalarField phic(mag(phi_/mesh_.magSf()));
     phic = min(cAlpha*phic, max(phic));
@@ -962,16 +803,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 
     surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
         
-    
-    pRecoil_ = alphaVapor_.pRecoil();
-    
     surfaceScalarField phiAlphaL("phiAlphaL",phi_);
     
-    
-    //SuA_ = divUL*alphaLiquid_;
-    
     divEvap_ = alphaLiquid_.S_evap(p_,T_);
-    SuB_ = divU - divEvap_;
     
     for (int gCorr=0; gCorr<nAlphaCorr; gCorr++)
     {
@@ -1000,18 +834,19 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             //-alphaLiquid_.Sv_evap()
         );
         
-        /*forAll(divU,cellI)
+        forAll(divComp_, celli)
         {
-            if( divU[cellI] < divEvap_[cellI] )
+            if (divComp_[celli] > 0.0 && alphaLiquid_[celli] > 0.0)
             {
-                Sp[cellI] += divU[cellI]; //Sp = divU - divEvap only if this is negative
+                Sp[celli] -= divComp_[celli]*alphaLiquid_[celli];
+                Su[celli] += divComp_[celli]*alphaLiquid_[celli];
             }
-            else
+            else if (divComp_[celli] < 0.0 && alphaLiquid_[celli] < 1.0)
             {
-                Su[cellI] += divU[cellI]*alphaLiquid_[cellI];
+                Sp[celli] += divComp_[celli]*(1.0 - alphaLiquid_[celli]);
             }
-        }*/
-        
+        }
+                
         phiAlphaL = 
         (
             fvc::flux
@@ -1030,7 +865,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 
 
         MULES::explicitSolve
-        //MULES::implicitSolve
         (
             geometricOneField(),
             alphaLiquid_,

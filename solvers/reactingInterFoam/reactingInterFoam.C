@@ -149,9 +149,8 @@ int main(int argc, char *argv[])
             dQ = combustion->dQ() + mixture.dQ_evap();
 
             #include "UEqn.H"	
-            //#include "TEqn.H"
+            #include "TEqn.H"
             
-
             // --- Pressure corrector loop
             while (pimple.correct())
             {

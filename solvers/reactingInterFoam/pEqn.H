@@ -1,5 +1,4 @@
 {
-    const volScalarField& alphaV = mixture.alphaVapor();
     rho = thermo.rho();
     
     // First part of density update, only changes compressible regions
@@ -53,9 +52,9 @@
         (
             fvc::div(phi)
           - fvm::laplacian(rAUf, p)
-          //- pSuSp.first()
-          //+ fvm::SuSp(pSuSp.second(), p)
-          - mixture.S_evap()
+          - pSuSp.first()
+          + fvm::SuSp(pSuSp.second(), p)
+          //- mixture.S_evap()
         );
 
         solve
@@ -70,6 +69,8 @@
         {
             // Second part of thermodynamic density update
             //thermo.rho() += thermo.psi()*p;
+
+            mixture.divComp() = (p_DpDt & p)/p; // - fvc::DDt(T)/T;
 
             phi += p_IC.flux();
             //p.relax(); //from Euler solver...

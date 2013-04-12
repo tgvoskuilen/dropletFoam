@@ -143,6 +143,21 @@
         mesh,
         dimensionedScalar("dQ", dimPower, 0.0)
     );
+    
+    const volScalarField& alphaV = mixture.alphaVapor();
+    
+    volScalarField divComp
+    (
+        IOobject
+        (
+            "divComp",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        pos(alphaV)*fvc::div(phi)/max(alphaV,0.0001)
+    );
 
 
 

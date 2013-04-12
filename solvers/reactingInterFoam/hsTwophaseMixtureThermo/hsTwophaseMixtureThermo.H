@@ -109,15 +109,8 @@ private:
         //- Velocity field
         const volVectorField& U_;
         
-        volVectorField Urecoil_;
-        volVectorField UL_;
-        volVectorField UL2_;
-        volVectorField nS_;
-        volScalarField divN_;
-        volScalarField pRecoil_;
-        volScalarField SuA_;
-        volScalarField SuB_;
         volScalarField divEvap_;
+        volScalarField divComp_;
                 
         //- Sharpened vapor fraction (for calculating curvature kappaI)
         volScalarField alphaVaporSmooth_;
@@ -156,7 +149,7 @@ private:
         void solveAlphas
         (
             const scalar cAlpha, 
-            const label nAlphaCorr, 
+            const label nAlphaCorr,
             scalar f = 1.0
         );
                 
@@ -280,6 +273,11 @@ public:
             const surfaceScalarField& rhoPhi() const
             {
                 return rhoPhi_;
+            }
+            
+            volScalarField& divComp()
+            {
+                return divComp_;
             }
 
             //- Solve reaction chemistry, evaporation, and phase transport       
