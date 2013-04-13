@@ -126,7 +126,7 @@ Foam::phase::phase
             IOobject::AUTO_WRITE
         ),
         mesh,
-        dimensionedScalar("cellMask_"+name, dimless, 0.0)
+        dimensionedScalar("cellMask_"+name, dimless, 1.0)
     ),
     faceMask_
     (
@@ -139,15 +139,10 @@ Foam::phase::phase
             IOobject::NO_WRITE
         ),
         mesh,
-        dimensionedScalar("faceMask_"+name, dimless, 0.0)
+        dimensionedScalar("faceMask_"+name, dimless, 1.0)
     )
 {  
-    //const volScalarField& p = mesh.lookupObject<volScalarField>("p");
-    //const volScalarField& T = mesh.lookupObject<volScalarField>("T");
-    
-    //rhoAlpha_ = sharp(0.0)*rho(p,T);
-    
-    rhoAlpha_.oldTime();
+
     cellMask_.oldTime();
     if( phaseDict_.found("SchmidtNo") )
     {
@@ -160,6 +155,15 @@ Foam::phase::phase
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+void Foam::phase::setOtherPhase
+(
+    const phase* other
+)
+{
+    otherPhase_ = other;
+}
+        
+        
 Foam::autoPtr<Foam::phase> Foam::phase::clone() const
 {
     notImplemented("phase::clone() const");
@@ -205,9 +209,23 @@ void Foam::phase::setSpecies( const volScalarField& otherRhoAlpha )
             specieI().Yp() *= cellMask_/(YpSum() + SMALL);
             specieI().Yp().correctBoundaryConditions();
             specieI().Yp().oldTime();
+            
+            Info<< "Min,Max values of " << specieI().name() << " = " 
+                << Foam::min(specieI().Yp()).value() << ", " 
+                << Foam::max(specieI().Yp()).value() << endl;
         }
     }
 
+
+    //Initialize the phase density field
+    const volScalarField& p = mesh().lookupObject<volScalarField>("p");
+    const volScalarField& T = mesh().lookupObject<volScalarField>("T");
+    
+    rhoAlpha_ = sharp(0.0)*rho(p,T)*cellMask_;
+    
+    rhoAlpha_.oldTime();
+    
+    
 
 /*
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
@@ -296,6 +314,7 @@ void Foam::phase::setCombustionPtr
 void Foam::phase::correct(const volScalarField& p, const volScalarField& T)
 {
     rhoAlpha_ = sharp(0.0) * rho(p,T) * cellMask_;
+    rhoAlpha_.correctBoundaryConditions();
         
     Info<< "Min,max rhoAlpha"<<name_
         <<" = " << Foam::min(rhoAlpha_).value() << ", " 
@@ -730,11 +749,11 @@ Foam::tmp<volScalarField> Foam::phase::sigma
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.07)
+            dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0)
         )
     );
     
-    /*
+    
     tmp<volScalarField> tn
     (
         new volScalarField
@@ -771,8 +790,8 @@ Foam::tmp<volScalarField> Foam::phase::sigma
     
     tn() += neg(tn() - SMALL);
 
-    return tsigma/tn;*/
-    return tsigma;
+    return tsigma/tn;
+    //return tsigma;
 }
 
 
@@ -1398,10 +1417,12 @@ scalar Foam::phase::solveSubSpecies
           - fvm::Sp(Sp, Yi)
         );
         
-        /*Info<<"YiEqn.A() min = " << Foam::min(YiEqn.A()) << endl;
+        /*Pout<<"YiEqn.A() min,max = " << Foam::min(YiEqn.A()) << ", " << Foam::max(YiEqn.A()) << endl;
+        Pout<<"max ddt(rhoAlpha) = " << Foam::max(fvc::ddt(rhoAlpha_)).value() << endl;
+        Pout<<"max ddt(rhoAlpha).if = " << Foam::max(fvc::ddt(rhoAlpha_)().internalField()) << endl;
         
-        if( Foam::min(YiEqn.A()).value() < SMALL )
-        {
+       // if( Foam::min(YiEqn.A()).value() < SMALL )
+       // {
             tmp<volScalarField> A = YiEqn.A();
             tmp<volScalarField> ddtdiv = fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - m_evap_sum();
             tmp<volScalarField> div = fvc::div(rhoPhiAlpha_);
@@ -1411,29 +1432,29 @@ scalar Foam::phase::solveSubSpecies
             
             forAll(A(), cellI)
             {
-                if( A()[cellI] < SMALL )
+                if( A()[cellI] < SMALL || ddt()[cellI] > 1e9)
                 {
                     
-                    Info<<"A = " << A()[cellI] << " where" << endl;
-                    Info<<"  rhoAlpha = " << rhoAlpha_[cellI] << endl;
-                    Info<<"  rhoAlphaOld = " << rhoAlpha_.oldTime()[cellI] << endl;
-                    Info<<"  Sp = " << Sp[cellI] << endl;
-                    Info<<"  cellMask = " << cellMask_[cellI] << endl;
-                    Info<<"  cellMaskOld = " << cellMask_.oldTime()[cellI] << endl;
-                    Info<<"  alpha = " << this->operator[](cellI) << endl;
-                    Info<<"  alphaOld = " << this->oldTime()[cellI] << endl;
-                    Info<<"  ddtdiv = " << ddtdiv()[cellI] << endl;
-                    Info<<"  ddt = " << ddt()[cellI] << endl;
-                    Info<<"  div = " << div()[cellI] << endl;
-                    Info<<"  avgFM = " << avgFaceMask()[cellI] << endl;
-                    Info<<"  avgD = " << avgD()[cellI] << endl;
-                    Info<<"  Y = " << Yi[cellI] << endl;
+                    Pout<<"A = " << A()[cellI] << " where" << endl;
+                    Pout<<"  rhoAlpha = " << rhoAlpha_[cellI] << endl;
+                    Pout<<"  rhoAlphaOld = " << rhoAlpha_.oldTime()[cellI] << endl;
+                    Pout<<"  Sp = " << Sp[cellI] << endl;
+                    Pout<<"  cellMask = " << cellMask_[cellI] << endl;
+                    Pout<<"  cellMaskOld = " << cellMask_.oldTime()[cellI] << endl;
+                    Pout<<"  alpha = " << this->operator[](cellI) << endl;
+                    Pout<<"  alphaOld = " << this->oldTime()[cellI] << endl;
+                    Pout<<"  ddtdiv = " << ddtdiv()[cellI] << endl;
+                    Pout<<"  ddt = " << ddt()[cellI] << endl;
+                    Pout<<"  div = " << div()[cellI] << endl;
+                    Pout<<"  avgFM = " << avgFaceMask()[cellI] << endl;
+                    Pout<<"  avgD = " << avgD()[cellI] << endl;
+                    Pout<<"  Y = " << Yi[cellI] << endl;
                 }
             
             }
         
-        }*/
-
+       // }
+*/
         //Info<<"Doing solve, min diag = " << Foam::min(YiEqn.A()) << endl;
         YiEqn.relax();
         YiEqn.solve(mesh().solver("Yi"));
@@ -1553,12 +1574,13 @@ void Foam::phase::setPhaseMasks
     {
         if( ddtM()[cellI] > 10. )
         {
-            //rhoAlpha_.oldTime()[cellI] = cellMask_[cellI]
-            //     * alpha.oldTime()[cellI] * rhoOld()[cellI];
-            cellMask_.oldTime()[cellI] = cellMask_[cellI];
+            rhoAlpha_.oldTime()[cellI] = cellMask_[cellI]
+                 * alpha.oldTime()[cellI] * rhoOld()[cellI];
+            //cellMask_.oldTime()[cellI] = cellMask_[cellI];
         }
     }
     
+    cellMask_.correctBoundaryConditions();
     
     rhoPhiAlpha_ *= faceMask_;
     

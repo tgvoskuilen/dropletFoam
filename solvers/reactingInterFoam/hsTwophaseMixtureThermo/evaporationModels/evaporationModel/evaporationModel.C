@@ -164,8 +164,10 @@ void Foam::evaporationModel::calculate(const volScalarField& evapMask)
     //hardt method
     tmp<volScalarField> C = alphaL_.sharp(0.01);
     
+    dimensionedScalar eps("eps",dimArea,SMALL);
     tmp<volScalarField> Cp = Foam::mag(fvc::grad(C()));
-    dimensionedScalar N = fvc::domainIntegrate(Cp()) / fvc::domainIntegrate((1-C())*(1-C())*Cp()); //TODO: catch divide by zero
+    dimensionedScalar N = fvc::domainIntegrate(Cp()) 
+        / (fvc::domainIntegrate((1-C())*(1-C())*Cp()) + eps);
 
     area_ = N*(1-C())*(1-C())*Cp;
     //area_ = Cp;

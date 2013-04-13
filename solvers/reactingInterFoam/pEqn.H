@@ -1,4 +1,6 @@
 {
+    const volScalarField& alphaV = mixture.alphaVapor();
+    
     rho = thermo.rho();
     
     // First part of density update, only changes compressible regions
@@ -24,7 +26,7 @@
     
     forAll(U,cellI)
     {
-        U[cellI].z() = 0.0;
+        U[cellI].x() = 0.0;
     }
     
     surfaceScalarField phiEst
@@ -59,7 +61,7 @@
 
         solve
         (
-            max(alphaV,0.0)*(p_DpDt/p - fvc::DDt(phi,T)/T) + p_IC,
+            max(alphaV,0.0)/p*p_DpDt - max(alphaV,0.0)/T*fvc::DDt(phi,T) + p_IC,
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
@@ -77,17 +79,15 @@
         }
     }
     
-    // Continuity error check checks whether thermo.rho satisfies continuity
-    // with rhoPhi field
-    // However, since we aren't updated rhoPhi, this would not make sense
-    // so we don't check, and we instead just update thermo.rho with psi*dp
-    
-    
     U += rAU*fvc::reconstruct((phi - phiEst)/rAUf);
     U.correctBoundaryConditions();    
             
     //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
     
+    // Continuity error check checks whether thermo.rho satisfies continuity
+    // with rhoPhi field
+    // However, since we aren't updated rhoPhi, this would not make sense
+    // so we don't check, and we instead just call thermo.correct
     thermo.correct();
     
     Info<< "min,max p = " << gMin(p)/1e5 << ", " 

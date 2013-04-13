@@ -165,10 +165,7 @@ public:
             return rhoAlpha_;
         }
         
-        void setOtherPhase(const phase* other)
-        {
-            otherPhase_ = other;
-        }
+        void setOtherPhase(const phase* other);
         
         void setPhaseMasks
         (

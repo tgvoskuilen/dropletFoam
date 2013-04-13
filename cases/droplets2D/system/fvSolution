@@ -121,7 +121,7 @@ solvers
         smoother        GaussSeidel;
         tolerance       1e-06;
         relTol          0;
-        nSweeps         1;
+        nSweeps         2;
     }
 
     "(k|B|nuTilda)"
@@ -169,7 +169,7 @@ solvers
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-06;
-        relTol          0.1;
+        relTol          0.0;
     }
 }
 
@@ -180,7 +180,7 @@ PIMPLE
     nCorrectors     3;
     nOuterCorrectors 1;
     nNonOrthogonalCorrectors 3;
-    nAlphaCorr      1;
+    nAlphaCorr      2;
     nAlphaSubCycles 3;
     cAlpha          1;
 

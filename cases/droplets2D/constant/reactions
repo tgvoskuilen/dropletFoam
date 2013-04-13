@@ -17,7 +17,7 @@ reactions
     {
         type            irreversibleArrheniusReaction;
         reaction        "CH3NHNH2L + N2O4L = MMHNTOL";
-        A               2e+05;
+        A               5e+05;
         beta            0;
         Ta              1960;  //Based on 16.3 kJ/mol from Smith
     }

@@ -44,8 +44,6 @@ if np > 1:
     print "Decomposing problem"
     pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
     pyOpenFOAM.run('decomposePar',args='-cellDist')
-    for p in range(0,np):
-        os.system('cp -r processor%1d/0 processor%1d/0.org' % (p,p))
 
 
 n_adapts = 3

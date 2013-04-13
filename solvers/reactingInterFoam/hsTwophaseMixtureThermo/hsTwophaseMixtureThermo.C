@@ -366,11 +366,11 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
                 mesh_
             ),
             mesh_,
-            dimensionedScalar("tmu", dimMass/dimTime/dimLength, 1.8e-5)
+            dimensionedScalar("tmu", dimMass/dimTime/dimLength, 0.0)
         )
     );
 
-/*
+
     scalarField& muCells = tmu().internalField();
     const scalarField& TCells = T_.internalField();
 
@@ -388,7 +388,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
             patchi
         );
     }
-*/
+
     return tmu;
 }
 
@@ -491,11 +491,11 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
 
     //stf = fvc::interpolate(sigma_*kappaI_ + alphaVapor_.pRecoil()) * fvc::snGrad(alphaVapor_.H());
     
-    dimensionedScalar meanRho("meanRho",dimDensity,500); //TODO
+    //dimensionedScalar meanRho("meanRho",dimDensity,500); //TODO: calc mean rho
     
-    surfaceScalarField rhof = fvc::interpolate(rho_)/meanRho;
+    //surfaceScalarField rhof = fvc::interpolate(rho_)/meanRho;
     
-    stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_.sharp(0.01)) * rhof;
+    stf = fvc::interpolate(sigma_*kappaI_) * fvc::snGrad(alphaVapor_.sharp(0.01));// * rhof;
     return tstf;
 }
 
@@ -544,7 +544,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
         1000.0 * mag(fvc::grad(alphaLiquid_.sharp(0.01))) * Foam::pow(mesh_.V(),1.0/3.0)
     );
 
-/*
+
     forAll(this->Y(), i)
     {
         const volScalarField& Yi = this->Y()[i];
@@ -554,7 +554,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
             mag(fvc::grad(Yi)) * Foam::pow(mesh_.V(),1.0/3.0)
         );
     }
-*/
+
     //Include total volume source into refinement criteria
     /*tRefinementField().internalField() = max
     (
@@ -634,7 +634,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 {
     //Solve for reaction rates
     Info<< "Solving combustion" << endl;
-    //combustionPtr_->correct();
+    rho_ = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
+    combustionPtr_->correct();
 
     //Solve for evaporation rates
     Info<< "Solving evaporation" << endl;
