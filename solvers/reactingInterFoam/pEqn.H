@@ -48,15 +48,15 @@
     // Solve for pressure to enforce continuity (based on phi)
     while (pimple.correctNonOrthogonal())
     {
-        Pair<tmp<volScalarField> > pSuSp = mixture.SuSp_evap();
+        //Pair<tmp<volScalarField> > pSuSp = mixture.SuSp_evap();
         
         fvScalarMatrix p_IC
         (
             fvc::div(phi)
           - fvm::laplacian(rAUf, p)
-          - pSuSp.first()
-          + fvm::SuSp(pSuSp.second(), p)
-          //- mixture.S_evap()
+          //- pSuSp.first()
+          //+ fvm::SuSp(pSuSp.second(), p)
+          - mixture.S_evap()
         );
 
         solve
@@ -65,7 +65,7 @@
             mesh.solver(p.select(pimple.finalInnerIter()))
         );
         
-        //p.max(dimensionedScalar("pMin",p.dimensions(),1000.0));
+        p.max(dimensionedScalar("pMin",p.dimensions(),1000.0));
 
         if (pimple.finalNonOrthogonalIter())
         {
@@ -82,7 +82,7 @@
     U += rAU*fvc::reconstruct((phi - phiEst)/rAUf);
     U.correctBoundaryConditions();    
             
-    //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
+    p.max(dimensionedScalar("pMin",p.dimensions(),1000.0));
     
     // Continuity error check checks whether thermo.rho satisfies continuity
     // with rhoPhi field

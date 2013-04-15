@@ -229,7 +229,8 @@ tmp<volScalarField> Foam::evaporationModels::HertzKnudsenPressure::dPvdT() const
            )*pos(T_ - Tb_)
        );
 
-    return tdPvdT;
+
+    return tdPvdT * neg(p_vap_ - Pc_);
 }
 
 Pair<tmp<volScalarField> > Foam::evaporationModels::HertzKnudsenPressure::TSuSp() const
