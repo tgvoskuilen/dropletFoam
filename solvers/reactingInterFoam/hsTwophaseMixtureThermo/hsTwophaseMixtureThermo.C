@@ -133,9 +133,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcEvaporation()
         
         Info<< "Max grad prod = " << Foam::max(tgradProd()).value() << endl;
         
-        // only allow evaporation if gradprod < 1e5 OR alphav > 0.5
+        // only allow evaporation if gradprod < 1e5 OR alphav > 0.8
         evap_mask_ = pos(neg(tgradProd() - 100000.0)
-                         + pos(alphaVapor_ - 0.5) - SMALL);
+                         + pos(alphaVapor_ - 0.8) - SMALL);
     }
     else
     {
@@ -223,7 +223,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
-        fvc::DDt(phi_,p_)/p_
+        fvc::DDt(phi_,p_)/(p_+dimensionedScalar("ps",dimPressure,1))
     ),
     alphaVaporSmooth_
     (

@@ -24,10 +24,10 @@
     // Estimate U with no force terms
     U = rAU*UEqn.H();
     
-    forAll(U,cellI)
+    /*forAll(U,cellI)
     {
         U[cellI].x() = 0.0;
-    }
+    }*/
     
     surfaceScalarField phiEst
     (
