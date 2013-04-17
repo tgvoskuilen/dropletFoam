@@ -189,7 +189,7 @@ void Foam::phaseChangeModels::LangmuirEvaporation::calculate
 
     Foam::Info<< "Min,max evaporation flux for " << vapor_specie_ << " = "
               << Foam::min(omega_).value() << ", " 
-              << Foam::max(omega_).value() << " kmol/m2/s" << Foam::endl;
+              << Foam::max(omega_).value() << " kmol/m3/s" << Foam::endl;
 }
 
 tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::mdot

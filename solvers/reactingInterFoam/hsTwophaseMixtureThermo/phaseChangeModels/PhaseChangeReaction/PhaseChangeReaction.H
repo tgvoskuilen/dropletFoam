@@ -35,32 +35,28 @@ SourceFiles
 #ifndef PhaseChangeReaction_H
 #define PhaseChangeReaction_H
 
-#include "evaporationModel.H"
+#include "phaseChangeModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace evaporationModels
+namespace phaseChangeModels
 {
 /*---------------------------------------------------------------------------*\
-                      Class evaporationModel Declaration
+                      Class phaseChangeModel Declaration
 \*---------------------------------------------------------------------------*/
 
 class PhaseChangeReaction
 :
-    public evaporationModel
+    public phaseChangeModel
 {
 
     //model-specific stuff
-
-        //tables of specie names and stoich coefficients
-        HashTable<scalar> reactants_;
-        HashTable<scalar> products_;
         
         dimensionedScalar Ta_;
-        dimensionedScalar k_;
-        
+        dimensionedScalar A_;
+        scalar beta_;
         
 
 public:
@@ -73,11 +69,11 @@ public:
         //- construct from components
         PhaseChangeReaction
         (
-            dictionary specieDict,
-            const volScalarField& p,
-            const volScalarField& T,
+            const word name,
+            const fvMesh& mesh,
             const phase& alphaL,
-            const phase& alphaV
+            const phase& alphaV,
+            dictionary phaseChangeDict
         );
         
     //- Destructor
@@ -87,17 +83,20 @@ public:
     // Member Functions
         virtual void calculate
         (
-            const volScalarField& evapMask
+            const volScalarField& evapMask,
+            const volScalarField& area
         );
         
+        virtual tmp<volScalarField> mdot(const word& phaseName) const;
+        virtual tmp<volScalarField> Vdot(const word& phaseName) const;
+        
         virtual Pair<tmp<volScalarField> > YSuSp(const word& specie) const;
-        virtual Pair<tmp<volScalarField> > pSuSp() const;
         virtual Pair<tmp<volScalarField> > TSuSp() const;
 };  
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-} // End namespace evaporationModel
+} // End namespace phaseChangeModels
 
 } // End namespace Foam
 

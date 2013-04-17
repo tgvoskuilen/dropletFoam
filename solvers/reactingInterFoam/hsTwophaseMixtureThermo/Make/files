@@ -3,6 +3,7 @@ phase/phase.C
 phaseChangeModels/phaseChangeModel/phaseChangeModel.C
 phaseChangeModels/phaseChangeModel/newPhaseChangeModel.C
 phaseChangeModels/LangmuirEvaporation/LangmuirEvaporation.C
+phaseChangeModels/PhaseChangeReaction/PhaseChangeReaction.C
 
 hsNewReactionThermos.C
 

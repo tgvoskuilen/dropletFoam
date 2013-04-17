@@ -30,49 +30,75 @@ License
 
 namespace Foam
 {
-namespace evaporationModels
+namespace phaseChangeModels
 {
     defineTypeNameAndDebug(PhaseChangeReaction, 0);
-    addToRunTimeSelectionTable(evaporationModel, PhaseChangeReaction, components);
+    addToRunTimeSelectionTable(phaseChangeModel, PhaseChangeReaction, components);
 }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-Foam::evaporationModels::PhaseChangeReaction::PhaseChangeReaction
+Foam::phaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
 (
-    dictionary specieDict,
-    const volScalarField& p,
-    const volScalarField& T,
+    const word name,
+    const fvMesh& mesh,
     const phase& alphaL,
-    const phase& alphaV
+    const phase& alphaV,
+    dictionary phaseChangeDict
 )
 :
-    evaporationModel(typeName, specieDict, p, T, alphaL, alphaV),
-    reactants_(),
-    products_(),
-    Ta_(),
-    k_()
+    phaseChangeModel(typeName, name, mesh, alphaL, alphaV, phaseChangeDict),
+    Ta_(phaseChangeDict_.lookup("Ta")),
+    A_(phaseChangeDict_.lookup("A")),
+    beta_(readScalar(phaseChangeDict_.lookup("beta")))
 {
+    Info<< "Liquid/vapor reaction configured for " << name_ << endl;
 }
     
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-void Foam::evaporationModels::PhaseChangeReaction::calculate
+void Foam::phaseChangeModels::PhaseChangeReaction::calculate
 (
-    const volScalarField& evapMask
+    const volScalarField& evapMask,
+    const volScalarField& area
 )
 {
-    evaporationModel::calculate(evapMask);
-
-   /* m_evap_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_);
-
-    Foam::Info<< "Min,max evaporation flux for " << vapor_specie_ << " = "
-              << Foam::min(m_evap_).value() << ", " 
-              << Foam::max(m_evap_).value() << " kg/m2/s" << Foam::endl;*/
+    dimensionedScalar sA("sA",dimless/dimLength,SMALL);
+    mask_ = pos(area-sA);
+    
+    
+    omega_ = A_*Foam::exp(-Ta_/T_)*mask_;
+    
+    if( Foam::mag(beta_) > SMALL )
+    {
+        omega_ *= Foam::pow(T_,beta_);
+    }
+    
+    dimensionedScalar c0("c0",dimMoles/dimVolume,1.0);
+    List<word> R = reactants_.toc();
+    forAll(R, i)
+    {
+        tmp<volScalarField> cL = alphaL_.x(R[i])*alphaL_.Npp()*alphaL_.rho(p_,T_)/c0;
+        scalar stoic = reactants_[R[i]];
+        
+        if( Foam::mag(stoic-1.0) < SMALL )
+        {
+            omega_ *= cL;
+        }
+        else
+        {
+            omega_ *= Foam::pow(cL,stoic);
+        }
+    }
+    
+    
+    Foam::Info<< "Min,max reaction flux for " << name_ << " = "
+              << Foam::min(omega_).value() << ", " 
+              << Foam::max(omega_).value() << " kmol/m3/s" << Foam::endl;
 }
 
 
 // get the explicit and implicit source terms for Ys
-Pair<tmp<volScalarField> > Foam::evaporationModels::PhaseChangeReaction::YSuSp
+Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::YSuSp
 (
     const word& specieName
 )
@@ -90,25 +116,9 @@ const
     );
 }
 
-// get the explicit and implicit source terms for pressure
-Pair<tmp<volScalarField> > Foam::evaporationModels::PhaseChangeReaction::pSuSp() const
-{
-
-    return Pair<tmp<volScalarField> >
-    (
-        area_*(coeffC_+coeffV_)*p_vap_*xL_,
-        area_*(coeffC_+coeffV_)*x_
-    );
-    
-    /*return Pair<tmp<volScalarField> >
-    (
-        area_*m_evap_,
-        area_*(coeffC_+coeffV_)*x_*0.0
-    );*/
-}
 
 
-Pair<tmp<volScalarField> > Foam::evaporationModels::PhaseChangeReaction::TSuSp() const
+Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::TSuSp() const
 {
 
     //Sh = -m_evap_*L()*area_
@@ -139,5 +149,52 @@ Pair<tmp<volScalarField> > Foam::evaporationModels::PhaseChangeReaction::TSuSp()
 }
 
 
+tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::mdot
+(
+    const word& phaseName
+) const
+{
+    tmp<volScalarField> tmdot
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tmdot",
+                mesh_.time().timeName(),
+                mesh_
+            ),
+            mesh_,
+            dimensionedScalar("tmdot",dimDensity/dimTime,0.0)
+        )
+    );
+    
+    
+    
+    return tmdot;
+}
 
+tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::Vdot
+(
+    const word& phaseName
+) const
+{
+    tmp<volScalarField> tVdot
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tVdot",
+                mesh_.time().timeName(),
+                mesh_
+            ),
+            mesh_,
+            dimensionedScalar("tVdot",dimless/dimTime,0.0)
+        )
+    );
+    
+    
+    return tVdot;
+}
 // ************************************************************************* //

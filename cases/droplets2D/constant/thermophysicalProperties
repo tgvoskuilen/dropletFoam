@@ -152,7 +152,7 @@ phaseChangeReactions
         }
     }
     
-    
+    /*
     LiquidReaction
     {
         phaseChangeModel   PhaseChangeReaction;
@@ -179,7 +179,7 @@ phaseChangeReactions
             
             beta  0.0;
         }
-    }
+    }*/
     
 );
 
