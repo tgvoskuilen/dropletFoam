@@ -53,7 +53,7 @@ SourceFiles
 #include "hsReactionThermo.H"
 #include "phase.H"
 #include "subSpecie.H"
-#include "evaporationModel.H"
+#include "phaseChangeModel.H"
 #include "PtrDictionary.H"
 #include "volFields.H"
 #include "surfaceFields.H"
@@ -100,6 +100,12 @@ private:
         //- Liquid phase
         phase alphaLiquid_;
         
+        //- Phase change models
+        PtrDictionary<phaseChangeModel> phaseChangeModels_;
+        
+        //- Inter-phase area and zone where interphase reactions can occur
+        volScalarField area_;
+        
         //- Total mass flux
         surfaceScalarField rhoPhi_;
                 
@@ -109,7 +115,7 @@ private:
         //- Velocity field
         const volVectorField& U_;
         
-        volScalarField divEvap_;
+        volScalarField divPhaseChange_;
         volScalarField divComp_;
                 
         //- Sharpened vapor fraction (for calculating curvature kappaI)
@@ -129,9 +135,7 @@ private:
         
         //- Stabilisation for normalisation of the interface normal
         const dimensionedScalar deltaN_;
-        
-        scalar phaseRelaxTime_;
-        
+                
         scalar phaseMaskTol_;
         
     // Private methods
@@ -142,8 +146,10 @@ private:
         //- Construct as copy (not implemented)
         hsTwophaseMixtureThermo(const hsTwophaseMixtureThermo<MixtureType>&);
 
-        //- Calculate evaporation rates for each evaporation pair
-        void calcEvaporation();
+        //- Calculate phase change reactions
+        void calcPhaseChange();
+        
+        void correctInterface();
 
         //- Solve the alpha transport equations
         void solveAlphas
@@ -279,6 +285,11 @@ public:
             {
                 return divComp_;
             }
+            
+            const volScalarField& divPhaseChange() const
+            {
+                return divPhaseChange_;
+            }
 
             //- Solve reaction chemistry, evaporation, and phase transport       
             scalar solve(volScalarField& rho);
@@ -305,25 +316,18 @@ public:
             tmp<volScalarField> getRefinementField() const;
             
             //- Get the total volume source (for pEqn and deltaT)
-            tmp<volScalarField> S_evap() const;
+            tmp<volScalarField> Sv_phaseChange() const;
             
-            Pair<tmp<volScalarField> > SuSp_evap() const;
+            //- Get the implicit and explicit total energy source terms
             Pair<tmp<volScalarField> > TSuSp() const;
                                     
-            //- Get the total reaction and evaporation enthalpy source
-            tmp<volScalarField> dQ_evap() const;
+            //- Get the total phase change heat generation
+            tmp<volScalarField> dQ_phaseChange() const;
             
             tmp<volScalarField> kByCv(const volScalarField& muEff) const;
             tmp<volScalarField> rCv() const;
             
             void setHs();
-            
-            //- Calculate the sharpened volume fraction for the vapor phase
-            void calculateAlphaVapor();
-            
-            //- Calculate the surface tension force from the curvature and
-            //  surface tension coefficients
-            void calculateSurfaceTension();
 };
 
 

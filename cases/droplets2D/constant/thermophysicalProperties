@@ -37,6 +37,10 @@ Vapor
        N2O4     {}
        N2       {}
    );
+   
+   phaseChangeReactions
+   (
+   );
 }
 
 
@@ -59,30 +63,6 @@ Liquid
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
             sigmaa          0.884;
                
-            evaporationModel HertzKnudsenPressure;
-            
-            HertzKnudsenPressureCoeffs
-            {
-                vapor           CH3NHNH2;
-                Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
-                Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
-                La              0.38;
-                betaM           0.6;
-
-                Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
-                Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
-                PvCoeffs        (9.1834 1943.89 492587.8);
-            }
-            
-            HertzKnudsenTemperatureCoeffs
-            {
-                vapor           CH3NHNH2;
-                Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
-                Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
-                Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
-                La              0.38;
-                betaM           0.6;
-            }
         }
         
         N2O4L
@@ -96,31 +76,6 @@ Liquid
               
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
             sigmaa          0.745;
-              
-            evaporationModel HertzKnudsenPressure;
-             
-            HertzKnudsenPressureCoeffs
-            {
-                vapor           N2O4;
-                Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
-                Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
-                La              0.38;
-                betaM           0.6;
-
-                Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
-                Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
-                PvCoeffs        (16.1 5400.115 -194831.8);
-            }
-            
-            HertzKnudsenTemperatureCoeffs
-            {
-                vapor           N2O4;
-                Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
-                Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
-                Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
-                La              0.38;
-                betaM           0.6;
-            }
          }
          
          MMHNTOL //averaged properties of MMH and NTO
@@ -137,6 +92,96 @@ Liquid
          }
    );
 }
+
+
+
+phaseChangeReactions
+(
+   MMHEvap
+   {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidReactants
+        (
+            CH3NHNH2L   1.0
+        );
+        
+        gasProducts
+        (
+            CH3NHNH2   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
+            La              0.38;
+            betaM           0.6;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
+            PvCoeffs        (9.1834 1943.89 492587.8);
+        }
+    }
+    
+    
+    NTOEvap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidReactants
+        (
+            N2O4L   1.0
+        );
+        
+        gasProducts
+        (
+            N2O4   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
+            La              0.38;
+            betaM           0.6;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
+            PvCoeffs        (16.1 5400.115 -194831.8);
+        }
+    }
+    
+    
+    LiquidReaction
+    {
+        phaseChangeModel   PhaseChangeReaction;
+        
+        liquidReactants
+        (
+            CH3NHNH2L 1.0
+            N2O4L     2.0
+        );
+        
+        gasProducts
+        (
+            CH3ONO2  1.0
+            N2O      0.5
+            H2O      0.5
+            N2       1.0
+        );
+        
+        PhaseChangeReactionCoeffs
+        {
+            Ta   Ta [ 0 0 0 1 0 0 0] 2000;
+            
+            A    A  [ 0 0 -1 0 0 0 0] 1e6;
+            
+            beta  0.0;
+        }
+    }
+    
+);
 
 
 

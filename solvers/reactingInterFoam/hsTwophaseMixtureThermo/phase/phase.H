@@ -54,8 +54,8 @@ SourceFiles
 
 namespace Foam
 {
-    //Forward declaration of evaporation model class
-    class evaporationModel;
+    //Forward declaration of subspecie class
+    class phaseChangeModel;
     class subSpecie;
     
 /*---------------------------------------------------------------------------*\
@@ -94,7 +94,7 @@ class phase
 
         //- Dictionary of pointers to phase subspecies
         PtrDictionary<subSpecie> subSpecies_;
-        
+               
         //- Schmidt number
         scalar Sc_;
         
@@ -171,7 +171,8 @@ public:
         (
             scalar maskTol,
             const volScalarField& p, 
-            const volScalarField& T
+            const volScalarField& T,
+            const volScalarField& area
         );
 
         //- Return the phase density
@@ -187,9 +188,7 @@ public:
             const volScalarField& p, 
             const volScalarField& T
         ) const;
-        
-        tmp<volScalarField> Sv_evap() const;
-                       
+                  
         //- Return the phase compressibility
         tmp<volScalarField> psi
         (
@@ -204,9 +203,6 @@ public:
         
         //- Get phase molar mass field
         tmp<volScalarField> W() const;
-        
-        //- Return the total enthalpy sources in this phase
-        tmp<volScalarField> Sh_evap() const;
         
         tmp<volScalarField> k() const;
         tmp<volScalarField> Cv(const volScalarField& T) const;
@@ -236,44 +232,14 @@ public:
             const volScalarField& T,
             const volScalarField& kappaMask
         ) const;
-        
-        //- Get mass source (or sink) for specie Yi due to evaporation
-        tmp<volScalarField> Su_Yi_evap
-        (
-            const subSpecie& specieI
-        ) const;
-        
-        
-        //- Get total volume source due to evaporation (only applicable to 
-        //   liquid phase)
-        tmp<volScalarField> S_evap
-        (
-            const volScalarField& p,
-            const volScalarField& T
-        ) const;
-        
-        tmp<volScalarField> m_evap_sum() const;
-        tmp<volScalarField> pRecoil() const;
-        
-        Pair<tmp<volScalarField> > YiSuSp
-        (
-            const subSpecie& specieI
-        ) const;
-        
-        Pair<tmp<volScalarField> > pSuSp
-        (
-            const volScalarField& p,
-            const volScalarField& T
-        ) const;
-        
-        Pair<tmp<volScalarField> > TSuSp() const;
-                        
+                                        
         void calculateDs(const volScalarField& muEff);
 
         scalar solveSubSpecies
         (
             const volScalarField& p,
-            const volScalarField& T
+            const volScalarField& T,
+            const PtrDictionary<phaseChangeModel>& phaseChangeModels
         );
         
         void updateGlobalYs
@@ -284,14 +250,14 @@ public:
         tmp<volScalarField> x(const word& name) const;
         tmp<volScalarField> xByY(const word& name) const;
         
-        tmp<volVectorField> URecoil(const volVectorField& n) const;
+        Pair<tmp<volScalarField> > YiSuSp
+        (
+            const subSpecie& specieI,
+            const PtrDictionary<phaseChangeModel>& phaseChangeModels
+        ) const;
+
+        //tmp<volVectorField> n() const; //normal pointing out of this phase
         
-        tmp<volVectorField> n() const; //normal pointing out of this phase
-        
-        tmp<volScalarField> H() const
-        {
-            return pos(*this - 0.5);
-        }
 };
 
 

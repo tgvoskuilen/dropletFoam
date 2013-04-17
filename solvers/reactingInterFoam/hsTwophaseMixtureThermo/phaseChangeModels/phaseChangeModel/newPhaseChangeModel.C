@@ -23,45 +23,55 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "evaporationModel.H"
+#include "phaseChangeModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::evaporationModel>
-Foam::evaporationModel::New
+Foam::autoPtr<Foam::phaseChangeModel>
+Foam::phaseChangeModel::New
 (
-    dictionary specieDict,
-    const volScalarField& p,
-    const volScalarField& T,
+    const word name,
+    const fvMesh& mesh,
     const phase& alphaL,
-    const phase& alphaV
+    const phase& alphaV,
+    dictionary phaseChangeDict
 )
 {
-    word evaporationModelTypeName
+    word phaseChangeModelTypeName
     (
-        specieDict.lookup("evaporationModel")
+        phaseChangeDict.lookup("phaseChangeModel")
     );
 
-    Info<< "Selecting evaporation model "
-        << evaporationModelTypeName << endl;
+    Info<< "Selecting phase change model "
+        << phaseChangeModelTypeName << endl;
 
     componentsConstructorTable::iterator cstrIter =
         componentsConstructorTablePtr_
-            ->find(evaporationModelTypeName);
+            ->find(phaseChangeModelTypeName);
 
     if (cstrIter == componentsConstructorTablePtr_->end())
     {
         FatalErrorIn
         (
-            "evaporationModel::New"
-        )   << "Unknown evaporationModel type "
-            << evaporationModelTypeName << endl << endl
-            << "Valid  evaporationModel are : " << endl
+            "phaseChangeModel::New"
+        )   << "Unknown phaseChangeModel type "
+            << phaseChangeModelTypeName << endl << endl
+            << "Valid  phaseChangeModel are : " << endl
             << componentsConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<evaporationModel>(cstrIter()(specieDict, p, T, alphaL, alphaV));
+    return autoPtr<phaseChangeModel>
+    (
+        cstrIter()
+        (
+            name,
+            mesh,
+            alphaL,
+            alphaV,
+            phaseChangeDict
+        )
+    );
 }
 
 

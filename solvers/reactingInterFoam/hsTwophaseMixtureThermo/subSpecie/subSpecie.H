@@ -73,10 +73,7 @@ class subSpecie
         
         //- Subspecie dictionary (in thermophysicalProperties)
         dictionary subSpecieDict_;
-        
-        //- Pointer to subspecie evaporation model
-        autoPtr<evaporationModel> evapModel_;
-               
+                       
         //- Viscosity model for this phase
         autoPtr<viscosityModel> nuModel_;
         
@@ -185,25 +182,10 @@ public:
             return name();
         }
         
-        autoPtr<evaporationModel>& evapPtr()
-        {
-            return evapModel_;
-        }
-        
-        const evaporationModel& evapModel() const
-        {
-            return evapModel_();
-        }
-        
-        evaporationModel& evapModel()
-        {
-            return evapModel_();
-        }
-        
-        bool hasEvaporation() const
+        /*bool hasEvaporation() const
         {
             return subSpecieDict_.found("evaporationModel");
-        }
+        }*/
         
         const dimensionedScalar rho0() const
         {

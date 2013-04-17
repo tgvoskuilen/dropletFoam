@@ -56,7 +56,7 @@
           - fvm::laplacian(rAUf, p)
           //- pSuSp.first()
           //+ fvm::SuSp(pSuSp.second(), p)
-          - mixture.S_evap()
+          - mixture.divPhaseChange()
         );
 
         solve

@@ -22,34 +22,34 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::HertzKnudsenPressure
+    Foam::LangmuirEvaporation
 
 Description
     Hertz Knudsen pressure-driven evaporation model
 
 SourceFiles
-    HertzKnudsenPressure.C
+    LangmuirEvaporation.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef HertzKnudsenPressure_H
-#define HertzKnudsenPressure_H
+#ifndef LangmuirEvaporation_H
+#define LangmuirEvaporation_H
 
-#include "evaporationModel.H"
+#include "phaseChangeModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace evaporationModels
+namespace phaseChangeModels
 {
 /*---------------------------------------------------------------------------*\
-                      Class evaporationModel Declaration
+                      Class phaseChangeModel Declaration
 \*---------------------------------------------------------------------------*/
 
-class HertzKnudsenPressure
+class LangmuirEvaporation
 :
-    public evaporationModel
+    public phaseChangeModel
 {
 
     //model-specific stuff
@@ -58,52 +58,64 @@ class HertzKnudsenPressure
         volScalarField coeffC_;
         volScalarField coeffV_;
         volScalarField p_vap_;
-        
-        dimensionedScalar Pc_;
-        
+                
         //- Vapor pressure coefficients for boiling to critical temperature
         //  range
+        dimensionedScalar Pc_;
+        dimensionedScalar Tc_;
+        dimensionedScalar Tb_;
+        dimensionedScalar Lb_;
+        scalar La_;
         vector PvCoeffs_;
-    
         scalar betaM_;
+        
+        word vapor_specie_;
+        word liquid_specie_;
+        
+        dimensionedScalar W_;
 
 public:
 
     //- Runtime type information
-    TypeName("HertzKnudsenPressure");
+    TypeName("LangmuirEvaporation");
 
     // Constructors
 
         //- construct from components
-        HertzKnudsenPressure
+        LangmuirEvaporation
         (
-            dictionary specieDict,
-            const volScalarField& p,
-            const volScalarField& T,
+            const word name,
+            const fvMesh& mesh,
             const phase& alphaL,
-            const phase& alphaV
+            const phase& alphaV,
+            dictionary phaseChangeDict
         );
         
     //- Destructor
-        virtual ~HertzKnudsenPressure() {}
+        virtual ~LangmuirEvaporation() {}
 
 
     // Member Functions
         virtual void calculate
         (
-            const volScalarField& evapMask
+            const volScalarField& evapMask,
+            const volScalarField& area
         );
         
         tmp<volScalarField> dPvdT() const;
+        tmp<volScalarField> L() const;
+        tmp<volScalarField> dLdT() const;
         
-        virtual Pair<tmp<volScalarField> > YSuSp() const;
-        virtual Pair<tmp<volScalarField> > pSuSp() const;
+        virtual tmp<volScalarField> mdot(const word& phaseName) const;
+        virtual tmp<volScalarField> Vdot(const word& phaseName) const;
+        
+        virtual Pair<tmp<volScalarField> > YSuSp(const word& specie) const;
         virtual Pair<tmp<volScalarField> > TSuSp() const;
 };  
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-} // End namespace evaporationModel
+} // End namespace phaseChangeModel
 
 } // End namespace Foam
 

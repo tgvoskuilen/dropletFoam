@@ -24,7 +24,6 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "subSpecie.H"
-#include "evaporationModel.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
