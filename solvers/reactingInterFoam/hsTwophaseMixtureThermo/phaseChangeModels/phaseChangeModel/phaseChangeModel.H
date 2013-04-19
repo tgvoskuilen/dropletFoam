@@ -76,6 +76,8 @@ class phaseChangeModel
         HashTable<scalar> reactants_;
         HashTable<scalar> products_;
         
+        HashTable<const gasThermoPhysics*> reacThermo_;
+        HashTable<const gasThermoPhysics*> prodThermo_;
 
      
         //- Universal gas constant
@@ -104,9 +106,10 @@ public:
                 const fvMesh& mesh,
                 const phase& alphaL,
                 const phase& alphaV,
+                const PtrList<gasThermoPhysics>& speciesData,
                 dictionary phaseChangeDict
             ),
-            (name, mesh, alphaL, alphaV, phaseChangeDict)
+            (name, mesh, alphaL, alphaV, speciesData, phaseChangeDict)
         );
 
 
@@ -119,6 +122,7 @@ public:
             const fvMesh& mesh,
             const phase& alphaL,
             const phase& alphaV,
+            const PtrList<gasThermoPhysics>& speciesData,
             dictionary phaseChangeDict
         );
 
@@ -133,6 +137,7 @@ public:
             const fvMesh& mesh_;
             const phase& alphaL_;
             const phase& alphaV_;
+            const PtrList<gasThermoPhysics>& speciesData_;
 
         public:
 
@@ -140,18 +145,28 @@ public:
             (
                 const fvMesh& mesh,
                 const phase& alphaL,
-                const phase& alphaV
+                const phase& alphaV,
+                const PtrList<gasThermoPhysics>& speciesData
             )
             :
                 mesh_(mesh),
                 alphaL_(alphaL),
-                alphaV_(alphaV)
+                alphaV_(alphaV),
+                speciesData_(speciesData)
             {}
 
             autoPtr<phaseChangeModel> operator()(Istream& is) const
             {
                 dictionaryEntry ent(dictionary::null, is);
-                return phaseChangeModel::New(ent.keyword(), mesh_, alphaL_, alphaV_, ent);
+                return phaseChangeModel::New
+                (
+                    ent.keyword(), 
+                    mesh_, 
+                    alphaL_, 
+                    alphaV_, 
+                    speciesData_
+                    ent
+                );
             }
         };
         
@@ -165,6 +180,7 @@ public:
             const fvMesh& mesh,
             const phase& alphaL,
             const phase& alphaV,
+            const PtrList<gasThermoPhysics>& speciesData,
             dictionary phaseChangeDict
         );
         

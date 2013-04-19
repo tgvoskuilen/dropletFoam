@@ -73,6 +73,7 @@ public:
             const fvMesh& mesh,
             const phase& alphaL,
             const phase& alphaV,
+            const PtrList<gasThermoPhysics>& speciesData,
             dictionary phaseChangeDict
         );
         

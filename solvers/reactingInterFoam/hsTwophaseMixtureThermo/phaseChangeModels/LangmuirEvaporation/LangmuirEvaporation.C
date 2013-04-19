@@ -120,17 +120,18 @@ Foam::phaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     La_(readScalar(phaseChangeDict_.lookup("La"))),
     PvCoeffs_(phaseChangeDict_.lookup("PvCoeffs")),
     betaM_(readScalar(phaseChangeDict_.lookup("betaM"))),
-    W_(dimensionedScalar("W", dimMass/dimMoles, 0)) // kg/kmol
+    W_(dimensionedScalar("W", dimMass/dimMoles, 0.0)) // kg/kmol
 {
-    List<word> prodList = products_.toc();
-    List<word> reacList = reactants_.toc();
+    List<word> prods = products_.toc();
+    List<word> reacts = reactants_.toc();
     
     //TODO: Warn if length of either list > 1
     
-    vapor_specie_ = prodList[0];
-    liquid_specie_ = reacList[0];
+    vapor_specie_ = prods[0];
+    liquid_specie_ = reacts[0];
     
-    W_ = alphaV_.subSpecies()[vapor_specie_]->W();
+    //W_ = alphaV_.subSpecies()[vapor_specie_]->W();
+    W_.value() = prodThermo_[vapor_specie_]->W()
     
     Info<< "Liquid/Vapor evaporation configured for " << liquid_specie_ 
         << "->" << vapor_specie_ << endl;

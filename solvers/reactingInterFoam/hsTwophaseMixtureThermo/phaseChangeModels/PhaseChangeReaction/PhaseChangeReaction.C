@@ -52,6 +52,9 @@ Foam::phaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
     A_(phaseChangeDict_.lookup("A")),
     beta_(readScalar(phaseChangeDict_.lookup("beta")))
 {
+    
+
+
     Info<< "Liquid/vapor reaction configured for " << name_ << endl;
 }
     
@@ -104,15 +107,59 @@ Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::YSuSp
 )
 const
 {
-    tmp<volScalarField> xByY = alphaV_.xByY(vapor_specie_);
+    tmp<volScalarField> tSY
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "SY",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimDensity/dimTime, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
     
-    //S_Yv = explicit - implicit*Yv
-    // This casts the evaporation in the form C*(Ysat - Y)
+    tmp<volScalarField> tZero
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "zero",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimDensity/dimTime, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
+
+    if( products_.found(specieName) )
+    {
+        tSY() += products_[specieName]*omega_*prodThermo_[specieName]->W();
+    }
+    else if( reactants_.found(specieName) )
+    {
+        tSY() -= reactants_[specieName]*omega_*reacThermo_[specieName]->W();
+    }
         
+    //Fully explicit. The liquid part could be made implicit, but that's not
+    // the part that needs stabilizing anyway
     return Pair<tmp<volScalarField> >
     (
-        area_*(coeffC_+coeffV_)*p_vap_*xL_,
-        area_*(coeffC_+coeffV_)*xByY*p_
+        tSY,
+        tZero
     );
 }
 
@@ -120,35 +167,78 @@ const
 
 Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::TSuSp() const
 {
-
-    //Sh = -m_evap_*L()*area_
-    //
-    //Sh = explicit - implicit * T
-    //
-    //  implicit = -dSh/dT = (dm/dT*L() + m_evap*dL/dT)*area_
-    //    dm/dT = dcoeff/dT*(pv*xL-p*x) + coeff*xL*dpv/dT
-    //    dcoeff/dT = -coeff/(2*T)
-    //    dpv/dT = pv * L / (R*T^2)
-
-    tmp<volScalarField> tL = L();
-    tmp<volScalarField> dmdT = -m_evap_/(2*T_) + (coeffC_+coeffV_)*xL_*dPvdT();
-    tmp<volScalarField> Sp = dmdT*tL() + m_evap_*dLdT();
-    tmp<volScalarField> Su = -m_evap_*tL() + Sp()*T_;
-    
-    return Pair<tmp<volScalarField> >
+    tmp<volScalarField> tSh
     (
-        area_*Su,
-        area_*Sp
+        new volScalarField
+        (
+            IOobject
+            (
+                "Sh",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimEnergy/dimTime/dimVolume, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
     );
     
-    /*return Pair<tmp<volScalarField> >
+    tmp<volScalarField> tZero
     (
-        -area_*m_evap_*L(),
-        -area_*m_evap_*L()/T_*0.0
-    );*/
+        new volScalarField
+        (
+            IOobject
+            (
+                "zero",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimEnergy/dimTime/dimVolume, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
+    
+    volScalarField& Sh = tSh();
+    
+    forAll(tSh(), cellI)
+    {
+        if( mag(omega_[cellI]) > SMALL )
+        {
+            forAllConstIter(HashTable<const gasThermoPhysics*>, reacThermo_, tRi)
+            {
+                word specie = tRi()->name();
+                
+                const scalar hi = tRi()->hc(); //Hc = H(Tstd) in J/kmol
+                
+                Sh[cellI] += hi*omega_[cellI]*reactants_[specie];
+            }
+            
+            forAllConstIter(HashTable<const gasThermoPhysics*>, prodThermo_, tPi)
+            {
+                word specie = tPi()->name();
+                
+                const scalar hi = tPi()->hc(); //Hc = H(Tstd) in J/kmol
+                
+                Sh[cellI] -= hi*omega_[cellI]*products_[specie];
+            }
+        }
+    }
+
+    return Pair<tmp<volScalarField> >
+    (
+        tSh,
+        tZero
+    );
 }
 
-
+//net mass generation in phase 'phaseName'
 tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::mdot
 (
     const word& phaseName
@@ -169,7 +259,22 @@ tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::mdot
         )
     );
     
-    
+    if( phaseName == "Vapor" )
+    {
+        forAllConstIter(HashTable<const gasThermoPhysics*>, prodThermo_, tPi)
+        {
+            word specie = tPi()->name();
+            tmdot() += products_[specie]*omega_*tPi()->W();
+        }
+    }
+    else if( phaseName == "Liquid" )
+    {
+        forAllConstIter(HashTable<const gasThermoPhysics*>, reacThermo_, tRi)
+        {
+            word specie = tRi()->name();
+            tmdot() -= reactants_[specie]*omega_*tRi()->W();
+        }
+    }
     
     return tmdot;
 }
@@ -194,6 +299,23 @@ tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::Vdot
         )
     );
     
+    if( phaseName == "Vapor" )
+    {
+        forAllConstIter(HashTable<const gasThermoPhysics*>, prodThermo_, tPi)
+        {
+            word specie = tPi()->name();
+            tVdot() += products_[specie]*omega_*R_*T_/p_;
+        }
+    }
+    else if( phaseName == "Liquid" )
+    {
+        forAllConstIter(HashTable<const gasThermoPhysics*>, reacThermo_, tRi)
+        {
+            word specie = tRi()->name();
+            dimensionedScalar rhoL = alphaL_.subSpecies()[specie]->rho0();
+            tVdot() -= reactants_[specie]*omega_*tRi()->W()/rhoL;
+        }
+    }
     
     return tVdot;
 }

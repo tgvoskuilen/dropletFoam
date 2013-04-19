@@ -160,7 +160,18 @@ public:
                         << "\n    with any specie in thermo.composition() "
                         << exit(FatalError);
                 }
-                return autoPtr<subSpecie>(new subSpecie(ent.keyword(), ent, mesh_, species_[s], speciesData_[s], s));
+                return autoPtr<subSpecie>
+                (
+                    new subSpecie
+                    (
+                        ent.keyword(), 
+                        ent, 
+                        mesh_, 
+                        species_[s], 
+                        speciesData_[s], 
+                        s
+                    )
+                );
             }
         };
 
@@ -181,12 +192,7 @@ public:
         {
             return name();
         }
-        
-        /*bool hasEvaporation() const
-        {
-            return subSpecieDict_.found("evaporationModel");
-        }*/
-        
+                
         const dimensionedScalar rho0() const
         {
             return rho0_;

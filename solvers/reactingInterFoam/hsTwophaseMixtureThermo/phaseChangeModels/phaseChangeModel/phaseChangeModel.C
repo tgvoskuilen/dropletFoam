@@ -42,6 +42,7 @@ Foam::phaseChangeModel::phaseChangeModel
     const fvMesh& mesh,
     const phase& alphaL,
     const phase& alphaV,
+    const PtrList<gasThermoPhysics>& speciesData,
     dictionary phaseChangeDict
 )
 :
@@ -80,9 +81,61 @@ Foam::phaseChangeModel::phaseChangeModel
     ),
     reactants_(phaseChangeDict.lookup("liquidReactants")),
     products_(phaseChangeDict.lookup("gasProducts")),
+    reacThermo_(reactants_.size()),
+    prodThermo_(products_.size()),
     R_(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314)) // J/kmol-K
 {
-
+    List<word> reacList = reactants_.toc();
+    List<word> prodList = products_.toc();
+    
+    forAll(reacList, i)
+    {
+        word R = reacList[i];
+        
+        forAll(speciesData, s)
+        {
+            if( speciesData[s].name() == R )
+            {
+                reacThermo_.set
+                (
+                    R,
+                    speciesData->operator()(s)
+                );
+                break;
+            }
+        }
+        
+        if( !reacThermo_.found(R) )
+        {
+            Info<< "WARNING: reacThermo for " << R << " not found in " 
+                << speciesData << endl;
+        }
+    }
+    
+    forAll(prodList, i)
+    {
+        word P = prodList[i];
+        
+        forAll(speciesData, s)
+        {
+            if( speciesData[s].name() == P )
+            {
+                prodThermo_.set
+                (
+                    P,
+                    speciesData->operator()(s)
+                );
+                break;
+            }
+        }
+        
+        if( !prodThermo_.found(P) )
+        {
+            Info<< "WARNING: prodThermo for " << P << " not found in " 
+                << speciesData << endl;
+        }
+    }
+    
 }
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //

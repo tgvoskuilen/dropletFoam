@@ -34,6 +34,7 @@ Foam::phaseChangeModel::New
     const fvMesh& mesh,
     const phase& alphaL,
     const phase& alphaV,
+    const PtrList<gasThermoPhysics>& speciesData,
     dictionary phaseChangeDict
 )
 {
@@ -69,6 +70,7 @@ Foam::phaseChangeModel::New
             mesh,
             alphaL,
             alphaV,
+            speciesData,
             phaseChangeDict
         )
     );
