@@ -1,0 +1,124 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      thermophysicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+thermoType hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics>>;
+
+chemistryReader foamChemistryReader;
+
+foamChemistryFile "$FOAM_CASE/constant/reactions";
+
+foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
+
+// Phase volume fraction tolerance for diffusion mask
+phaseMaskTol 0.01;
+
+Vapor
+{
+   SchmidtNo  0.9;
+   
+   subspecies
+   (
+       CH3NHNH2 {}
+       RFNA     {}
+       N2       {}
+   );
+}
+
+
+
+Liquid
+{
+   SchmidtNo  0.9;
+   
+   subspecies
+   (
+        CH3NHNH2L
+        {
+            transportModel  Newtonian;
+            nu              nu [ 0 2 -1 0 0 0 0 ] 9.2e-7; //rocketdyne
+   
+            rho0         rho0 [ 1 -3 0 0 0 0 0 ] 870.0;
+            Tc           Tc   [ 0 0 0 1 0 0 0] 585.0;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.25; //mmh bible, 300 K 
+            
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
+            sigmaa          0.884;
+               
+            evaporationModel HertzKnudsenPressure;
+            
+            HertzKnudsenPressureCoeffs
+            {
+                vapor           CH3NHNH2;
+                Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
+                Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
+                La              0.38;
+                betaM           0.6;
+
+                Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
+                Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
+                PvCoeffs        (9.1834 1943.89 492587.8);
+            }
+        }
+        
+        RFNAL
+        {
+            transportModel  Newtonian;
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1550.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 546.5;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.105;
+            sigmaa          1.219;
+              
+            evaporationModel HertzKnudsenPressure;
+             
+            HertzKnudsenPressureCoeffs
+            {
+                vapor           RFNA;
+                Lb              Lb [ 1 2 -2 0 -1 0 0] 39451321.0;
+                Tb              Tb [ 0 0 0 1 0 0 0] 333.66;
+                La              0.38;
+                betaM           0.6;
+
+                Tc              Tc [ 0 0 0 1 0 0 0] 546.5;
+                Pc              Pc [ 1 -1 -2 0 0 0 0] 9535000.0;
+                PvCoeffs        (7.841548 487.708305 710279.230159);
+            }
+            
+         }
+         
+         MMHNTOL //averaged properties of MMH and NTO
+         {
+            transportModel  Newtonian;
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6e-07;
+            
+            rho0      rho0  [ 1 -3  0  0 0 0 0] 1160.0;
+            Tc        Tc    [ 0  0  0  1 0 0 0] 550;
+            kappa     kappa [ 1  1 -3 -1 0 0 0] 0.19; 
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
+            sigmaa          0.8;
+         }
+   );
+}
+
+
+
+
+// ************************************************************************* //

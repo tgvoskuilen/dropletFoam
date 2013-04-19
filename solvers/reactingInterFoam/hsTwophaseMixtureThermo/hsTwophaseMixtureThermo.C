@@ -133,9 +133,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcEvaporation()
         
         Info<< "Max grad prod = " << Foam::max(tgradProd()).value() << endl;
         
-        // only allow evaporation if gradprod < 1e5 OR alphav > 0.8
+        // only allow evaporation if gradprod < 1e5 OR alphav > 0.5
         evap_mask_ = pos(neg(tgradProd() - 100000.0)
-                         + pos(alphaVapor_ - 0.8) - SMALL);
+                         + pos(alphaVapor_ - 0.5) - SMALL);
     }
     else
     {
@@ -889,7 +889,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         << ", " << max(alphaLiquid_).value()
         << endl;
         
-    alphaLiquid_.max(0.0);
+    //alphaLiquid_.max(0.0);
     //alphaLiquid_.min(1.0);
     
     surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
@@ -900,16 +900,16 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 
     rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
 
-    alphaVapor_ == scalar(1) - alphaLiquid_;
-    alphaVapor_.max(0.0);
+    //alphaVapor_ == scalar(1) - alphaLiquid_;
+    //alphaVapor_.max(0.0);
         
     // Re-sharpen alpha field
     //  This is not mass conserving, but prevents excessive floatsom
-    //volScalarField& alphaL = alphaLiquid_;
-    //alphaL = alphaLiquid_.sharp(1e-3);
+    volScalarField& alphaL = alphaLiquid_;
+    alphaL = alphaLiquid_.sharp(1e-3);
     
     
-    //alphaVapor_ == scalar(1) - alphaLiquid_;
+    alphaVapor_ == scalar(1) - alphaLiquid_;
         
     Info<< "Liquid phase volume fraction = "
         << alphaLiquid_.weightedAverage(mesh_.V()).value()
