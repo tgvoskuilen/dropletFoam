@@ -889,7 +889,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         << ", " << max(alphaLiquid_).value()
         << endl;
         
-    //alphaLiquid_.max(0.0);
+    alphaLiquid_.max(0.0);
     //alphaLiquid_.min(1.0);
     
     surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
@@ -900,16 +900,14 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 
     rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
 
-    //alphaVapor_ == scalar(1) - alphaLiquid_;
-    //alphaVapor_.max(0.0);
+    alphaVapor_ == scalar(1) - alphaLiquid_;
+    alphaVapor_.max(0.0);
         
     // Re-sharpen alpha field
     //  This is not mass conserving, but prevents excessive floatsom
-    volScalarField& alphaL = alphaLiquid_;
-    alphaL = alphaLiquid_.sharp(1e-3);
-    
-    
-    alphaVapor_ == scalar(1) - alphaLiquid_;
+    //volScalarField& alphaL = alphaLiquid_;
+    //alphaL = alphaLiquid_.sharp(1e-3);
+    //alphaVapor_ == scalar(1) - alphaLiquid_;
         
     Info<< "Liquid phase volume fraction = "
         << alphaLiquid_.weightedAverage(mesh_.V()).value()

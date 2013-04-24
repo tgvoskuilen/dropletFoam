@@ -1,0 +1,61 @@
+#!/usr/bin/python
+
+import os
+import sys
+
+sys.path.append('../../../foamTools/python')
+import pyOpenFOAM
+
+# The inputs for this case builder are
+#    chemkin/chem.inp   -   Reaction information and species list
+#    chemkin/therm.dat  -   Thermodynamic database for species
+#    chemkin/properties.db  -  Transport property database for species
+#
+
+
+
+# Read number of processors from command line (1 by default)
+np = pyOpenFOAM.read_inputs(sys.argv)
+print "Running with %d processors" % np
+
+# Convert the chemkin files to Foam format
+#pyOpenFOAM.run('chemkinToFoam',args='chemkin/chem.inp chemkin/therm.dat constant/reactions constant/thermo');
+
+# Read species list from 'constant/reactions'
+#species = pyOpenFOAM.read_species()
+
+# Make 0 directory for this species list
+#pyOpenFOAM.make_zero_dir(species, default='N2')
+
+# Generate the transportProperties dict
+#pyOpenFOAM.make_transport_properties(species)
+
+# Make the *.foam file for ParaView
+pyOpenFOAM.touch_foam_files('evaporation')
+
+os.system('cp -r 0.org 0')
+#os.system('gambit -inp gambit_journal.jou')
+#os.system('rm -f default_id.*')
+os.system('gambitToFoam mesh.neu')
+
+quit()
+
+
+
+if np > 1:
+    # For parallel runs, decompose the problem
+    print "Decomposing problem"
+    pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+    pyOpenFOAM.run('decomposePar',args='-cellDist')
+
+
+# Run the problem
+print "Running the problem"
+pyOpenFOAM.run('reactingInterFoam',np,hide=False)
+
+
+
+
+print "Finished!"
+
+

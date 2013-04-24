@@ -1,3 +1,45 @@
+RFNAL
+{
+    specie
+    {
+        nMoles 1;
+        molWeight 57.2;
+    }
+    thermodynamics
+    {
+        Tlow 200;
+        Thigh 5000;
+        Tcommon 1000;
+        highCpCoeffs ( 10.4822 0.00597227 -2.56404e-06 4.91689e-10 -3.49097e-14 -2849.99 -26.1229 );
+        lowCpCoeffs ( 3.62459 0.0247471 -2.17287e-05 9.9271e-09 -2.22282e-12 -912.824 9.45717 );
+    }
+    transport
+    {
+        As 1.67212e-06;
+        Ts 170.672;
+    }
+}
+RFNA
+{
+    specie
+    {
+        nMoles 1;
+        molWeight 57.2;
+    }
+    thermodynamics
+    {
+        Tlow 200;
+        Thigh 5000;
+        Tcommon 1000;
+        highCpCoeffs ( 10.4822 0.00597227 -2.56404e-06 4.91689e-10 -3.49097e-14 -2849.99 -26.1229 );
+        lowCpCoeffs ( 3.62459 0.0247471 -2.17287e-05 9.9271e-09 -2.22282e-12 -912.824 9.45717 );
+    }
+    transport
+    {
+        As 1.67212e-06;
+        Ts 170.672;
+    }
+}
 HONO
 {
     specie
@@ -187,6 +229,27 @@ HCO
         Ts              170.672;
     }
 }
+HNO3L
+{
+    specie
+    {
+        nMoles          1;
+        molWeight       63.0129;
+    }
+    thermodynamics
+    {
+        Tlow            200;
+        Thigh           5000;
+        Tcommon         1000;
+        highCpCoeffs    ( 7.00384 0.00581149 -2.33379e-06 4.28881e-10 -2.95938e-14 -18899.5 -10.4786 );
+        lowCpCoeffs     ( 1.35319 0.0222002 -1.97881e-05 8.77391e-09 -1.65838e-12 -17385.6 18.5187 );
+    }
+    transport
+    {
+        As              1.67212e-06;
+        Ts              170.672;
+    }
+}
 HNO3
 {
     specie
@@ -313,27 +376,6 @@ N2O4L
         Ts              170.672;
     }
 }
-RFNAL
-{
-    specie
-    {
-        nMoles          1;
-        molWeight       57.2;
-    }
-    thermodynamics
-    {
-        Tlow            200;
-        Thigh           5000;
-        Tcommon         1000;
-        highCpCoeffs    ( 10.4822 0.00597227 -2.56404e-06 4.91689e-10 -3.49097e-14 -2849.99 -26.1229 );
-        lowCpCoeffs     ( 3.62459 0.0247471 -2.17287e-05 9.9271e-09 -2.22282e-12 -912.824 9.45717 );
-    }
-    transport
-    {
-        As              1.67212e-06;
-        Ts              170.672;
-    }
-}
 HO2
 {
     specie
@@ -355,6 +397,28 @@ HO2
         Ts              170.672;
     }
 }
+CH3ONO2
+{
+    specie
+    {
+        nMoles          1;
+        molWeight       77;
+    }
+    thermodynamics
+    {
+        Tlow            200;
+        Thigh           4000;
+        Tcommon         1000;
+        highCpCoeffs    ( 0.01436189E+03 0.04112243E-01 -0.05113052E-05 -0.01496436E-08  0.03012156E-12 -0.01972440E+06 -0.05131842E+03 );
+        lowCpCoeffs     ( 0.07803354E+01 0.03454204E+00 -0.02822328E-03  0.01232324E-06 -0.02302164E-10 -0.01465346E+06  0.02245752E+03 );
+    }
+    transport
+    {
+        As              1.67212e-06;
+        Ts              170.672;
+    }
+}
+
 CH3OH
 {
     specie
@@ -397,20 +461,20 @@ CH2O
         Ts              170.672;
     }
 }
-RFNA
+N2O
 {
     specie
     {
         nMoles          1;
-        molWeight       57.2;
+        molWeight       44;
     }
     thermodynamics
     {
         Tlow            200;
         Thigh           5000;
         Tcommon         1000;
-        highCpCoeffs    ( 10.4822 0.00597227 -2.56404e-06 4.91689e-10 -3.49097e-14 -2849.99 -26.1229 );
-        lowCpCoeffs     ( 3.62459 0.0247471 -2.17287e-05 9.9271e-09 -2.22282e-12 -912.824 9.45717 );
+        highCpCoeffs    ( 0.04718977E+02 0.02873714E-01 -0.01197496E-04 0.02250552E-08 -0.01575337E-12 0.08165811E+05 -0.01657250E+02 );
+        lowCpCoeffs     ( 0.02543058E+02 0.09492193E-01 -0.09792775E-04 0.06263845E-07 -0.01901826E-10 0.08765100E+05  0.09511222E+02 );
     }
     transport
     {
@@ -418,6 +482,7 @@ RFNA
         Ts              170.672;
     }
 }
+
 N2O4
 {
     specie

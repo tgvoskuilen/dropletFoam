@@ -1,0 +1,39 @@
+/ Journal File for GAMBIT 2.4.6, Database 2.4.4, lnamd64 SP2007051420
+/ Identifier "default_id"
+/ File opened for write Wed Feb 16 08:26:39 2011.
+
+solver select "Generic"
+
+vertex create coordinates -0.06 0 0
+vertex create coordinates 0.06 0 0
+vertex create coordinates 0.06 0.2 0
+vertex create coordinates -0.06 0.2 0
+
+vertex create coordinates 0 0.06 0
+vertex create coordinates 0 0.07 0
+vertex create coordinates 0.01 0.06 0
+
+edge create straight "vertex.1" "vertex.2" "vertex.3" "vertex.4" "vertex.1"
+
+face create wireframe "edge.1" "edge.2" "edge.3" "edge.4" real
+face create center2points "vertex.5" "vertex.6" "vertex.7" circle
+
+face subtract "face.1" faces "face.2"
+
+edge mesh "edge.6" successive ratio1 1 intervals 60
+
+edge mesh "edge.1" "edge.3" successive ratio1 1 size 0.001
+edge mesh "edge.2" "edge.4" successive ratio1 1 size 0.001
+
+face mesh "face.1" pave
+
+volume create translate "face.1" vector 0 0 0.002
+volume mesh "volume.1" intervals 1
+
+physics create "FrontAndBack" btype "ELEMENT_SIDE" face "face.1" "face.7"
+physics create "Bottom" btype "ELEMENT_SIDE" face "face.2"
+physics create "Wire" btype "ELEMENT_SIDE" face "face.3"
+physics create "Top" btype "ELEMENT_SIDE" face "face.6"
+physics create "Sides" btype "ELEMENT_SIDE" face "face.4" "face.5"
+
+export gambit "mesh.neu"
