@@ -44,10 +44,20 @@ Foam::phaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     const fvMesh& mesh,
     const phase& alphaL,
     const phase& alphaV,
+    const PtrList<gasThermoPhysics>& speciesData,
     dictionary phaseChangeDict
 )
 :
-    phaseChangeModel(typeName, name, mesh, alphaL, alphaV, phaseChangeDict),
+    phaseChangeModel
+    (
+        typeName, 
+        name, 
+        mesh, 
+        alphaL, 
+        alphaV, 
+        speciesData, 
+        phaseChangeDict
+    ),
     x_
     (
         IOobject
@@ -121,17 +131,17 @@ Foam::phaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     PvCoeffs_(phaseChangeDict_.lookup("PvCoeffs")),
     betaM_(readScalar(phaseChangeDict_.lookup("betaM"))),
     W_(dimensionedScalar("W", dimMass/dimMoles, 0.0)) // kg/kmol
-{
-    List<word> prods = products_.toc();
-    List<word> reacts = reactants_.toc();
+{    
+    List<word> prodList = products_.toc();
+    List<word> reacList = reactants_.toc();
     
-    //TODO: Warn if length of either list > 1
+    //TODO: Warn if length of either products or reactants > 1
     
-    vapor_specie_ = prods[0];
-    liquid_specie_ = reacts[0];
+    vapor_specie_ = prodList[0];
+    liquid_specie_ = reacList[0];
     
     //W_ = alphaV_.subSpecies()[vapor_specie_]->W();
-    W_.value() = prodThermo_[vapor_specie_]->W()
+    W_.value() = prodThermo_[vapor_specie_]->W();
     
     Info<< "Liquid/Vapor evaporation configured for " << liquid_specie_ 
         << "->" << vapor_specie_ << endl;
@@ -171,15 +181,13 @@ void Foam::phaseChangeModels::LangmuirEvaporation::calculate
     
     tmp<volScalarField> xSat = p_vap_/p_*xL_;
     xSat().min(1.0);
+    
+    //set x to xSat in areas with trace mass fractions
     x_ = alphaV_.x(vapor_specie_)*pos(alphaV_.Yp() - 1e-4) 
          + xSat*neg(alphaV_.Yp() - 1e-4);
     
-    //x_ = alphaV_.x(vapor_specie_);
-    
-    
     scalar pi = constant::mathematical::pi;
-    
-    
+
     tmp<volScalarField> coeff = area*Foam::sqrt(W_/(2*pi*R_*T_))*mask_;
     
     dimensionedScalar sp("sp",dimPressure,1e-2);

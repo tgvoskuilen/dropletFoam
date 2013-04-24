@@ -44,56 +44,43 @@ Foam::phaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
     const fvMesh& mesh,
     const phase& alphaL,
     const phase& alphaV,
+    const PtrList<gasThermoPhysics>& speciesData,
     dictionary phaseChangeDict
 )
 :
-    phaseChangeModel(typeName, name, mesh, alphaL, alphaV, phaseChangeDict),
-    Ta_(phaseChangeDict_.lookup("Ta")),
-    A_(phaseChangeDict_.lookup("A")),
-    beta_(readScalar(phaseChangeDict_.lookup("beta")))
+    phaseChangeModel
+    (
+        typeName, 
+        name, 
+        mesh, 
+        alphaL, 
+        alphaV, 
+        speciesData, 
+        phaseChangeDict
+    ),
+    key_specie_(phaseChangeDict_.lookup("keySpecie")),
+    keyID_(alphaL_.subSpecies()[key_specie_]->idx()),
+    keyW_(alphaL_.subSpecies()[key_specie_]->W())
 {
-    
-
-
     Info<< "Liquid/vapor reaction configured for " << name_ << endl;
 }
     
-// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //       
 void Foam::phaseChangeModels::PhaseChangeReaction::calculate
 (
     const volScalarField& evapMask,
     const volScalarField& area
 )
 {
-    dimensionedScalar sA("sA",dimless/dimLength,SMALL);
-    mask_ = pos(area-sA);
+    //get the reaction rate based on the total mass rate of change of the
+    // key specie. This assumes the key specie is only involved in this
+    // reaction!
     
-    
-    omega_ = A_*Foam::exp(-Ta_/T_)*mask_;
-    
-    if( Foam::mag(beta_) > SMALL )
-    {
-        omega_ *= Foam::pow(T_,beta_);
-    }
-    
-    dimensionedScalar c0("c0",dimMoles/dimVolume,1.0);
-    List<word> R = reactants_.toc();
-    forAll(R, i)
-    {
-        tmp<volScalarField> cL = alphaL_.x(R[i])*alphaL_.Npp()*alphaL_.rho(p_,T_)/c0;
-        scalar stoic = reactants_[R[i]];
-        
-        if( Foam::mag(stoic-1.0) < SMALL )
-        {
-            omega_ *= cL;
-        }
-        else
-        {
-            omega_ *= Foam::pow(cL,stoic);
-        }
-    }
-    
-    
+    const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
+    tmp<volScalarField> omegaKey = chemistry.RR( keyID_ ) / keyW_;
+
+    omega_ = -omegaKey / reactants_[key_specie_];
+
     Foam::Info<< "Min,max reaction flux for " << name_ << " = "
               << Foam::min(omega_).value() << ", " 
               << Foam::max(omega_).value() << " kmol/m3/s" << Foam::endl;
@@ -107,25 +94,6 @@ Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::YSuSp
 )
 const
 {
-    tmp<volScalarField> tSY
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "SY",
-                mesh_.time().timeName(),
-                mesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                false
-            ),
-            mesh_,
-            dimensionedScalar("zero", dimDensity/dimTime, 0.0),
-            zeroGradientFvPatchScalarField::typeName
-        )
-    );
-    
     tmp<volScalarField> tZero
     (
         new volScalarField
@@ -145,20 +113,10 @@ const
         )
     );
 
-    if( products_.found(specieName) )
-    {
-        tSY() += products_[specieName]*omega_*prodThermo_[specieName]->W();
-    }
-    else if( reactants_.found(specieName) )
-    {
-        tSY() -= reactants_[specieName]*omega_*reacThermo_[specieName]->W();
-    }
-        
-    //Fully explicit. The liquid part could be made implicit, but that's not
-    // the part that needs stabilizing anyway
+    // Y source is already counted in reactions, so don't count it here
     return Pair<tmp<volScalarField> >
     (
-        tSY,
+        tZero,
         tZero
     );
 }
@@ -166,26 +124,7 @@ const
 
 
 Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::TSuSp() const
-{
-    tmp<volScalarField> tSh
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "Sh",
-                mesh_.time().timeName(),
-                mesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                false
-            ),
-            mesh_,
-            dimensionedScalar("zero", dimEnergy/dimTime/dimVolume, 0.0),
-            zeroGradientFvPatchScalarField::typeName
-        )
-    );
-    
+{    
     tmp<volScalarField> tZero
     (
         new volScalarField
@@ -204,36 +143,11 @@ Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::TSuSp()
             zeroGradientFvPatchScalarField::typeName
         )
     );
-    
-    volScalarField& Sh = tSh();
-    
-    forAll(tSh(), cellI)
-    {
-        if( mag(omega_[cellI]) > SMALL )
-        {
-            forAllConstIter(HashTable<const gasThermoPhysics*>, reacThermo_, tRi)
-            {
-                word specie = tRi()->name();
-                
-                const scalar hi = tRi()->hc(); //Hc = H(Tstd) in J/kmol
-                
-                Sh[cellI] += hi*omega_[cellI]*reactants_[specie];
-            }
-            
-            forAllConstIter(HashTable<const gasThermoPhysics*>, prodThermo_, tPi)
-            {
-                word specie = tPi()->name();
-                
-                const scalar hi = tPi()->hc(); //Hc = H(Tstd) in J/kmol
-                
-                Sh[cellI] -= hi*omega_[cellI]*products_[specie];
-            }
-        }
-    }
 
+    // Heat source is already counted in reactions, so don't count it here
     return Pair<tmp<volScalarField> >
     (
-        tSh,
+        tZero,
         tZero
     );
 }

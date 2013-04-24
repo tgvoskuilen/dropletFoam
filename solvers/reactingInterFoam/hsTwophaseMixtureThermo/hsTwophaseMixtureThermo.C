@@ -267,7 +267,13 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     phaseChangeModels_
     (
         lookup("phaseChangeReactions"),
-        phaseChangeModel::iNew(mesh, alphaLiquid_, alphaVapor_)
+        phaseChangeModel::iNew
+        (
+            mesh, 
+            alphaLiquid_, 
+            alphaVapor_, 
+            this->speciesData()
+        )
     ),
     area_
     (
@@ -603,6 +609,11 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::setPtrs
 {
     combustionPtr_ = combustion;
     
+    forAllIter(PtrDictionary<phaseChangeModel>, phaseChangeModels_, pcmI)
+    {
+        pcmI().setPtr( combustion );
+    }
+    
     //Set combustion pointer in all phases (to access reaction rates)
     alphaLiquid_.setCombustionPtr( combustion );
     alphaVapor_.setCombustionPtr( combustion );
@@ -677,6 +688,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     //Solve for reaction rates
     Info<< "Solving combustion" << endl;
     rho_ = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
+    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
+    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
     combustionPtr_->correct();
 
     //Solve for evaporation rates
@@ -744,7 +757,6 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_, phaseChangeModels_ );
 
     // Update global mass fractions based on phase-based mass fractions
-    //correct();
     alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
     alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
     

@@ -54,10 +54,9 @@ class PhaseChangeReaction
 
     //model-specific stuff
         
-        dimensionedScalar Ta_;
-        dimensionedScalar A_;
-        scalar beta_;
-        
+        word key_specie_;
+        label keyID_;
+        dimensionedScalar keyW_;
 
 public:
 

@@ -64,7 +64,7 @@ Foam::phaseChangeModel::phaseChangeModel
             IOobject::NO_WRITE
         ),
         mesh_,
-        dimensionedScalar("omega_"+name, dimless/dimTime, 0.0)
+        dimensionedScalar("omega_"+name, dimMoles/dimVolume/dimTime, 0.0)
     ),
     mask_
     (
@@ -79,10 +79,11 @@ Foam::phaseChangeModel::phaseChangeModel
         mesh_,
         dimensionedScalar("mask_"+name, dimless, 0.0)
     ),
-    reactants_(phaseChangeDict.lookup("liquidReactants")),
-    products_(phaseChangeDict.lookup("gasProducts")),
+    reactants_(phaseChangeDict.lookup("liquidSpecies")),
+    products_(phaseChangeDict.lookup("gasSpecies")),
     reacThermo_(reactants_.size()),
     prodThermo_(products_.size()),
+    combustionPtr_(NULL),
     R_(dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), 8314)) // J/kmol-K
 {
     List<word> reacList = reactants_.toc();
@@ -99,7 +100,7 @@ Foam::phaseChangeModel::phaseChangeModel
                 reacThermo_.set
                 (
                     R,
-                    speciesData->operator()(s)
+                    speciesData(s)
                 );
                 break;
             }
@@ -107,7 +108,7 @@ Foam::phaseChangeModel::phaseChangeModel
         
         if( !reacThermo_.found(R) )
         {
-            Info<< "WARNING: reacThermo for " << R << " not found in " 
+            Info<< "WARNING: thermo for reactant " << R << " not found in " 
                 << speciesData << endl;
         }
     }
@@ -123,7 +124,7 @@ Foam::phaseChangeModel::phaseChangeModel
                 prodThermo_.set
                 (
                     P,
-                    speciesData->operator()(s)
+                    speciesData(s)
                 );
                 break;
             }
@@ -131,7 +132,7 @@ Foam::phaseChangeModel::phaseChangeModel
         
         if( !prodThermo_.found(P) )
         {
-            Info<< "WARNING: prodThermo for " << P << " not found in " 
+            Info<< "WARNING: thermo for product " << P << " not found in " 
                 << speciesData << endl;
         }
     }

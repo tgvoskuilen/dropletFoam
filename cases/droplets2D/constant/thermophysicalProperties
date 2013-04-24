@@ -101,12 +101,12 @@ phaseChangeReactions
    {
         phaseChangeModel LangmuirEvaporation;
         
-        liquidReactants
+        liquidSpecies
         (
             CH3NHNH2L   1.0
         );
         
-        gasProducts
+        gasSpecies
         (
             CH3NHNH2   1.0
         );
@@ -129,12 +129,12 @@ phaseChangeReactions
     {
         phaseChangeModel LangmuirEvaporation;
         
-        liquidReactants
+        liquidSpecies
         (
             N2O4L   1.0
         );
         
-        gasProducts
+        gasSpecies
         (
             N2O4   1.0
         );
@@ -152,32 +152,28 @@ phaseChangeReactions
         }
     }
     
-    /*
-    LiquidReaction
+    
+    /*LiquidReaction
     {
         phaseChangeModel   PhaseChangeReaction;
         
-        liquidReactants
+        liquidSpecies
         (
-            CH3NHNH2L 1.0
-            N2O4L     2.0
+            CH3NHNH2L   1.0
+            HNO3L       3.0
         );
         
-        gasProducts
+        gasSpecies
         (
-            CH3ONO2  1.0
-            N2O      0.5
-            H2O      0.5
-            N2       1.0
+            CH3ONO2
+            N2O
+            H2O
+            N2
         );
         
         PhaseChangeReactionCoeffs
         {
-            Ta   Ta [ 0 0 0 1 0 0 0] 2000;
-            
-            A    A  [ 0 0 -1 0 0 0 0] 1e6;
-            
-            beta  0.0;
+            keySpecie   HNO3L;
         }
     }*/
     
