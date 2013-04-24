@@ -24,10 +24,10 @@
     // Estimate U with no force terms
     U = rAU*UEqn.H();
     
-    /*forAll(U,cellI)
+    forAll(U,cellI)
     {
         U[cellI].x() = 0.0;
-    }*/
+    }
     
     surfaceScalarField phiEst
     (
@@ -72,10 +72,10 @@
             // Second part of thermodynamic density update
             //thermo.rho() += thermo.psi()*p;
 
-            mixture.divComp() = (p_DpDt & p)/p - fvc::DDt(phi,T)/T; //should be fvc::DDt(phi,psi)/psi but psi is 0 some places
-
             phi += p_IC.flux();
             //p.relax(); //from Euler solver...
+            
+            mixture.divComp() = (p_DpDt & p)/p - fvc::DDt(phi,T)/T; //should be fvc::DDt(phi,psi)/psi but psi is 0 some places
         }
     }
     
