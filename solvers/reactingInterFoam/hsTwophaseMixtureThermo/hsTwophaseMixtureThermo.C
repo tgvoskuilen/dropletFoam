@@ -215,9 +215,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
         
         Info<< "Max grad prod = " << Foam::max(tgradProd()).value() << endl;
         
-        // only allow evaporation if gradprod < 1e5 OR alphav > 0.8
+        // only allow evaporation if gradprod < 1e5 OR alphav > 0.5
         evap_mask_ = pos(neg(tgradProd() - 100000.0)
-                         + pos(alphaVapor_ - 0.8) - SMALL);
+                         + pos(alphaVapor_ - 0.5) - SMALL);
     }
     else
     {
@@ -990,8 +990,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     //  This is not mass conserving, but prevents excessive floatsom
     //volScalarField& alphaL = alphaLiquid_;
     //alphaL = alphaLiquid_.sharp(1e-3);
-    
-    
     //alphaVapor_ == scalar(1) - alphaLiquid_;
         
     Info<< "Liquid phase volume fraction = "

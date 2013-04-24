@@ -1,0 +1,59 @@
+species
+6
+(
+N2
+CH3NHNH2L
+RFNAL
+CH3NHNH2
+RFNA
+MMHNTOL
+)
+;
+
+reactions
+{
+    /*liqLiqReaction
+    {
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NHNH2L + 2HNO3L = CH3ONO2 + 0.5N2O + 2.5H2O + N2";
+        A               1e+03;
+        beta            0;
+        Ta              0;
+    }
+    
+    vapVapReaction
+    {
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NHNH2 + 2HNO3 = CH3ONO2 + 0.5N2O + 2.5H2O + N2";
+        A               1e+03;
+        beta            0;
+        Ta              0;
+    }
+
+    vapLiqReactionA
+    {
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NHNH2L + 2HNO3 = CH3ONO2 + 0.5N2O + 2.5H2O + N2";
+        A               1e+03;
+        beta            0;
+        Ta              0;
+    }
+    
+    vapLiqReactionB
+    {
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NHNH2 + 2HNO3L = CH3ONO2 + 0.5N2O + 2.5H2O + N2";
+        A               1e+03;
+        beta            0;
+        Ta              0;
+    }*/
+    
+    un-named-reaction-0
+    {
+        type            irreversibleArrheniusReaction;
+        reaction        "CH3NHNH2L + RFNAL = MMHNTOL";
+        A               5e+05;
+        beta            0;
+        Ta              1960;  //Based on 16.3 kJ/mol from Smith
+    }
+}
