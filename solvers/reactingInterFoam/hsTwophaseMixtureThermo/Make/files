@@ -7,4 +7,4 @@ phaseChangeModels/PhaseChangeReaction/PhaseChangeReaction.C
 
 hsNewReactionThermos.C
 
-LIB = $(FOAM_USER_LIBBIN)/libreactingInterFoamDev
+LIB = $(FOAM_USER_LIBBIN)/libreactingInterFoam
