@@ -36,7 +36,7 @@ shapes
             radius   (0 0.001 0.001);
         }
         
-        delVapor 3e-4;
+        delVapor 1.5e-4;
         U        (0 0 -1);
         
         liquidSpecies
@@ -46,11 +46,11 @@ shapes
         
         vaporSpecies
         (
-            CH3NHNH2   0.05
+            CH3NHNH2   0.1
         );
     }
     
-    DropNTO
+    DropNA
     {
         alphaName alphaLiquid;
         
@@ -62,18 +62,17 @@ shapes
             radius   (0 0.001 0.001);
         }
         
-        delVapor 3e-4;
+        delVapor 1.5e-4;
         U        (0 0 1);
         
         liquidSpecies
         (
-            N2O4L  1.0
+            HNO3L  1.0
         );
         
         vaporSpecies
         (
-            N2O4   0.95
-            NO2    0.05
+            HNO3   0.2
         );
     }
 

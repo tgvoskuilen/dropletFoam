@@ -55,7 +55,7 @@ SourceFiles
 namespace Foam
 {
     //Forward declaration of subspecie class
-    class phaseChangeModel;
+    class mixturePhaseChangeModel;
     class subSpecie;
     
 /*---------------------------------------------------------------------------*\
@@ -239,7 +239,7 @@ public:
         (
             const volScalarField& p,
             const volScalarField& T,
-            const PtrDictionary<phaseChangeModel>& phaseChangeModels
+            const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
         );
         
         void updateGlobalYs
@@ -253,7 +253,7 @@ public:
         Pair<tmp<volScalarField> > YiSuSp
         (
             const subSpecie& specieI,
-            const PtrDictionary<phaseChangeModel>& phaseChangeModels
+            const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
         ) const;
 
         //tmp<volVectorField> n() const; //normal pointing out of this phase

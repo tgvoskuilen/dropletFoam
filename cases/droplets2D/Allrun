@@ -3,15 +3,10 @@
 import os
 import sys
 
-sys.path.append('../../../foamTools/python')
+toolPath = '../../../foamTools/python'
+sys.path.append(toolPath)
+
 import pyOpenFOAM
-
-# The inputs for this case builder are
-#    chemkin/chem.inp   -   Reaction information and species list
-#    chemkin/therm.dat  -   Thermodynamic database for species
-#    chemkin/properties.db  -  Transport property database for species
-#
-
 
 
 # Read number of processors from command line (1 by default)
@@ -22,18 +17,19 @@ print "Running with %d processors" % np
 # pyOpenFOAM.run('chemkinToFoam',args='chemkin/chem.inp chemkin/therm.dat constant/reactions constant/thermo');
 
 # Read species list from 'constant/reactions'
-#species = pyOpenFOAM.read_species()
+species = pyOpenFOAM.read_species()
 
-# Make 0 directory for this species list
-#pyOpenFOAM.make_zero_dir(species, default='N2')
+# Add all gas species to "subSpecies" list in the "Vapor" phase
+pyOpenFOAM.add_species_to_thermo_dict(species)
 
-# Generate the transportProperties dict
-#pyOpenFOAM.make_transport_properties(species)
+# Write the thermo file based on the species list
+pyOpenFOAM.write_thermo(species,toolPath)
 
 # Make the *.foam file for ParaView
 pyOpenFOAM.touch_foam_files('hypergol')
 
 os.system('cp -r 0.org 0')
+
 
 # Generate the initial mesh
 print "Generating blockMesh"
@@ -45,9 +41,7 @@ if np > 1:
     pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
     pyOpenFOAM.run('decomposePar',args='-cellDist')
 
-
-n_adapts = 3
-    
+n_adapts = pyOpenFOAM.max_refinement_levels()
     
 for i in range(0,n_adapts):
     print "Pre-Refinement loop", i
@@ -59,12 +53,12 @@ print "Setting final field values"
 pyOpenFOAM.run('VOFSetFields',np)
 
 
-
 # Run the problem
 print "Running the problem"
-pyOpenFOAM.run('reactingInterFoam',np,hide=False)
-
-
+if np > 1:
+    os.system('foamJob -parallel -screen reactingInterFoam')
+else:
+    os.system('foamJob -screen reactingInterFoam')
 
 print "Finished!"
 

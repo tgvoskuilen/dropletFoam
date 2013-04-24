@@ -22,18 +22,18 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::phaseChangeModel
+    Foam::mixturePhaseChangeModel
 
 Description
     General phase change model
 
 SourceFiles
-    phaseChangeModel.C
+    mixturePhaseChangeModel.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef phaseChangeModel_H
-#define phaseChangeModel_H
+#ifndef mixturePhaseChangeModel_H
+#define mixturePhaseChangeModel_H
 
 #include "volFields.H"
 #include "PtrDictionary.H"
@@ -51,10 +51,10 @@ namespace Foam
 {
    
 /*---------------------------------------------------------------------------*\
-                      Class phaseChangeModel Declaration
+                      Class mixturePhaseChangeModel Declaration
 \*---------------------------------------------------------------------------*/
 
-class phaseChangeModel
+class mixturePhaseChangeModel
 {
     // Private data
     protected:
@@ -85,15 +85,15 @@ class phaseChangeModel
         //- Universal gas constant
         dimensionedScalar R_;
         
-        phaseChangeModel(const phaseChangeModel&);
+        mixturePhaseChangeModel(const mixturePhaseChangeModel&);
         
-        void operator=(const phaseChangeModel&);
+        void operator=(const mixturePhaseChangeModel&);
         
         
 public:
 
     //- Runtime type information
-    TypeName("phaseChangeModel");
+    TypeName("mixturePhaseChangeModel");
 
 
     // Declare run-time constructor selection table
@@ -101,7 +101,7 @@ public:
         declareRunTimeSelectionTable
         (
             autoPtr,
-            phaseChangeModel,
+            mixturePhaseChangeModel,
             components,
             (
                 const word name,
@@ -118,7 +118,7 @@ public:
     // Selectors
 
         //- Return a reference to the selected phaseChange model
-        static autoPtr<phaseChangeModel> New
+        static autoPtr<mixturePhaseChangeModel> New
         (
             const word name,
             const fvMesh& mesh,
@@ -130,10 +130,10 @@ public:
 
 
         //- Return clone
-        autoPtr<phaseChangeModel> clone() const;
+        autoPtr<mixturePhaseChangeModel> clone() const;
         
         //- Return a pointer to a new phase change model created on freestore
-        //  from Istream
+        // from Istream
         class iNew
         {
             const fvMesh& mesh_;
@@ -157,25 +157,24 @@ public:
                 speciesData_(speciesData)
             {}
 
-            autoPtr<phaseChangeModel> operator()(Istream& is) const
+            autoPtr<mixturePhaseChangeModel> operator()(Istream& is) const
             {
                 dictionaryEntry ent(dictionary::null, is);
-                return phaseChangeModel::New
+                return mixturePhaseChangeModel::New
                 (
-                    ent.keyword(), 
-                    mesh_, 
-                    alphaL_, 
-                    alphaV_, 
+                    ent.keyword(),
+                    mesh_,
+                    alphaL_,
+                    alphaV_,
                     speciesData_,
                     ent
                 );
             }
         };
         
-        
     // Constructors
     
-        phaseChangeModel
+        mixturePhaseChangeModel
         (
             const word& type,
             const word name,
@@ -186,11 +185,12 @@ public:
             dictionary phaseChangeDict
         );
         
-        virtual ~phaseChangeModel() {}
+        virtual ~mixturePhaseChangeModel() {}
 
 
     // Member Functions
-    
+        // defined here, cannot be overwritten
+        
         const word& name() const
         {
             return name_;
@@ -203,18 +203,14 @@ public:
         
         bool hasSpecie(const word& name) const;
         
-    // Virtual Functions
-    
-        virtual void setPtr(combustionModels::rhoChemistryCombustionModel* combustion)
+        void setPtr(combustionModels::rhoChemistryCombustionModel* combustion)
         {
             combustionPtr_ = combustion;
         }
         
-        virtual void calculate
-        (
-            const volScalarField& phaseChangeZones,
-            const volScalarField& area
-        );
+    // Virtual Functions
+        // defined here, can be overwritten
+
         
         //- Enthalpy source term
         //  Sh = TSuSp.first() - TSuSp.second()*T ?
@@ -223,8 +219,13 @@ public:
         
         
     // Abstract Functions
-    
-
+        // not defined here, must be defined by derived class
+        
+        virtual void calculate
+        (
+            const volScalarField& phaseChangeZones,
+            const volScalarField& area
+        ) =0;
     
         //- Get the total mass generation rate for a named phase
         virtual tmp<volScalarField> mdot(const word& phaseName) const = 0;

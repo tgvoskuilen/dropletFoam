@@ -225,7 +225,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
     }
     
     
-    forAllIter(PtrDictionary<phaseChangeModel>, phaseChangeModels_, pcmI)
+    forAllIter(PtrDictionary<mixturePhaseChangeModel>, phaseChangeModels_, pcmI)
     {
         pcmI().calculate
         (
@@ -267,11 +267,11 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     phaseChangeModels_
     (
         lookup("phaseChangeReactions"),
-        phaseChangeModel::iNew
+        mixturePhaseChangeModel::iNew
         (
-            mesh, 
-            alphaLiquid_, 
-            alphaVapor_, 
+            mesh,
+            alphaLiquid_,
+            alphaVapor_,
             this->speciesData()
         )
     ),
@@ -513,11 +513,16 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::dQ_phaseChange() const
         )
     );
     
-    forAllConstIter(PtrDictionary<phaseChangeModel>, phaseChangeModels_, pcmI)
+    forAllConstIter
+    (
+        PtrDictionary<mixturePhaseChangeModel>, 
+        phaseChangeModels_, 
+        pcmI
+    )
     {
         dQ() += pcmI().Sh();
     }
-    
+            
     dQ().dimensionedInternalField() *= mesh_.V();
     dQ().correctBoundaryConditions();
 
@@ -608,8 +613,13 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::setPtrs
 )
 {
     combustionPtr_ = combustion;
-    
-    forAllIter(PtrDictionary<phaseChangeModel>, phaseChangeModels_, pcmI)
+        
+    forAllIter
+    (
+        PtrDictionary<mixturePhaseChangeModel>, 
+        phaseChangeModels_, 
+        pcmI
+    )
     {
         pcmI().setPtr( combustion );
     }
@@ -801,7 +811,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
                     mesh_
                 ),
                 mesh_,
-                dimensionedScalar("TSu", dimDensity/dimTime, 0.0) //TODO
+                dimensionedScalar("TSu", dimPower/dimVolume, 0.0)
             )
         ),
         tmp<volScalarField>
@@ -815,12 +825,17 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
                     mesh_
                 ),
                 mesh_,
-                dimensionedScalar("TSp", dimDensity/dimTime, 0.0) //TODO
+                dimensionedScalar("TSp",dimPower/dimVolume/dimTemperature,0.0)
             )
         )
     );
     
-    forAllConstIter(PtrDictionary<phaseChangeModel>, phaseChangeModels_, pcmI)
+    forAllConstIter
+    (
+        PtrDictionary<mixturePhaseChangeModel>, 
+        phaseChangeModels_, 
+        pcmI
+    )
     {
         Pair<tmp<volScalarField> > pcmTSuSp = pcmI().TSuSp();
         tTSuSp.first()() += pcmTSuSp.first();
@@ -886,7 +901,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         dimensionedScalar("Sv",dimless/dimTime,0.0)
     );
     
-    forAllIter(PtrDictionary<phaseChangeModel>, phaseChangeModels_, pcmI)
+    forAllConstIter
+    (
+        PtrDictionary<mixturePhaseChangeModel>, 
+        phaseChangeModels_, 
+        pcmI
+    )
     {
         divPhaseChange_ += pcmI().Vdot("Vapor") + pcmI().Vdot("Liquid");
         Sv += pcmI().Vdot("Liquid");

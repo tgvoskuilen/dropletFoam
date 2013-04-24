@@ -25,7 +25,7 @@ License
 
 #include "phase.H"
 #include "subSpecie.H"
-#include "phaseChangeModel.H"
+#include "mixturePhaseChangeModel.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -612,7 +612,7 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::TSuSp() const
 Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::YiSuSp
 (
     const subSpecie& specieI,
-    const PtrDictionary<phaseChangeModel>& phaseChangeModels
+    const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
 ) const
 {
     Pair<tmp<volScalarField> > tYSuSp
@@ -647,8 +647,12 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::YiSuSp
         )
     );
     
-    
-    forAllConstIter(PtrDictionary<phaseChangeModel>, phaseChangeModels, pcmI)
+    forAllConstIter
+    (
+        PtrDictionary<mixturePhaseChangeModel>, 
+        phaseChangeModels, 
+        pcmI
+    )
     {
         if( pcmI().hasSpecie( specieI.name() ) )
         {
@@ -1316,7 +1320,7 @@ scalar Foam::phase::solveSubSpecies
 (
     const volScalarField& p,
     const volScalarField& T,
-    const PtrDictionary<phaseChangeModel>& phaseChangeModels
+    const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
 )
 {   
     word divScheme("div(rho*phi*alpha,Yi)");
@@ -1346,10 +1350,15 @@ scalar Foam::phase::solveSubSpecies
             mesh()
         ),
         mesh(),
-        dimensionedScalar("m_pc",dimMass/dimTime,0.0)
+        dimensionedScalar("m_pc",dimDensity/dimTime,0.0)
     );
         
-    forAllConstIter(PtrDictionary<phaseChangeModel>, phaseChangeModels, pcmI)
+    forAllConstIter
+    (
+        PtrDictionary<mixturePhaseChangeModel>, 
+        phaseChangeModels, 
+        pcmI
+    )
     {
         mdot_phase += pcmI().mdot(name_);
     }

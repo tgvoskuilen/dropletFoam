@@ -32,14 +32,9 @@ Vapor
    
    subspecies
    (
-       CH3NHNH2 {}
-       NO2      {}
-       N2O4     {}
-       N2       {}
-   );
-   
-   phaseChangeReactions
-   (
+        CH3NHNH2     {}
+        N2           {}
+        HNO3         {}
    );
 }
 
@@ -65,30 +60,18 @@ Liquid
                
         }
         
-        N2O4L
+        HNO3L
         {
             transportModel  Newtonian;
-            nu              nu [ 0 2 -1 0 0 0 0 ] 2.9e-7; //rocketdyne
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
             
-            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1447.0;
-            Tc        Tc   [ 0 0 0 1 0 0 0] 431.35;
-            kappa        kappa [1 1 -3 -1 0 0 0] 0.123; //doi:10.1063/1.1726692 
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1550.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 546.5;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
               
-            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
-            sigmaa          0.745;
-         }
-         
-         MMHNTOL //averaged properties of MMH and NTO
-         {
-            transportModel  Newtonian;
-            nu              nu [ 0 2 -1 0 0 0 0 ] 6e-07;
-            
-            rho0      rho0  [ 1 -3  0  0 0 0 0] 1160.0;
-            Tc        Tc    [ 0  0  0  1 0 0 0] 510;
-            kappa     kappa [ 1  1 -3 -1 0 0 0] 0.19; 
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.105;
+            sigmaa          1.219;
               
-            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0620;
-            sigmaa          0.8;
          }
    );
 }
@@ -97,8 +80,9 @@ Liquid
 
 phaseChangeReactions
 (
-   MMHEvap
-   {
+
+    MMHEvap
+    {
         phaseChangeModel LangmuirEvaporation;
         
         liquidSpecies
@@ -123,32 +107,32 @@ phaseChangeReactions
             PvCoeffs        (9.1834 1943.89 492587.8);
         }
     }
-    
-    
-    NTOEvap
+        
+        
+    NAEvap
     {
         phaseChangeModel LangmuirEvaporation;
         
         liquidSpecies
         (
-            N2O4L   1.0
+            HNO3L   1.0
         );
         
         gasSpecies
         (
-            N2O4   1.0
+            HNO3   1.0
         );
         
         LangmuirEvaporationCoeffs
         {
-            Lb              Lb [ 1 2 -2 0 -1 0 0] 33888000.0;
-            Tb              Tb [ 0 0 0 1 0 0 0] 294.285;
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 39451321.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 333.66;
             La              0.38;
             betaM           0.6;
 
-            Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
-            Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
-            PvCoeffs        (16.1 5400.115 -194831.8);
+            Tc              Tc [ 0 0 0 1 0 0 0] 546.5;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 9535000.0;
+            PvCoeffs        (7.841548 487.708305 710279.230159);
         }
     }
     
@@ -165,10 +149,10 @@ phaseChangeReactions
         
         gasSpecies
         (
-            CH3ONO2
-            N2O
-            H2O
-            N2
+            CH3ONO2     1.0
+            HONO        2.0
+            H2O         2.0
+            N2          1.0
         );
         
         PhaseChangeReactionCoeffs

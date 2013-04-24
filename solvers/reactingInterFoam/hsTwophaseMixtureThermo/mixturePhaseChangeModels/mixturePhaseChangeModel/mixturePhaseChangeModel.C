@@ -23,19 +23,19 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "phaseChangeModel.H"
+#include "mixturePhaseChangeModel.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTypeNameAndDebug(phaseChangeModel, 0);
-    defineRunTimeSelectionTable(phaseChangeModel, components);
+    defineTypeNameAndDebug(mixturePhaseChangeModel, 0);
+    defineRunTimeSelectionTable(mixturePhaseChangeModel, components);
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::phaseChangeModel::phaseChangeModel
+Foam::mixturePhaseChangeModel::mixturePhaseChangeModel
 (
     const word& type,
     const word name,
@@ -61,7 +61,7 @@ Foam::phaseChangeModel::phaseChangeModel
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh_,
         dimensionedScalar("omega_"+name, dimMoles/dimVolume/dimTime, 0.0)
@@ -140,18 +140,18 @@ Foam::phaseChangeModel::phaseChangeModel
 }
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-Foam::autoPtr<Foam::phaseChangeModel> Foam::phaseChangeModel::clone() const
+Foam::autoPtr<Foam::mixturePhaseChangeModel> Foam::mixturePhaseChangeModel::clone() const
 {
-    notImplemented("phaseChangeModel::clone() const");
-    return autoPtr<phaseChangeModel>(NULL);
+    notImplemented("mixturePhaseChangeModel::clone() const");
+    return autoPtr<mixturePhaseChangeModel>(NULL);
 }
 
-bool Foam::phaseChangeModel::hasSpecie(const word& specie) const
+bool Foam::mixturePhaseChangeModel::hasSpecie(const word& specie) const
 {
     return products_.found(specie) || reactants_.found(specie);
 }
 
-Foam::tmp<Foam::volScalarField> Foam::phaseChangeModel::Sh() const
+Foam::tmp<Foam::volScalarField> Foam::mixturePhaseChangeModel::Sh() const
 {
     Pair<tmp<volScalarField> > Ts = TSuSp();
     return Ts.first() - Ts.second()*T_;

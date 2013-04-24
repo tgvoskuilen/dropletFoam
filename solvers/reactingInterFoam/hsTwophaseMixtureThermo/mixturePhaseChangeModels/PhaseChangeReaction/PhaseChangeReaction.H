@@ -35,21 +35,21 @@ SourceFiles
 #ifndef PhaseChangeReaction_H
 #define PhaseChangeReaction_H
 
-#include "phaseChangeModel.H"
+#include "mixturePhaseChangeModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace phaseChangeModels
+namespace mixturePhaseChangeModels
 {
 /*---------------------------------------------------------------------------*\
-                      Class phaseChangeModel Declaration
+                      Class PhaseChangeReaction Declaration
 \*---------------------------------------------------------------------------*/
 
 class PhaseChangeReaction
 :
-    public phaseChangeModel
+    public mixturePhaseChangeModel
 {
 
     //model-specific stuff
@@ -96,7 +96,7 @@ public:
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-} // End namespace phaseChangeModels
+} // End namespace mixturePhaseChangeModels
 
 } // End namespace Foam
 

@@ -30,15 +30,15 @@ License
 
 namespace Foam
 {
-namespace phaseChangeModels
+namespace mixturePhaseChangeModels
 {
     defineTypeNameAndDebug(LangmuirEvaporation, 0);
-    addToRunTimeSelectionTable(phaseChangeModel, LangmuirEvaporation, components);
+    addToRunTimeSelectionTable(mixturePhaseChangeModel, LangmuirEvaporation, components);
 }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-Foam::phaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
+Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
 (
     const word name,
     const fvMesh& mesh,
@@ -48,7 +48,7 @@ Foam::phaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     dictionary phaseChangeDict
 )
 :
-    phaseChangeModel
+    mixturePhaseChangeModel
     (
         typeName, 
         name, 
@@ -148,7 +148,7 @@ Foam::phaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
 }
     
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-void Foam::phaseChangeModels::LangmuirEvaporation::calculate
+void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
 (
     const volScalarField& phaseChangeZones,
     const volScalarField& area
@@ -201,7 +201,7 @@ void Foam::phaseChangeModels::LangmuirEvaporation::calculate
               << Foam::max(omega_).value() << " kmol/m3/s" << Foam::endl;
 }
 
-tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::mdot
+tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::mdot
 (
     const word& phaseName
 ) const
@@ -237,7 +237,7 @@ tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::mdot
     return tmdot;
 }
 
-tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::Vdot
+tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::Vdot
 (
     const word& phaseName
 ) const
@@ -276,7 +276,7 @@ tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::Vdot
 
 
 // get the explicit and implicit source terms for Yvapor
-Pair<tmp<volScalarField> > Foam::phaseChangeModels::LangmuirEvaporation::YSuSp
+Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::YSuSp
 (
     const word& specie
 ) const
@@ -335,7 +335,7 @@ Pair<tmp<volScalarField> > Foam::phaseChangeModels::LangmuirEvaporation::YSuSp
 
 
 
-tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::dPvdT() const
+tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::dPvdT() const
 {
     tmp<volScalarField> tdPvdT
     (
@@ -365,7 +365,7 @@ tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::dPvdT() const
     return tdPvdT * neg(p_vap_ - Pc_);
 }
 
-Pair<tmp<volScalarField> > Foam::phaseChangeModels::LangmuirEvaporation::TSuSp() const
+Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::TSuSp() const
 {
 
     //Sh = -omega_*L()
@@ -390,7 +390,7 @@ Pair<tmp<volScalarField> > Foam::phaseChangeModels::LangmuirEvaporation::TSuSp()
 
 }
 
-tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::L() const
+tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::L() const
 {
     tmp<volScalarField> tL
     (
@@ -415,7 +415,7 @@ tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::L() const
     return tL;
 }
 
-tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::dLdT() const
+tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::dLdT() const
 {
     tmp<volScalarField> tdLdT
     (
@@ -428,7 +428,7 @@ tmp<volScalarField> Foam::phaseChangeModels::LangmuirEvaporation::dLdT() const
                 mesh_
             ),
             mesh_,
-            dimensionedScalar("dLdT",dimEnergy/dimMass/dimTemperature,0.0)
+            dimensionedScalar("dLdT",dimEnergy/dimMoles/dimTemperature,0.0)
         )
     );
         

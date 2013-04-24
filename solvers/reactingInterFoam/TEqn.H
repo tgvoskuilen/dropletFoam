@@ -1,5 +1,6 @@
 {
-    
+    Info<< "Building TEqn" << endl;
+        
     divU = fvc::div(phi);
     
     Pair<tmp<volScalarField> > TSuSp = mixture.TSuSp(); //<- includes rCv, linearized evaporation enthalpy sink

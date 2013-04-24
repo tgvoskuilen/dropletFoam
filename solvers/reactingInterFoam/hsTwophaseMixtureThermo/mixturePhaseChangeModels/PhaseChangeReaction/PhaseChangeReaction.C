@@ -30,15 +30,15 @@ License
 
 namespace Foam
 {
-namespace phaseChangeModels
+namespace mixturePhaseChangeModels
 {
     defineTypeNameAndDebug(PhaseChangeReaction, 0);
-    addToRunTimeSelectionTable(phaseChangeModel, PhaseChangeReaction, components);
+    addToRunTimeSelectionTable(mixturePhaseChangeModel, PhaseChangeReaction, components);
 }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-Foam::phaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
+Foam::mixturePhaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
 (
     const word name,
     const fvMesh& mesh,
@@ -48,7 +48,7 @@ Foam::phaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
     dictionary phaseChangeDict
 )
 :
-    phaseChangeModel
+    mixturePhaseChangeModel
     (
         typeName, 
         name, 
@@ -66,7 +66,7 @@ Foam::phaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
 }
     
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //       
-void Foam::phaseChangeModels::PhaseChangeReaction::calculate
+void Foam::mixturePhaseChangeModels::PhaseChangeReaction::calculate
 (
     const volScalarField& evapMask,
     const volScalarField& area
@@ -88,7 +88,7 @@ void Foam::phaseChangeModels::PhaseChangeReaction::calculate
 
 
 // get the explicit and implicit source terms for Ys
-Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::YSuSp
+Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::PhaseChangeReaction::YSuSp
 (
     const word& specieName
 )
@@ -123,7 +123,7 @@ const
 
 
 
-Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::TSuSp() const
+Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::PhaseChangeReaction::TSuSp() const
 {    
     tmp<volScalarField> tZero
     (
@@ -153,7 +153,7 @@ Pair<tmp<volScalarField> > Foam::phaseChangeModels::PhaseChangeReaction::TSuSp()
 }
 
 //net mass generation in phase 'phaseName'
-tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::mdot
+tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::mdot
 (
     const word& phaseName
 ) const
@@ -193,7 +193,7 @@ tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::mdot
     return tmdot;
 }
 
-tmp<volScalarField> Foam::phaseChangeModels::PhaseChangeReaction::Vdot
+tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::Vdot
 (
     const word& phaseName
 ) const

@@ -23,12 +23,12 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "phaseChangeModel.H"
+#include "mixturePhaseChangeModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::phaseChangeModel>
-Foam::phaseChangeModel::New
+Foam::autoPtr<Foam::mixturePhaseChangeModel>
+Foam::mixturePhaseChangeModel::New
 (
     const word name,
     const fvMesh& mesh,
@@ -38,31 +38,31 @@ Foam::phaseChangeModel::New
     dictionary phaseChangeDict
 )
 {
-    word phaseChangeModelTypeName
+    word mixturePhaseChangeModelTypeName
     (
         phaseChangeDict.lookup("phaseChangeModel")
     );
 
     Info<< "Selecting phase change model "
-        << phaseChangeModelTypeName << endl;
+        << mixturePhaseChangeModelTypeName << endl;
 
     componentsConstructorTable::iterator cstrIter =
         componentsConstructorTablePtr_
-            ->find(phaseChangeModelTypeName);
+            ->find(mixturePhaseChangeModelTypeName);
 
     if (cstrIter == componentsConstructorTablePtr_->end())
     {
         FatalErrorIn
         (
-            "phaseChangeModel::New"
-        )   << "Unknown phaseChangeModel type "
-            << phaseChangeModelTypeName << endl << endl
-            << "Valid  phaseChangeModel are : " << endl
+            "mixturePhaseChangeModel::New"
+        )   << "Unknown mixturePhaseChangeModel type "
+            << mixturePhaseChangeModelTypeName << endl << endl
+            << "Valid  mixturePhaseChangeModel are : " << endl
             << componentsConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<phaseChangeModel>
+    return autoPtr<mixturePhaseChangeModel>
     (
         cstrIter()
         (

@@ -35,21 +35,21 @@ SourceFiles
 #ifndef LangmuirEvaporation_H
 #define LangmuirEvaporation_H
 
-#include "phaseChangeModel.H"
+#include "mixturePhaseChangeModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace phaseChangeModels
+namespace mixturePhaseChangeModels
 {
 /*---------------------------------------------------------------------------*\
-                      Class phaseChangeModel Declaration
+                      Class LangmuirEvaporation Declaration
 \*---------------------------------------------------------------------------*/
 
 class LangmuirEvaporation
 :
-    public phaseChangeModel
+    public mixturePhaseChangeModel
 {
 
     //model-specific stuff
@@ -116,7 +116,7 @@ public:
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-} // End namespace phaseChangeModel
+} // End namespace mixturePhaseChangeModel
 
 } // End namespace Foam
 

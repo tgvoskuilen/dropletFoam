@@ -53,7 +53,7 @@ SourceFiles
 #include "hsReactionThermo.H"
 #include "phase.H"
 #include "subSpecie.H"
-#include "phaseChangeModel.H"
+#include "mixturePhaseChangeModel.H"
 #include "PtrDictionary.H"
 #include "volFields.H"
 #include "surfaceFields.H"
@@ -101,7 +101,7 @@ private:
         phase alphaLiquid_;
         
         //- Phase change models
-        PtrDictionary<phaseChangeModel> phaseChangeModels_;
+        PtrDictionary<mixturePhaseChangeModel> phaseChangeModels_;
         
         //- Inter-phase area and zone where interphase reactions can occur
         volScalarField area_;
