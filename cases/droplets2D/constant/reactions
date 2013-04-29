@@ -1,25 +1,154 @@
 species
-8
+16
 (
 CH3NHNH2
-N2
+CH3NHNH2L
+CH3NNH2
+CH3NNH
+CH3NN
+CH3O
 CH3ONO2
+CH3
+NO2
+NO2L
 HONO
-H2O
 HNO3
 HNO3L
-CH3NHNH2L
+H2O
+O2
+N2
 )
 ;
 
 reactions
 {
-    liqLiqReaction
+    un-named-reaction-0
     {
-        type            reversibleArrheniusReaction;
-        reaction        "CH3NHNH2L + 3HNO3L = CH3ONO2 + 2H2O + 2HONO + N2";
-        A               1e+03;
+        type            irreversibleArrheniusReaction;
+        reaction        "CH3NHNH2L + 3HNO3L = CH3ONO2 + 2HONO + 2H2O + N2";
+        A               1;
         beta            0;
         Ta              0;
+    }
+    un-named-reaction-1
+    {
+        type            irreversibleArrheniusReaction;
+        reaction        "HNO3 = 0.5H2O + NO2 + 0.25O2";
+        A               3.01e+24;
+        beta            0;
+        Ta              16057.9;
+    }
+    un-named-reaction-2
+    {
+        type            irreversibleArrheniusReaction;
+        reaction        "CH3NHNH2L + NO2 = CH3NNH2 + HONO";
+        A               2.2e+11;
+        beta            0;
+        Ta              2968.83;
+    }
+    un-named-reaction-3
+    {
+        type            irreversibleArrheniusReaction;
+        reaction        "CH3NHNH2L + NO2L = CH3NNH2 + HONO";
+        A               2.2e+11;
+        beta            0;
+        Ta              2968.83;
+    }
+    un-named-reaction-4
+    {
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NHNH2 + NO2 = CH3NNH2 + HONO";
+        A               2.2e+11;
+        beta            0;
+        Ta              2968.83;
+    }
+    un-named-reaction-5
+    {
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NNH2 + NO2 = CH3NNH + HONO";
+        A               1e+08;
+        beta            2;
+        Ta              0;
+    }
+    un-named-reaction-6
+    {
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NNH + NO2 = CH3NN + HONO";
+        A               2.2e+11;
+        beta            0;
+        Ta              2968.83;
+    }
+    un-named-reaction-7
+    {
+        type            reversiblethirdBodyArrheniusReaction;
+        reaction        "CH3NN = CH3 + N2";
+        A               1e+11;
+        beta            0;
+        Ta              2968.83;
+        coeffs          
+16
+(
+(CH3NHNH2 1)
+(CH3NHNH2L 0)
+(CH3NNH2 1)
+(CH3NNH 1)
+(CH3NN 1)
+(CH3O 1)
+(CH3ONO2 1)
+(CH3 1)
+(NO2 1)
+(NO2L 0)
+(HONO 1)
+(HNO3 1)
+(HNO3L 0)
+(H2O 1)
+(O2 1)
+(N2 1)
+)
+;
+    }
+    un-named-reaction-8
+    {
+        type            reversibleArrheniusLindemannFallOffReaction;
+        reaction        "CH3O + NO2 = CH3ONO2";
+        k0
+        {
+            A               1.4e+24;
+            beta            -4.5;
+            Ta              0;
+        }
+        kInf
+        {
+            A               1.2e+10;
+            beta            0;
+            Ta              0;
+        }
+        F
+        {
+        }
+        thirdBodyEfficiencies
+        {
+            coeffs          
+16
+(
+(CH3NHNH2 1)
+(CH3NHNH2L 0)
+(CH3NNH2 1)
+(CH3NNH 1)
+(CH3NN 1)
+(CH3O 1)
+(CH3ONO2 1)
+(CH3 1)
+(NO2 1)
+(NO2L 0)
+(HONO 1)
+(HNO3 1)
+(HNO3L 0)
+(H2O 1)
+(O2 1)
+(N2 1)
+)
+;
+        }
     }
 }

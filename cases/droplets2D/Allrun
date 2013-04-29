@@ -4,6 +4,8 @@ import os
 import sys
 
 toolPath = '../../../foamTools/python'
+utilPath = '../../utilities/thermochem'
+
 sys.path.append(toolPath)
 
 import pyOpenFOAM
@@ -13,8 +15,8 @@ import pyOpenFOAM
 np = pyOpenFOAM.read_inputs(sys.argv)
 print "Running with %d processors" % np
 
-# Convert the chemkin files to Foam format
-# pyOpenFOAM.run('chemkinToFoam',args='chemkin/chem.inp chemkin/therm.dat constant/reactions constant/thermo');
+# Load a chemistry set to use from the utilities/chem folder
+pyOpenFOAM.load_chemistry('chemLiqPaths.inp',utilPath)
 
 # Read species list from 'constant/reactions'
 species = pyOpenFOAM.read_species()
@@ -23,13 +25,13 @@ species = pyOpenFOAM.read_species()
 pyOpenFOAM.add_species_to_thermo_dict(species)
 
 # Write the thermo file based on the species list
-pyOpenFOAM.write_thermo(species,toolPath)
+pyOpenFOAM.write_thermo(species,utilPath)
 
 # Make the *.foam file for ParaView
 pyOpenFOAM.touch_foam_files('hypergol')
 
+# Make the 0 folder
 os.system('cp -r 0.org 0')
-
 
 # Generate the initial mesh
 print "Generating blockMesh"

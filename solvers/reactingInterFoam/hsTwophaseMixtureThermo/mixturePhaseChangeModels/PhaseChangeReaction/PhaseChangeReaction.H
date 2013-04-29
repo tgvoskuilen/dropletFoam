@@ -53,10 +53,9 @@ class PhaseChangeReaction
 {
 
     //model-specific stuff
-        
-        word key_specie_;
-        label keyID_;
-        dimensionedScalar keyW_;
+        // all this needs for its calculations is the combustion model
+        // and const access to alphaL and alphaV
+
 
 public:
 

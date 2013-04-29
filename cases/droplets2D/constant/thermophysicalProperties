@@ -33,8 +33,18 @@ Vapor
    subspecies
    (
         CH3NHNH2     {}
-        N2           {}
+        CH3NNH2      {}
+        CH3NNH       {}
+        CH3NN        {}
+        CH3O         {}
+        CH3ONO2      {}
+        CH3          {}
+        NO2          {}
+        HONO         {}
         HNO3         {}
+        H2O          {}
+        O2           {}
+        N2           {}
    );
 }
 
@@ -60,6 +70,20 @@ Liquid
                
         }
         
+        NO2L
+        {
+            transportModel  Newtonian;
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1447.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 431.35;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.062;
+            sigmaa          0.745;
+              
+        }
+        
         HNO3L
         {
             transportModel  Newtonian;
@@ -69,10 +93,10 @@ Liquid
             Tc        Tc   [ 0 0 0 1 0 0 0] 546.5;
             kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
               
-            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.105;
-            sigmaa          1.219;
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0887;
+            sigmaa          1;
               
-         }
+        }
    );
 }
 
@@ -125,41 +149,62 @@ phaseChangeReactions
         
         LangmuirEvaporationCoeffs
         {
-            Lb              Lb [ 1 2 -2 0 -1 0 0] 39451321.0;
-            Tb              Tb [ 0 0 0 1 0 0 0] 333.66;
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 38094729.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 360.8;
             La              0.38;
             betaM           0.6;
 
-            Tc              Tc [ 0 0 0 1 0 0 0] 546.5;
+            Tc              Tc [ 0 0 0 1 0 0 0] 546.48;
             Pc              Pc [ 1 -1 -2 0 0 0 0] 9535000.0;
-            PvCoeffs        (7.841548 487.708305 710279.230159);
+            PvCoeffs        (14.922185 6186.610617 -289492.595);
         }
     }
     
+    NO2Evap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            NO2L   1.0
+        );
+        
+        gasSpecies
+        (
+            NO2   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 33709918.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 294;
+            La              0.38;
+            betaM           0.6;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
+            PvCoeffs        (16.046357 5374.83122 -193954.549332);
+        }
+    }
     
-    /*LiquidReaction
+    //simply including this then accounts for all liquid-gas reactions in the
+    // chemistry set. no arguments are needed other than the model type
+    LiquidReaction
     {
         phaseChangeModel   PhaseChangeReaction;
         
         liquidSpecies
         (
-            CH3NHNH2L   1.0
-            HNO3L       3.0
         );
         
         gasSpecies
         (
-            CH3ONO2     1.0
-            HONO        2.0
-            H2O         2.0
-            N2          1.0
         );
         
         PhaseChangeReactionCoeffs
         {
-            keySpecie   HNO3L;
         }
-    }*/
+    }
     
 );
 

@@ -1,0 +1,43 @@
+ELEMENTS
+H C O N 
+END
+
+SPECIES
+CH3NHNH2 CH3NHNH2L CH3NNH2 CH3NNH CH3NN CH3O CH3ONO2 CH3
+NO2 NO2L HONO HNO3 HNO3L
+H2O O2 N2
+END
+
+REACTIONS
+!Tynell reactions
+!  Reaction rate guessed. 1e9 is very rapid
+CH3NHNH2L+3HNO3L=>CH3ONO2+2HONO+2H2O+N2        1.00E+09    0.0        0.0
+
+!Nitric acid thermal decomposition reaction
+HNO3=>0.5H2O+NO2+0.25O2                        3.01E+24    0.0    31912.2
+
+!H abstraction reactions, added for liquids, ratesx1000
+CH3NHNH2L+NO2=>CH3NNH2+HONO                    2.20E+14    0.0     5900.0
+CH3NHNH2L+NO2L=>CH3NNH2+HONO                   2.20E+14    0.0     5900.0
+!CH3NNH2+NO2L<=>CH3NNH+HONO                     1.00E+11    2.0        0.0
+!CH3NNH+NO2L=>CH3NN+HONO                        2.20E+14    0.0     5900.0
+
+!-----------------------------------------------------------------------------
+!Direct from the 41 specie mechanism
+CH3NHNH2+NO2<=>CH3NNH2+HONO                    2.20E+14    0.0     5900.0
+CH3NNH2+NO2<=>CH3NNH+HONO                      1.00E+11    2.0        0.0
+CH3NNH+NO2<=>CH3NN+HONO                        2.20E+14    0.0     5900.0
+CH3NN+M<=>CH3+N2+M                             1.00E+14    0.0     5900.0
+      CH3NHNH2L/  0.0/
+      HNO3L/      0.0/
+      NO2L/       0.0/
+CH3O+NO2(+M)<=>CH3ONO2(+M)                     1.20E+13    0.0        0.0
+                                         LOW/  1.40E+30   -4.5        0.0 /
+      CH3NHNH2L/  0.0/
+      HNO3L/      0.0/
+      NO2L/       0.0/
+
+!-----------------------------------------------------------------------------
+!Direct from the 25 specie mechanism
+
+END

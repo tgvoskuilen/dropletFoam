@@ -57,10 +57,7 @@ Foam::mixturePhaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
         alphaV, 
         speciesData, 
         phaseChangeDict
-    ),
-    key_specie_(phaseChangeDict_.lookup("keySpecie")),
-    keyID_(alphaL_.subSpecies()[key_specie_]->idx()),
-    keyW_(alphaL_.subSpecies()[key_specie_]->W())
+    )
 {
     Info<< "Liquid/vapor reaction configured for " << name_ << endl;
 }
@@ -72,29 +69,37 @@ void Foam::mixturePhaseChangeModels::PhaseChangeReaction::calculate
     const volScalarField& area
 )
 {
-    //get the reaction rate based on the total mass rate of change of the
-    // key specie. This assumes the key specie is only involved in this
-    // reaction!
-    
-    const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
-    tmp<volScalarField> omegaKey = chemistry.RR( keyID_ ) / keyW_;
-
-    omega_ = -omegaKey / reactants_[key_specie_];
-
-    Foam::Info<< "Min,max reaction flux for " << name_ << " = "
-              << Foam::min(omega_).value() << ", " 
-              << Foam::max(omega_).value() << " kmol/m3/s" << Foam::endl;
+    //do nothing
 }
 
 
 // get the explicit and implicit source terms for Ys
-Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::PhaseChangeReaction::YSuSp
+Pair<tmp<volScalarField> > 
+Foam::mixturePhaseChangeModels::PhaseChangeReaction::YSuSp
 (
     const word& specieName
-)
-const
+) const
 {
-    tmp<volScalarField> tZero
+    tmp<volScalarField> tZero1
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "zero",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimDensity/dimTime, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
+    
+    tmp<volScalarField> tZero2
     (
         new volScalarField
         (
@@ -116,16 +121,17 @@ const
     // Y source is already counted in reactions, so don't count it here
     return Pair<tmp<volScalarField> >
     (
-        tZero,
-        tZero
+        tZero1,
+        tZero2
     );
 }
 
 
 
-Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::PhaseChangeReaction::TSuSp() const
+Pair<tmp<volScalarField> > 
+Foam::mixturePhaseChangeModels::PhaseChangeReaction::TSuSp() const
 {    
-    tmp<volScalarField> tZero
+    tmp<volScalarField> tZero1
     (
         new volScalarField
         (
@@ -139,7 +145,25 @@ Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::PhaseChangeReaction::
                 false
             ),
             mesh_,
-            dimensionedScalar("zero", dimEnergy/dimTime/dimVolume, 0.0),
+            dimensionedScalar("zero", dimPower/dimVolume, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
+    tmp<volScalarField> tZero2
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "zero",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimPower/dimVolume/dimTemperature, 0.0),
             zeroGradientFvPatchScalarField::typeName
         )
     );
@@ -147,8 +171,8 @@ Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::PhaseChangeReaction::
     // Heat source is already counted in reactions, so don't count it here
     return Pair<tmp<volScalarField> >
     (
-        tZero,
-        tZero
+        tZero1,
+        tZero2
     );
 }
 
@@ -172,21 +196,20 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::mdot
             dimensionedScalar("tmdot",dimDensity/dimTime,0.0)
         )
     );
+    const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
     
     if( phaseName == "Vapor" )
     {
-        forAllConstIter(HashTable<const gasThermoPhysics*>, prodThermo_, tPi)
+        forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
         {
-            word specie = tPi()->name();
-            tmdot() += products_[specie]*omega_*tPi()->W();
+            tmdot() += chemistry.RR(specieI().idx());
         }
     }
     else if( phaseName == "Liquid" )
     {
-        forAllConstIter(HashTable<const gasThermoPhysics*>, reacThermo_, tRi)
+        forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
         {
-            word specie = tRi()->name();
-            tmdot() -= reactants_[specie]*omega_*tRi()->W();
+            tmdot() += chemistry.RR(specieI().idx());
         }
     }
     
@@ -198,6 +221,11 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::Vdot
     const word& phaseName
 ) const
 {
+    // While the mass divergence is 0 within a phase, the velocity divergence
+    // is not guaranteed to be so, since reactions change the number of moles
+    // present which changes the partial volumes of the species involved. This
+    // term can be nonzero even when there are no phase-change reactions.
+
     tmp<volScalarField> tVdot
     (
         new volScalarField
@@ -212,22 +240,21 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::Vdot
             dimensionedScalar("tVdot",dimless/dimTime,0.0)
         )
     );
+    const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
     
     if( phaseName == "Vapor" )
     {
-        forAllConstIter(HashTable<const gasThermoPhysics*>, prodThermo_, tPi)
+        forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
         {
-            word specie = tPi()->name();
-            tVdot() += products_[specie]*omega_*R_*T_/p_;
+            tmp<volScalarField> rhoV = p_*specieI().W()/(R_*T_);
+            tVdot() += chemistry.RR(specieI().idx())/rhoV;
         }
     }
     else if( phaseName == "Liquid" )
     {
-        forAllConstIter(HashTable<const gasThermoPhysics*>, reacThermo_, tRi)
+        forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
         {
-            word specie = tRi()->name();
-            dimensionedScalar rhoL = alphaL_.subSpecies()[specie]->rho0();
-            tVdot() -= reactants_[specie]*omega_*tRi()->W()/rhoL;
+            tVdot() += chemistry.RR(specieI().idx())/specieI().rho0();
         }
     }
     

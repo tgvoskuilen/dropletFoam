@@ -1534,10 +1534,13 @@ void Foam::phase::updateGlobalYs
     const volScalarField& rhoAlphaOther
 )
 {
+    dimensionedScalar s("small",dimDensity,SMALL);
+    
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
-        specieI().Y() = specieI().Yp()*rhoAlpha_/(rhoAlpha_ + rhoAlphaOther);
+        specieI().Y() = specieI().Yp()*rhoAlpha_/(rhoAlpha_ + rhoAlphaOther + s);
         specieI().Y().max(0.0);
+        //specieI().Y().min(1.0);
         specieI().Y().correctBoundaryConditions();
     }
     
