@@ -21,8 +21,10 @@ alphaName   alphaVapor;
 volScalarFields //don't put "alphaName" in here
 (
     alphaLiquid
-    N2
+    H2OL
+    H2O
     p
+    p_rgh
     T
     Ydefault
 );

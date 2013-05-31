@@ -37,7 +37,8 @@ def molwt(atoms):
           'N':  14.007, 
           'O':  15.999,
           'AR': 39.948,
-          'HE': 4.0026}
+          'HE': 4.0026,
+          'E':  0.0} #electrons have essentially 0 mass
           
     W = 0.
     
@@ -61,7 +62,7 @@ def read_thermo_entry(name,lines):
         istr = atoms[3:5] # number of atoms
         try:
             i = int(istr) # istr is a number
-            if n and i > 0:
+            if n and abs(i) > 0:
                 try:
                     int(n) # n is not a number
                 except ValueError:
@@ -70,8 +71,7 @@ def read_thermo_entry(name,lines):
         except ValueError:
             break
         atoms = atoms[5:]
-    
-    
+            
     # Read Tlow, Tmid, and Thigh
     Tlow = float(lines[0][46:55])
     Thigh = float(lines[0][55:65])
@@ -150,8 +150,12 @@ def read_thermo(thermoFile):
             if ec == 4:
                 name = currentEntry[0][0:18]
                 name = name.strip().split(' ')[0]
-                data[name] = read_thermo_entry(name,currentEntry)
-                currentEntry = []
+                try:
+                    data[name] = read_thermo_entry(name,currentEntry)
+                except KeyError:
+                    print "\n *** Error reading entry '%s' ***\n" % name
+                finally:
+                    currentEntry = []
             
         except IndexError:
             pass
@@ -284,10 +288,14 @@ def write_openfoam_database(thermo, transport, dbfilename):
     dataSet = {}
     
     for name,data in thermo.iteritems():
+        dataSet[name] = data
         if name in transport:
-            dataSet[name] = data
             dataSet[name]['As'] = transport[name]['As']
             dataSet[name]['Ts'] = transport[name]['Ts']
+        else:
+            #TODO
+            dataSet[name]['As'] = 1e-5
+            dataSet[name]['Ts'] = 200
     
     with open(dbfilename,'w') as dbfile:
         for name,data in dataSet.iteritems():

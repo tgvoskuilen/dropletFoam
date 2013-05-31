@@ -1,6 +1,6 @@
 function h = H(entry,T)
 
-    R = 8314;% / entry.W;
+    R = 8.314; %J/mol-K
 
     h = zeros(size(T));
     Tmid = entry.Tmid;

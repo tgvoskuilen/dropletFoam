@@ -1,0 +1,77 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      p_rgh;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    Top
+    {
+        //type            waveTransmissive;
+        //value           uniform 1e5;
+        //phi             phi;
+        //rho             rho;
+        //gamma           1.4;
+        //lInf            0.05;
+        //fieldInf        1e5;
+        
+        type            totalPressure;
+        p0              uniform 0;
+        U               U;
+        phi             phi;
+        rho             rho;
+        psi             none;
+        gamma           1;
+        value           uniform 0;
+        
+        //type              fixedValue;
+        //value             uniform 1e5;
+    }
+
+    Sides
+    {
+        type            buoyantPressure;
+        //type            fixedFluxPressure;
+        //type            zeroGradient;
+        value           uniform 0;
+        
+    }
+    
+    FrontAndBack
+    {
+        type            symmetryPlane;
+    }
+    
+    Bottom
+    {
+        //type            zeroGradient;
+        //type            fixedFluxPressure;
+        type            buoyantPressure;
+        value           uniform 0;
+    }
+    
+    Wire
+    {
+        //type            fixedFluxPressure;
+        type            buoyantPressure;
+        //type            zeroGradient;
+        value           uniform 0;
+    }
+}
+
+// ************************************************************************* //

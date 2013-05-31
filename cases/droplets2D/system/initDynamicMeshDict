@@ -25,6 +25,7 @@ volScalarFields //don't put "alphaName" in here
     muSgs
     N2
     p
+    p_rgh
     T
     Ydefault
 );

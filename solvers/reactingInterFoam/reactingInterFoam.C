@@ -57,6 +57,8 @@ int main(int argc, char *argv[])
     scalar volSourceLimit =
         runTime.controlDict().lookupOrDefault<scalar>("volSourceLimit", 1e-2);
 
+    word clipDir = runTime.controlDict().lookupOrDefault<word>("clipDirection","none");
+
     pimpleControl pimple(mesh);
     volScalarField divU(fvc::div(phi));
 

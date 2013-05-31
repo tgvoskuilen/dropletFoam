@@ -1,4 +1,4 @@
-function Sh = CalcHeatRelease(rxn,T,thermo)
+function dH = CalcRxndH(rxn,T,thermo)
 
     dH = zeros(size(T));
 
@@ -13,4 +13,3 @@ function Sh = CalcHeatRelease(rxn,T,thermo)
         dH = dH - H(thermo.(rxn.products(p).name),T)*rxn.products(p).e;
     end
     
-    Sh = dH; %J/mol * mol/cm3/s = W/cm3

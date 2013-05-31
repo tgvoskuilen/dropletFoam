@@ -12,47 +12,50 @@ import pyOpenFOAM
 
 
 # Read number of processors from command line (1 by default)
-np = pyOpenFOAM.read_inputs(sys.argv)
-print "Running with %d processors" % np
+(np,resume) = pyOpenFOAM.read_inputs(sys.argv)
 
-# Load a chemistry set to use from the utilities/chem folder
-pyOpenFOAM.load_chemistry('chemLiqPaths.inp',utilPath)
+if not resume:
+    print "Running with %d processors" % np
 
-# Read species list from 'constant/reactions'
-species = pyOpenFOAM.read_species()
+    # Load a chemistry set to use from the utilities/chem folder
+    pyOpenFOAM.load_chemistry('chemLiqPaths.inp',utilPath)
 
-# Add all gas species to "subSpecies" list in the "Vapor" phase
-pyOpenFOAM.add_species_to_thermo_dict(species)
+    # Read species list from 'constant/reactions'
+    species = pyOpenFOAM.read_species()
 
-# Write the thermo file based on the species list
-pyOpenFOAM.write_thermo(species,utilPath)
+    # Add all gas species to "subSpecies" list in the "Vapor" phase
+    pyOpenFOAM.add_species_to_thermo_dict(species)
 
-# Make the *.foam file for ParaView
-pyOpenFOAM.touch_foam_files('hypergol')
+    # Write the thermo file based on the species list
+    pyOpenFOAM.write_thermo(species,utilPath)
 
-# Make the 0 folder
-os.system('cp -r 0.org 0')
+    # Make the *.foam file for ParaView
+    pyOpenFOAM.touch_foam_files('hypergol')
 
-# Generate the initial mesh
-print "Generating blockMesh"
-pyOpenFOAM.run('blockMesh')
+    # Make the 0 folder
+    os.system('cp -r 0.org 0')
 
-if np > 1:
-    # For parallel runs, decompose the problem
-    print "Decomposing problem"
-    pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
-    pyOpenFOAM.run('decomposePar',args='-cellDist')
+    # Generate the initial mesh
+    print "Generating blockMesh"
+    pyOpenFOAM.run('blockMesh')
 
-n_adapts = pyOpenFOAM.max_refinement_levels()
-    
-for i in range(0,n_adapts):
-    print "Pre-Refinement loop", i
+    if np > 1:
+        # For parallel runs, decompose the problem
+        print "Decomposing problem"
+        pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+        pyOpenFOAM.set_balance_par(np)
+        pyOpenFOAM.run('decomposePar',args='-cellDist')
+
+    n_adapts = pyOpenFOAM.max_refinement_levels()
+        
+    for i in range(0,n_adapts):
+        print "Pre-Refinement loop", i
+        pyOpenFOAM.run('VOFSetFields',np)
+        pyOpenFOAM.run('initDynamicMesh',np)
+
+
+    print "Setting final field values"
     pyOpenFOAM.run('VOFSetFields',np)
-    pyOpenFOAM.run('initDynamicMesh',np)
-
-
-print "Setting final field values"
-pyOpenFOAM.run('VOFSetFields',np)
 
 
 # Run the problem

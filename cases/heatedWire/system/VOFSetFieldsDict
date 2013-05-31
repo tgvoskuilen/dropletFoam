@@ -18,35 +18,34 @@ FoamFile
 
 defaultSpecies
 (
-    N2   1.0
+    H2OL   1.0
 );
 
-vaporPhaseName   alphaVapor;
+vaporPhaseName   alphaLiquid;
 
 shapes
 (
-    WaterFilm
+    VaporFilm
     {
-        alphaName  alphaLiquid;
+        alphaName  alphaVapor;
         
         shape      ellipsoid;
         
         ellipsoidCoeffs
         {
-            center   (0.005 0.005 0.0005);
-            radius   (0.002 0.001 0);
+            center   (0.03 -0.07 0.005);
+            radius   (0.006 0.006 0);
         }
         
-        delVapor 1e-2;
+        delVapor 0.0;
         U        (0 0 0);
         
         liquidSpecies
         (
-            H2OL  1.0
+            H2O  1.0
         );
         vaporSpecies
         (
-            H2O   0.1
         );
     }
 );

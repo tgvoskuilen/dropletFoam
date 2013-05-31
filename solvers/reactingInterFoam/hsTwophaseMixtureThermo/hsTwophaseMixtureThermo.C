@@ -842,8 +842,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
         tTSuSp.second()() += pcmTSuSp.second();
     }
     
-    tTSuSp.first()() *= rCv();
-    tTSuSp.second()() *= rCv();
+    tTSuSp.first()() /= Cp();
+    tTSuSp.second()() /= Cp();
     
     return tTSuSp;
 }
@@ -1263,84 +1263,27 @@ bool Foam::hsTwophaseMixtureThermo<MixtureType>::read()
     }
 }
 
-template<class MixtureType> 
-Foam::tmp<Foam::volScalarField> 
-Foam::hsTwophaseMixtureThermo<MixtureType>::kappaV() const
-{
-    tmp<volScalarField> tkappa
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tkappa",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            dimensionedScalar("tkappa", dimPower/dimLength/dimTemperature, 0.2)
-        )
-    );
-/*
-    scalarField& kappaCells = tkappa().internalField();
-    const scalarField& TCells = T_.internalField();
-
-    forAll(TCells, celli)
-    {
-        kappaCells[celli] = this->cellMixture(celli).kappa( TCells[celli] );
-    }
-
-    forAll(T_.boundaryField(), patchi)
-    {
-        tkappa().boundaryField()[patchi] = 
-            kappa(T_.boundaryField()[patchi], patchi);
-    }
-*/
-    return tkappa;
-}
-
-template<class MixtureType>
-Foam::tmp<Foam::scalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::kappa
-(
-    const scalarField& T,
-    const label patchi
-) const
-{
-    tmp<scalarField> tkappa(new scalarField(T.size()));
-
-    scalarField& kappa = tkappa();
-
-    forAll(T, facei)
-    {
-        kappa[facei] = this->patchFaceMixture(patchi, facei).kappa(T[facei]);
-    }
-
-    return tkappa;
-}
-
 
 
 template<class MixtureType>
 tmp<volScalarField> 
-Foam::hsTwophaseMixtureThermo<MixtureType>::kByCv
+Foam::hsTwophaseMixtureThermo<MixtureType>::kByCp
 (
-    const volScalarField& muEff
+    const volScalarField& alphat //turbulent k/Cp contribution
 ) const
 {
-   // kByCv = (alpha1*k1/Cv1 + alpha2*k2/Cv2) + muEff
+   // kByCp = (alpha1*k1/Cp1 + alpha2*k2/Cp2) + alphat
 
-    return alphaLiquid_*alphaLiquid_.k()/alphaLiquid_.Cv(T_)
-         + alphaVapor_*kappaV()/alphaVapor_.Cv(T_)
-         + muEff;
+    return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cp(T_)
+         + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cp(T_)
+         + alphat;
 }
 
 
 template<class MixtureType>
-tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCv() const
+tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCp() const
 {
-    // mixture.rCv() = (alphaL/CvL + alphaV/CvV)  
-    return alphaLiquid_/alphaLiquid_.Cv(T_) + alphaVapor_/alphaVapor_.Cv(T_);
+    return 1.0 / Cp();
 }
 
 

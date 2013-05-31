@@ -142,7 +142,7 @@ Foam::phase::phase
         dimensionedScalar("faceMask_"+name, dimless, 1.0)
     )
 {  
-
+    this->oldTime();
     cellMask_.oldTime();
     if( phaseDict_.found("SchmidtNo") )
     {
@@ -1153,9 +1153,10 @@ Foam::tmp<volScalarField> Foam::phase::W() const
 
 
 // Calculate the phase thermal conductivity using the method from Harvazinski
-// This is only used for the liquid phase. The gas phase conducitivty is 
-// evaluated using the selected transport model (Sutherland)
-Foam::tmp<Foam::volScalarField> Foam::phase::k() const
+Foam::tmp<Foam::volScalarField> Foam::phase::kappa
+(
+    const volScalarField& T
+) const
 {
     tmp<volScalarField> tk1
     (
@@ -1190,8 +1191,16 @@ Foam::tmp<Foam::volScalarField> Foam::phase::k() const
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
         // xi = Y / (W * Np)
-        tk1() += specieI().Y() / (specieI().W() * Np()) * specieI().kappa();
-        tk2() += specieI().Y() / (specieI().W() * Np()) / specieI().kappa();
+        if( name_ == "Vapor" )
+        {
+            tk1() += specieI().Y() / (specieI().W() * Np()) * specieI().kappa(T);
+            tk2() += specieI().Y() / (specieI().W() * Np()) / specieI().kappa(T);
+        }
+        else
+        {
+            tk1() += specieI().Y() / (specieI().W() * Np()) * specieI().kappaL();
+            tk2() += specieI().Y() / (specieI().W() * Np()) / specieI().kappaL();
+        }
     }
     
     tk1() += pos(Yp() - 1e-3) / tk2;
@@ -1200,12 +1209,14 @@ Foam::tmp<Foam::volScalarField> Foam::phase::k() const
 }
 
 
+
+
 void Foam::phase::calculateDs
 (
     const volScalarField& muEff
 )
 {
-    D_ = Sc_ * fvc::interpolate(muEff) * faceMask_;
+    D_ = fvc::interpolate(muEff) * faceMask_ / Sc_;
 }
 
 
@@ -1243,27 +1254,27 @@ void Foam::phase::calculateDs
 }*/
 
 
-// Calculate phase specific heat using subspecie Cv model, which calls the
+// Calculate phase specific heat using subspecie Cp model, which calls the
 // underlying thermo model for each specie (Janaf table)
 // Where the phase is trace (Yp < 1e-4) the Cv is just the average of the
 // phase's subspecies, otherwise it is weighted by mass fraction
-Foam::tmp<Foam::volScalarField> Foam::phase::Cv
+Foam::tmp<Foam::volScalarField> Foam::phase::Cp
 (
     const volScalarField& T
 ) const
 {
-    tmp<volScalarField> tCv
+    tmp<volScalarField> tCp
     (
         new volScalarField
         (
             IOobject
             (
-                "tCv"+name_,
+                "tCp"+name_,
                 mesh().time().timeName(),
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("Cv",dimEnergy/dimMass/dimTemperature,SMALL)
+            dimensionedScalar("Cp",dimEnergy/dimMass/dimTemperature,SMALL)
         )
     );
     
@@ -1276,12 +1287,12 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Cv
     
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
-        tCv() += ( mask1()*specieI().Y() + mask2() )*specieI().Cv(T);
+        tCp() += ( mask1()*specieI().Y() + mask2() )*specieI().Cp(T);
     }
     
-    tCv().correctBoundaryConditions();
+    tCp().correctBoundaryConditions();
     
-    return tCv;
+    return tCp;
 }
 
 // Returns a sharpened version of the phase volume fraction

@@ -245,7 +245,7 @@ public:
             return dimensionedScalar("W_"+name_, dimMass/dimMoles, thermo_.W());
         }
         
-        const dimensionedScalar& kappa() const
+        const dimensionedScalar& kappaL() const
         {
             return kappa_;
         }
@@ -260,18 +260,21 @@ public:
             return dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), thermo_.RR);
         }
         
-        tmp<scalarField> Cv
+        tmp<scalarField> Cp
         (
             const scalarField& T,
             const label patchi
         ) const;
-
-        /*tmp<volScalarField> hs
-        (
-            const volScalarField& T
-        ) const;*/
         
-        tmp<volScalarField> Cv(const volScalarField& T) const;
+        tmp<volScalarField> Cp(const volScalarField& T) const;
+        
+        tmp<scalarField> kappa
+        (
+            const scalarField& T,
+            const label patchi
+        ) const;
+        
+        tmp<volScalarField> kappa(const volScalarField& T) const;
         
         void correct();
 };

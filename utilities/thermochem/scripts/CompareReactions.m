@@ -13,7 +13,8 @@ reactions = ReadCHEMKINReactions('chem41.inp');
 
 for r = 1:length(reactions)
     reactions(r).omega = CalcMaxRate(reactions(r),T,1);
-    reactions(r).Sh = CalcHeatRelease(reactions(r),T,db);
+    reactions(r).dH = CalcHeatRelease(reactions(r),T,db);
+    reactions(r).Sh = reactions(r).omega*reactions(r).dH;
 end
 
 
@@ -25,7 +26,7 @@ for r = 1:length(reactions)
     ps = {reactions(r).products.name};
     
     if any(strcmpi(rs,'HONO')) || any(strcmpi(ps,'HONO'))
-        hN = plot(T,reactions(r).Sh);
+        hN = plot(T,reactions(r).dH);
         h = [h; hN];
         set(hN,'DisplayName',reactions(r).name)
     end

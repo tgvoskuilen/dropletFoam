@@ -54,4 +54,11 @@ maxDeltaT       1;
 
 volSourceLimit  0.2;
 
+clipDirection   x;
+
+libs
+(
+    "libdynamicFvMesh-dev.so"
+);
+
 // ************************************************************************* //

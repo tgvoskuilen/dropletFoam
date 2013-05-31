@@ -9,49 +9,14 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volVectorField;
-    location    "0";
-    object      U;
+    class       dictionary;
+    location    "system";
+    object      balanceParDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 1 -1 0 0 0 0];
+numberOfSubdomains NUMPROCS;
 
-internalField   uniform (0 0 0);
-
-boundaryField
-{
-    Top
-    {
-        //type            pressureInletOutletVelocity;
-        //value           uniform (0 0 0);
-        type            fluxCorrectedVelocity;
-        value           uniform (0 0 0);
-    }
-    
-    Sides
-    {
-        type            fixedValue;
-        value           uniform (0 0 0);
-    }
-    
-    Wire
-    {
-        type            fixedValue;
-        value           uniform (0 0 0);
-    }
-    
-    FrontAndBack
-    {
-        type            symmetryPlane;
-    }
-    
-    Bottom
-    {
-        type            fixedValue;
-        value           uniform (0 0 0);
-    }
-}
-
+method          ptscotch;
 
 // ************************************************************************* //

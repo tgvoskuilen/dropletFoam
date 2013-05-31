@@ -25,7 +25,7 @@ stopAt          endTime;
 
 endTime         2.0;
 
-deltaT          1e-6;
+deltaT          1e-3;
 
 writeControl    adjustableRunTime; //timeStep
 
@@ -53,5 +53,10 @@ maxAlphaCo      0.2;
 maxDeltaT       1;
 
 volSourceLimit  0.2;
+
+libs
+(
+    "libdynamicFvMesh-dev.so"
+);
 
 // ************************************************************************* //

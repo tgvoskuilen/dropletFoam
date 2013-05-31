@@ -25,13 +25,13 @@
 
     wordList pcorrTypes
     (
-        p.boundaryField().size(),
+        p_rgh.boundaryField().size(),
         zeroGradientFvPatchScalarField::typeName
     );
 
-    forAll (p.boundaryField(), i)
+    forAll (p_rgh.boundaryField(), i)
     {
-        if (p.boundaryField()[i].fixesValue())
+        if (p_rgh.boundaryField()[i].fixesValue())
         {
             pcorrTypes[i] = fixedValueFvPatchScalarField::typeName;
         }
@@ -48,7 +48,7 @@
             IOobject::NO_WRITE
         ),
         mesh,
-        dimensionedScalar("pcorr", p.dimensions(), 0.0),
+        dimensionedScalar("pcorr", p_rgh.dimensions(), 0.0),
         pcorrTypes
     );
 

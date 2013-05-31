@@ -41,7 +41,7 @@ Vapor
 
 Liquid
 {
-   SchmidtNo  0.9;
+   SchmidtNo  600.0;
    
    subspecies
    (

@@ -1,19 +1,17 @@
 function data = ReadDb()
 
-    filename = 'thermo.pydb';
+    filename = '../props/thermo.pydb';
 
     fid = fopen(filename,'r');
     
-    %allLines = fgets(f);
-    %fclose(f);
-
-
+    %list of molar masses for atoms used in here
     Ws.C = 12.011;
     Ws.N = 14.007;
     Ws.H = 1.008;
     Ws.O = 15.999;
     Ws.AR = 39.948;
     Ws.HE = 4.0026;
+    Ws.E = 0;
     
     data = struct();
 
@@ -69,7 +67,7 @@ function data = ReadDb()
                 entry.name = A{1}{j+1}(2:end-2);
             end
 
-            if strcmp(ss,'''Atoms'':')
+            if ~isempty(strfind(ss,'Atoms'))
                 k = j+1;
                 atoms = struct();
                 while true
@@ -99,7 +97,7 @@ function data = ReadDb()
                 entry.atoms = atoms;
             end
         end
-
+        
         f = fieldnames(entry.atoms);
         W = 0;
 

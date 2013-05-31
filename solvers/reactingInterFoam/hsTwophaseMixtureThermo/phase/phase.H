@@ -159,6 +159,11 @@ public:
         {
             return rhoPhiAlpha_;
         }
+        
+        const surfaceScalarField& D() const
+        {
+            return D_;
+        }
                 
         const volScalarField& rhoAlpha() const
         {
@@ -204,8 +209,8 @@ public:
         //- Get phase molar mass field
         tmp<volScalarField> W() const;
         
-        tmp<volScalarField> k() const;
-        tmp<volScalarField> Cv(const volScalarField& T) const;
+        tmp<volScalarField> kappa(const volScalarField& T) const;
+        tmp<volScalarField> Cp(const volScalarField& T) const;
                 
         //- Correct the phase properties
         void correct(const volScalarField& p, const volScalarField& T);

@@ -30,7 +30,8 @@ boundaryField
         
     Sides
     {
-        type            symmetryPlane;
+        type            zeroGradient;
+        value           uniform 0.0;
     }
     
     Bottom

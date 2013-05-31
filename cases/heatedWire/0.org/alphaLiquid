@@ -30,19 +30,20 @@ boundaryField
         
     Sides
     {
-        type            symmetryPlane;
+        type            zeroGradient;
+        value           uniform 1.0;
     }
     
     Bottom
     {
         type            zeroGradient;
-        value           uniform 0.0;
+        value           uniform 1.0;
     }
     
     Wire
     {
         type            zeroGradient;
-        value           uniform 0.0;
+        value           uniform 1.0;
     }
     
     FrontAndBack

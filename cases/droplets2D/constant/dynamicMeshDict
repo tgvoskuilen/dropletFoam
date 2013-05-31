@@ -15,10 +15,13 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dynamicFvMesh   dynamicRefineFvMesh; //staticFvMesh
+dynamicFvMesh   dynamicRefineBalancedFvMesh; //dynamicRefineFvMesh; //staticFvMesh
 
 dynamicRefineFvMeshCoeffs
 {
+    enableBalancing true;
+    allowableImbalance 0.2;
+    
     // How often to refine
     refineInterval  1;
 

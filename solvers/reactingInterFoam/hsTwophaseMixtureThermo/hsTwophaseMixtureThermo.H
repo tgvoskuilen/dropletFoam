@@ -245,14 +245,14 @@ public:
             virtual tmp<volScalarField> muV() const;
             
             //- 
-            virtual tmp<scalarField> kappa
+            /*virtual tmp<scalarField> kappa
             (
                 const scalarField& T,
                 const label patchi
             ) const;
 
             //- 
-            virtual tmp<volScalarField> kappaV() const;
+            virtual tmp<volScalarField> kappaV() const;*/
             
             
         //- Read thermophysicalProperties dictionary
@@ -269,6 +269,17 @@ public:
             {
                 return alphaVapor_;
             }
+            
+            const phase& liquid() const
+            {
+                return alphaLiquid_;
+            }
+            
+            const phase& vapor() const
+            {
+                return alphaVapor_;
+            }
+            
             
             volScalarField& T()
             {
@@ -324,8 +335,8 @@ public:
             //- Get the total phase change heat generation
             tmp<volScalarField> dQ_phaseChange() const;
             
-            tmp<volScalarField> kByCv(const volScalarField& muEff) const;
-            tmp<volScalarField> rCv() const;
+            tmp<volScalarField> kByCp(const volScalarField& muEff) const;
+            tmp<volScalarField> rCp() const;
             
             void setHs();
 };

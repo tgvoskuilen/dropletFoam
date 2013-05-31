@@ -101,7 +101,28 @@
     T.oldTime(); //needed?
     volScalarField& p = mixture.p();
     p.oldTime(); //needed?
- 
+    
+    //TODO: Read from dictionary
+    dimensionedScalar p0("p0",dimPressure,1e5);
+    
+    Info<< "Reading field p_rgh\n" << endl;
+    volScalarField p_rgh
+    (
+        IOobject
+        (
+            "p_rgh",
+            runTime.timeName(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh
+    );
+
+    //Force p to be consistent with p_rgh (gives better initial conditions
+    // than forcing p_rgh to be consistent with p)
+    p = p_rgh + p0 + rho*gh;
+    
     /*volScalarField hs
     (
         IOobject
@@ -113,9 +134,9 @@
             IOobject::AUTO_WRITE
         ),
         thermo.hs()
-    );
+    );*/
     
-    volScalarField Te
+    /*volScalarField Te
     (
         IOobject
         (
@@ -144,7 +165,11 @@
         dimensionedScalar("dQ", dimPower, 0.0)
     );
     
+    Info<< "Creating field dpdt\n" << endl;
+    volScalarField dpdt("dpdt", fvc::ddt(p));
 
+    Info<< "Creating field kinetic energy K\n" << endl;
+    volScalarField K("K", 0.5*magSqr(U));
 
 
 

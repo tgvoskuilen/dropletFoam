@@ -67,14 +67,14 @@ shapes
         
         liquidSpecies
         (
-            HNO3L  0.85
-            NO2L   0.15
+            HNO3L  0.995
+            NO2L   0.005
         );
         
         vaporSpecies
         (
             HNO3   0.1
-            NO2    0.2
+            NO2    0.005
         );
     }
 

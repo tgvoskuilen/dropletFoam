@@ -24,9 +24,11 @@
                 (
                     mixture.surfaceTensionForce()
                   - ghf*fvc::snGrad(rho)
-                  - fvc::snGrad(p)
+                  - fvc::snGrad(p_rgh)
                 ) * mesh.magSf()
             )
         );
+        
+        K = 0.5*magSqr(U);
     }
 

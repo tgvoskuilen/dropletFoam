@@ -154,9 +154,7 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
     const volScalarField& area
 )
 {
-    dimensionedScalar sA("sA",dimless/dimLength,SMALL);
-    mask_ = (phaseChangeZones * neg(T_ - Tc_*0.9) +  pos(T_ - Tc_*0.9)) 
-          * pos(area-sA);
+
     
     //Calculate the vapor pressure
     dimensionedScalar p0("p0",dimPressure,101325);
@@ -174,7 +172,13 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
      );
     
     p_vap_.min(Pc_);
-                              
+    
+    dimensionedScalar sA("sA",dimless/dimLength,SMALL);
+    // Allow new phase nucleation only on interfaces, and supress where
+    // non-boiling interfaces overlap
+    mask_ = (phaseChangeZones * neg(p_vap_ - p_) +  pos(p_vap_ - p_)) 
+          * pos(area-sA);
+                          
     //Calculate the mole fractions
 
     xL_ = alphaL_.x(liquid_specie_);

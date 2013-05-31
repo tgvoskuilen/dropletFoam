@@ -17,35 +17,35 @@ FoamFile
 
 5
 (
-    FrontAndBack
-    {
-        type            symmetryPlane;
-        nFaces          45960;
-        startFace       45610;
-    }
     Bottom
     {
         type            patch;
-        nFaces          120;
-        startFace       91570;
+        nFaces          300;
+        startFace       200200;
     }
-    Wire
+    Sides
     {
         type            patch;
-        nFaces          60;
-        startFace       91690;
+        nFaces          1000;
+        startFace       200500;
     }
     Top
     {
         type            patch;
-        nFaces          120;
-        startFace       91750;
+        nFaces          300;
+        startFace       201500;
     }
-    Sides
+    Wire
+    {
+        type            patch;
+        nFaces          1200;
+        startFace       201800;
+    }
+    FrontAndBack
     {
         type            symmetryPlane;
-        nFaces          400;
-        startFace       91870;
+        nFaces          28800;
+        startFace       203000;
     }
 )
 
