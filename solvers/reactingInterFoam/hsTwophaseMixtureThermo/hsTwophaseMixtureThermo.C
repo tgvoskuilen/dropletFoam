@@ -404,6 +404,9 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     ),
     phaseMaskTol_(readScalar(lookup("phaseMaskTol")))
 {
+    T_.correctBoundaryConditions();
+    p_.correctBoundaryConditions();
+    
     divPhaseChange_.oldTime();
     divComp_.oldTime();
     alphaLiquid_.setOtherPhase( &alphaVapor_ );
