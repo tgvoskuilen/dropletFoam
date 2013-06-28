@@ -22,7 +22,8 @@ ddtSchemes
 
 gradSchemes
 {
-    default         Gauss linear;
+    default           Gauss linear;
+    alphaVaporSmooth  extendedLeastSquares;
 }
 
 divSchemes
@@ -39,10 +40,12 @@ divSchemes
     div(phi,h)      Gauss limitedLinear 1;
     div(phi,K)      Gauss limitedLinear 1;
     div(rho*phi,K)  Gauss limitedLinear 1;
-    div(phid,p)     Gauss limitedLinear 1;
+    div(phid,p_rgh)     Gauss limitedLinear 1;
+    div(phi,p_rgh)      Gauss limitedLinear 1;
     div(phi,p)      Gauss limitedLinear 1;
     div(phi,epsilon) Gauss limitedLinear 1;
     div(rho*phi,T)  Gauss limitedLinear 1;
+    div(phi,T)      Gauss limitedLinear 1;
     div(rho*phi,Te)  Gauss upwind;
     div(phi,Te)  Gauss upwind;
     div(phi,k) Gauss limitedLinear 1;
@@ -68,7 +71,7 @@ snGradSchemes
 fluxRequired
 {
     default         no;
-    p;
+    p_rgh;
     pcorr;
     "alpha(.*)";
 }

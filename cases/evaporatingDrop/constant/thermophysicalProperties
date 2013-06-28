@@ -41,7 +41,7 @@ Vapor
 
 Liquid
 {
-   SchmidtNo  0.9;
+   SchmidtNo  200.0;
    
    subspecies
    (
@@ -56,36 +56,61 @@ Liquid
             
             sigma0       sigma0 [ 1 0 -2 0 0 0 0] 0.07;//7; //13;
             sigmaa       0.0;
-               
-            evaporationModel HertzKnudsenPressure;
-            
-            HertzKnudsenPressureCoeffs
-            {
-               vapor           H2O;
-               Lb              Lb [ 1 2 -2 0 -1 0 0] 40626000.0;
-               Tb              Tb [ 0 0 0 1 0 0 0] 373.15;
-               La              0.38;
-               betaM           0.6;
 
-               Tc              Tc [ 0 0 0 1 0 0 0] 647.3;
-               Pc              Pc [ 1 -1 -2 0 0 0 0] 22120000;
-               PvCoeffs        (10.9988 2.9728e3 4.1643e5);
-            }
-            
-            HertzKnudsenTemperatureCoeffs
-            {
-               vapor           H2O;
-               Lb              Lb [ 1 2 -2 0 -1 0 0] 40626000.0;
-               Tb              Tb [ 0 0 0 1 0 0 0] 373.15;
-               La              0.38;
-               betaM           0.6;
-               Tc              Tc [ 0 0 0 1 0 0 0] 647.3;
-            }
         }
    );
 }
 
 
+phaseChangeReactions
+(    
+    H2OEvap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            H2OL   1.0
+        );
+        
+        gasSpecies
+        (
+            H2O   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 41236897.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 375.5;
+            La              0.38;
+            betaM           0.6;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 647.3;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 22120000.0;
+            PvCoeffs        (12.450952 4391.192311 106786.654764);
+        }
+    }
+        
+    //simply including this then accounts for all liquid-gas reactions in the
+    // chemistry set. no arguments are needed other than the model type
+    LiquidReaction
+    {
+        phaseChangeModel   PhaseChangeReaction;
+        
+        liquidSpecies
+        (
+        );
+        
+        gasSpecies
+        (
+        );
+        
+        PhaseChangeReactionCoeffs
+        {
+        }
+    }
+    
+);
 
 
 // ************************************************************************* //

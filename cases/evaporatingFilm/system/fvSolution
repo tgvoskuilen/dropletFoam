@@ -76,7 +76,7 @@ solvers
         maxIter         100;
     }
 
-    p
+    p_rgh
     {
         solver          GAMG;
         tolerance       1e-08;
@@ -89,10 +89,9 @@ solvers
         nCellsInCoarsestLevel 10;
         agglomerator    faceAreaPair;
         mergeLevels     1;
-        maxIter         20;
     }
 
-    pFinal
+    p_rghFinal
     {
         solver          PCG;
         preconditioner
@@ -122,7 +121,7 @@ solvers
         smoother        GaussSeidel;
         tolerance       1e-06;
         relTol          0;
-        nSweeps         1;
+        nSweeps         2;
     }
 
     "(k|B|nuTilda)"
@@ -170,7 +169,7 @@ solvers
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-06;
-        relTol          0.1;
+        relTol          0.0;
     }
 }
 
@@ -182,7 +181,7 @@ PIMPLE
     nOuterCorrectors 1;
     nNonOrthogonalCorrectors 3;
     nAlphaCorr      1;
-    nAlphaSubCycles 3;
+    nAlphaSubCycles 2;
     cAlpha          1;
 
 //    pRefPoint      (0.51 0.51 0.51);

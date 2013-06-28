@@ -32,7 +32,7 @@ shapes
         
         ellipsoidCoeffs
         {
-            center   (0 0.003 0.00411);
+            center   (0 0.003 0.00417);
             radius   (0 0.001 0.001);
         }
         
@@ -58,7 +58,7 @@ shapes
                 
         ellipsoidCoeffs
         {
-            center   (0 0.003 0.00189);
+            center   (0 0.003 0.00183);
             radius   (0 0.001 0.001);
         }
         
@@ -67,14 +67,14 @@ shapes
         
         liquidSpecies
         (
-            HNO3L  0.995
-            NO2L   0.005
+            HNO3L  0.85
+            NO2L   0.15
         );
         
         vaporSpecies
         (
-            HNO3   0.1
-            NO2    0.005
+            HNO3   0.2
+            NO2    0.25
         );
     }
 

@@ -33,8 +33,8 @@ Vapor
    subspecies
    (
         CH3ONO2      {}
-        CH3N3        {}
         N2O          {}
+        CH3N3        {}
         CH3NHNH2     {}
         CH3NNH2      {}
         CH3NNH       {}

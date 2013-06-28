@@ -154,8 +154,6 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
     const volScalarField& area
 )
 {
-
-    
     //Calculate the vapor pressure
     dimensionedScalar p0("p0",dimPressure,101325);
     

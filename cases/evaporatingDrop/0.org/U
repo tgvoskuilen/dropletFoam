@@ -27,14 +27,9 @@ boundaryField
         value           uniform (0 0 0);
     }
     
-    sides
+    frontAndBack
     {
         type            symmetryPlane;
-    }
-    
-    heatedWall
-    {
-        type            zeroGradient;
     }
     
     defaultFaces

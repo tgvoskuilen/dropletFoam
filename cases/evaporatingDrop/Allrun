@@ -3,66 +3,59 @@
 import os
 import sys
 
-sys.path.append('../../../foamTools/python')
-import pyOpenFOAM
+toolPath = '../../../foamTools/python'
 
-# The inputs for this case builder are
-#    chemkin/chem.inp   -   Reaction information and species list
-#    chemkin/therm.dat  -   Thermodynamic database for species
-#    chemkin/properties.db  -  Transport property database for species
-#
+sys.path.append(toolPath)
+
+import pyOpenFOAM
 
 
 
 # Read number of processors from command line (1 by default)
-np = pyOpenFOAM.read_inputs(sys.argv)
-print "Running with %d processors" % np
+(np,resume) = pyOpenFOAM.read_inputs(sys.argv)
 
-# Convert the chemkin files to Foam format
-#pyOpenFOAM.run('chemkinToFoam',args='chemkin/chem.inp chemkin/therm.dat constant/reactions constant/thermo');
-
-# Read species list from 'constant/reactions'
-#species = pyOpenFOAM.read_species()
-
-# Make 0 directory for this species list
-#pyOpenFOAM.make_zero_dir(species, default='N2')
-
-# Generate the transportProperties dict
-#pyOpenFOAM.make_transport_properties(species)
-
-# Make the *.foam file for ParaView
-pyOpenFOAM.touch_foam_files('evaporation')
-
-os.system('cp -r 0.org 0')
-
-# Generate the initial mesh
-print "Generating blockMesh"
-pyOpenFOAM.run('blockMesh')
-
-for i in range(0,3):
-    print "Pre-Refinement loop", i
-    pyOpenFOAM.run('VOFSetFields')
-    pyOpenFOAM.run('initDynamicMesh')
+if not resume:
+    print "Running with %d processors" % np
 
 
-pyOpenFOAM.run('VOFSetFields')
+    # Make the *.foam file for ParaView
+    pyOpenFOAM.touch_foam_files('drop')
+
+    os.system('cp -r 0.org 0')
+
+    # Generate the initial mesh
+    print "Generating blockMesh"
+    pyOpenFOAM.run('blockMesh')
+    
+    if np > 1:
+        # For parallel runs, decompose the problem
+        print "Decomposing problem"
+        pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+        pyOpenFOAM.set_balance_par(np)
+        pyOpenFOAM.run('decomposePar',args='-cellDist')
+        
+    n_adapts = pyOpenFOAM.max_refinement_levels()
+        
+    for i in range(0,n_adapts):
+        print "Pre-Refinement loop", i
+        pyOpenFOAM.run('VOFSetFields',np)
+        pyOpenFOAM.run('initDynamicMesh',np)
 
 
+    print "Setting final field values"
+    pyOpenFOAM.run('VOFSetFields',np)
 
-if np > 1:
-    # For parallel runs, decompose the problem
-    print "Decomposing problem"
-    pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
-    pyOpenFOAM.run('decomposePar',args='-cellDist')
 
 
 # Run the problem
 print "Running the problem"
-pyOpenFOAM.run('reactingInterFoam',np,hide=False)
-
-
-
+if np > 1:
+    os.system('foamJob -parallel -screen reactingInterFoam')
+else:
+    os.system('foamJob -screen reactingInterFoam')
 
 print "Finished!"
+
+
 
 

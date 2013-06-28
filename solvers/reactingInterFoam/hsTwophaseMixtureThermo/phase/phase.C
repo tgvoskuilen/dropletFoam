@@ -1298,9 +1298,15 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Cp
 // Returns a sharpened version of the phase volume fraction
 Foam::tmp<Foam::volScalarField> Foam::phase::sharp
 (
-    scalar tol
+    scalar tolL,
+    scalar tolH //defaults to -1, so same as tolL
 ) const
 {
+    if( tolH < 0.0 )
+    {
+        tolH = tolL;
+    }
+    
     tmp<volScalarField> ts
     (
         new volScalarField
@@ -1318,8 +1324,10 @@ Foam::tmp<Foam::volScalarField> Foam::phase::sharp
     volScalarField& s = ts();
 
     //Sharpen the alpha field
-    scalar Cpc = 2.0*tol;
-    s = (Foam::min(Foam::max(s, 0.5*Cpc),1.0-0.5*Cpc) - 0.5*Cpc)/(1.0-Cpc);
+    scalar Cpc = tolL+tolH;
+    s = (Foam::min(Foam::max(s, tolL),1.0-tolH) - tolL)/(1.0-Cpc);
+    
+    s.correctBoundaryConditions();
 
     return ts;
 }
@@ -1377,6 +1385,7 @@ scalar Foam::phase::solveSubSpecies
            
     //Arbitrary diagonal term for cells outside normal region
     volScalarField Sp = (1.0 - cellMask_)*rho(p,T)/mesh().time().deltaT();
+
     
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
@@ -1409,15 +1418,15 @@ scalar Foam::phase::solveSubSpecies
           - fvm::Sp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
         );
-        
-        /*Pout<<"YiEqn.A() min,max = " << Foam::min(YiEqn.A()) << ", " << Foam::max(YiEqn.A()) << endl;
+        /*
+        Pout<<"YiEqn.A() min,max = " << Foam::min(YiEqn.A()) << ", " << Foam::max(YiEqn.A()) << endl;
         Pout<<"max ddt(rhoAlpha) = " << Foam::max(fvc::ddt(rhoAlpha_)).value() << endl;
         Pout<<"max ddt(rhoAlpha).if = " << Foam::max(fvc::ddt(rhoAlpha_)().internalField()) << endl;
         
-       // if( Foam::min(YiEqn.A()).value() < SMALL )
-       // {
+        if( Foam::min(YiEqn.A()).value() < SMALL )
+        {
             tmp<volScalarField> A = YiEqn.A();
-            tmp<volScalarField> ddtdiv = fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - m_evap_sum();
+            tmp<volScalarField> ddtdiv = fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - mdot_phase;
             tmp<volScalarField> div = fvc::div(rhoPhiAlpha_);
             tmp<volScalarField> ddt = fvc::ddt(rhoAlpha_);
             tmp<volScalarField> avgFaceMask = fvc::average(faceMask_);
@@ -1439,6 +1448,7 @@ scalar Foam::phase::solveSubSpecies
                     Pout<<"  ddtdiv = " << ddtdiv()[cellI] << endl;
                     Pout<<"  ddt = " << ddt()[cellI] << endl;
                     Pout<<"  div = " << div()[cellI] << endl;
+                    Pout<<"  mdot_evap = " << mdot_phase[cellI] << endl;
                     Pout<<"  avgFM = " << avgFaceMask()[cellI] << endl;
                     Pout<<"  avgD = " << avgD()[cellI] << endl;
                     Pout<<"  Y = " << Yi[cellI] << endl;
@@ -1446,8 +1456,8 @@ scalar Foam::phase::solveSubSpecies
             
             }
         
-       // }
-*/
+        }*/
+
         //Info<<"Doing solve, min diag = " << Foam::min(YiEqn.A()) << endl;
         YiEqn.relax();
         YiEqn.solve(mesh().solver("Yi"));
@@ -1501,15 +1511,37 @@ void Foam::phase::setPhaseMasks
     scalar maskTol,
     const volScalarField& p,
     const volScalarField& T,
-    const volScalarField& area
+    const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
 )
-{
+{    
     volScalarField& alpha = *this;
-
-    dimensionedScalar one("one",dimLength,1.0);
+    
+    volScalarField mdot_phase
+    (
+        IOobject
+        (
+            "m_pc",
+            mesh().time().timeName(),
+            mesh()
+        ),
+        mesh(),
+        dimensionedScalar("m_pc",dimDensity/dimTime,0.0)
+    );
+        
+    forAllConstIter
+    (
+        PtrDictionary<mixturePhaseChangeModel>, 
+        phaseChangeModels, 
+        pcmI
+    )
+    {
+        mdot_phase += pcmI().mdot(name_);
+    }
+    
+    dimensionedScalar one("one",dimTime/dimDensity,1.0);
     
     //tmp<volScalarField> oldMask = cellMask_;
-    cellMask_ = pos(alpha - maskTol + area*one - SMALL);
+    cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*one - SMALL);
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     
     //apply the current-time mask to the old-time rhoAlpha

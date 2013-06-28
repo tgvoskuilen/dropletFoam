@@ -22,24 +22,13 @@ boundaryField
 {
     atmosphere
     {
-        type            waveTransmissive;
-        value           uniform 1e5;
-        phi             phi;
-        rho             rho;
-        gamma           1.4;
-        lInf            0.05;
-        fieldInf        1e5;
+        type            calculated;
+        value           $internalField;
     }
 
-
-    sides
+    frontAndBack
     {
         type            symmetryPlane;
-    }
-    
-    heatedWall
-    {
-        type            zeroGradient;
     }
     
     defaultFaces

@@ -124,7 +124,7 @@
             thermo.rho() += thermo.psi()*p_rgh;
 
             phi += p_rghEqn.flux();
-            p_rgh.relax(); //from Euler solver and Buoyant solver...
+            //p_rgh.relax(); //from Euler solver and Buoyant solver...
             
             U += rAU*fvc::reconstruct((phiForces + p_rghEqn.flux())/rAUf);
             U.correctBoundaryConditions(); 

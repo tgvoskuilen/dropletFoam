@@ -46,7 +46,7 @@ shapes
         );
         vaporSpecies
         (
-            H2O   0.1
+            H2O   0.2
         );
     }
 );

@@ -140,6 +140,11 @@ public:
             return name();
         }
         
+        const volScalarField& cellMask() const
+        {
+            return cellMask_;
+        }
+        
         const PtrDictionary<subSpecie>& subSpecies() const
         {
             return subSpecies_;
@@ -177,7 +182,7 @@ public:
             scalar maskTol,
             const volScalarField& p, 
             const volScalarField& T,
-            const volScalarField& area
+            const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
         );
 
         //- Return the phase density
@@ -229,7 +234,7 @@ public:
         
         const volScalarField& Y(const word& specie) const;
         
-        tmp<volScalarField> sharp(scalar tol) const;
+        tmp<volScalarField> sharp(scalar tol1, scalar tol2 = -1.0) const;
         
         //- Calculate the surface tension field for this phase
         tmp<volScalarField> sigma

@@ -22,7 +22,8 @@ ddtSchemes
 
 gradSchemes
 {
-    default         Gauss linear;
+    default           Gauss linear;
+    alphaVaporSmooth  extendedLeastSquares;
 }
 
 divSchemes

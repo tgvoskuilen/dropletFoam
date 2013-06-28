@@ -16,25 +16,19 @@ FoamFile
 
 dimensions      [0 0 0 1 0 0 0];
 
-internalField   uniform 300;
+internalField   uniform 350;
 
 boundaryField
 {
     atmosphere
     {
         type            fixedValue;
-        value           uniform 300;
+        value           uniform 500;
     }
     
-    sides
+    frontAndBack
     {
         type            symmetryPlane;
-    }
-    
-    heatedWall
-    {
-        type            fixedValue;
-        value           uniform 450;
     }
     
     defaultFaces

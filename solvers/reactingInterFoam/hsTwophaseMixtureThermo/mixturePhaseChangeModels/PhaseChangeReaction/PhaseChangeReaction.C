@@ -196,23 +196,26 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::mdot
             dimensionedScalar("tmdot",dimDensity/dimTime,0.0)
         )
     );
-    const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
     
-    if( phaseName == "Vapor" )
+    if(combustionPtr_)
     {
-        forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
+        const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
+        
+        if( phaseName == "Vapor" )
         {
-            tmdot() += chemistry.RR(specieI().idx());
+            forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
+            {
+                tmdot() += chemistry.RR(specieI().idx());
+            }
+        }
+        else if( phaseName == "Liquid" )
+        {
+            forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
+            {
+                tmdot() += chemistry.RR(specieI().idx());
+            }
         }
     }
-    else if( phaseName == "Liquid" )
-    {
-        forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
-        {
-            tmdot() += chemistry.RR(specieI().idx());
-        }
-    }
-    
     return tmdot;
 }
 
@@ -240,24 +243,27 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::Vdot
             dimensionedScalar("tVdot",dimless/dimTime,0.0)
         )
     );
-    const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
     
-    if( phaseName == "Vapor" )
+    if(combustionPtr_)
     {
-        forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
+        const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
+        
+        if( phaseName == "Vapor" )
         {
-            tmp<volScalarField> rhoV = p_*specieI().W()/(R_*T_);
-            tVdot() += chemistry.RR(specieI().idx())/rhoV;
+            forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
+            {
+                tmp<volScalarField> rhoV = p_*specieI().W()/(R_*T_);
+                tVdot() += chemistry.RR(specieI().idx())/rhoV;
+            }
+        }
+        else if( phaseName == "Liquid" )
+        {
+            forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
+            {
+                tVdot() += chemistry.RR(specieI().idx())/specieI().rho0();
+            }
         }
     }
-    else if( phaseName == "Liquid" )
-    {
-        forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
-        {
-            tVdot() += chemistry.RR(specieI().idx())/specieI().rho0();
-        }
-    }
-    
     return tVdot;
 }
 // ************************************************************************* //
