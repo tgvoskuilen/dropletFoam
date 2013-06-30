@@ -17,5 +17,8 @@
 lnInclude/
 linux64GccDPOpt/
 
+# Decomposed case folders
+processor*/
+
 # Text backup files
 *~

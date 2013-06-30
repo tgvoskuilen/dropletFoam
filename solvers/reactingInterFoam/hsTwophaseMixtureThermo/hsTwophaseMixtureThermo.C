@@ -87,8 +87,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     correctInterface();
     
     // uses area_ and alpha to set mask
-    alphaLiquid_.setPhaseMasks(phaseMaskTol_, p_, T_, phaseChangeModels_ );
-    alphaVapor_.setPhaseMasks(phaseMaskTol_, p_, T_, phaseChangeModels_ );
+    alphaLiquid_.setPhaseMasks(phaseMaskTol_, p_, T_, phaseChangeModels_, area_ );
+    alphaVapor_.setPhaseMasks(phaseMaskTol_, p_, T_, phaseChangeModels_, area_ );
     
     // uses mask to set rhoAlpha
     alphaVapor_.correct(p_,T_);
@@ -165,7 +165,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     word gradScheme("grad(alphaVaporSmooth)");
     
     dimensionedScalar eps("eps",dimArea,SMALL);
-    tmp<volScalarField> Cp = Foam::mag(fvc::grad(C(), gradScheme));
+    tmp<volScalarField> Cp = Foam::mag(fvc::grad(C(),gradScheme));
     dimensionedScalar N = fvc::domainIntegrate(Cp()) 
         / (fvc::domainIntegrate((1-C())*(1-C())*Cp()) + eps);
 
@@ -884,7 +884,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     //Calculate interface curvature field
     // Cell gradient of alpha
     word gradScheme("grad(alphaVaporSmooth)");
-    const volVectorField gradAlpha(fvc::grad(alphaLiquid_,gradScheme));
+    const volVectorField gradAlpha(fvc::grad(alphaLiquid_, gradScheme));
     //const volVectorField gradAlpha(fvc::grad(alphaVapor_,gradScheme));
     
     // Interpolated face-gradient of alpha
@@ -956,7 +956,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             // Divergence term is handled explicitly to be
             // consistent with the explicit transport solution
             //divU*min(alphaLiquid_, scalar(1)) + Sv - divPhaseChange_*areaFactor
-            divU*min(alphaVapor_, scalar(1)) + Sv
+            divU*min(alphaLiquid_, scalar(1)) + Sv
             //Sv
         );
         

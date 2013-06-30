@@ -1511,7 +1511,8 @@ void Foam::phase::setPhaseMasks
     scalar maskTol,
     const volScalarField& p,
     const volScalarField& T,
-    const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
+    const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels,
+    const volScalarField& area
 )
 {    
     volScalarField& alpha = *this;
@@ -1539,8 +1540,10 @@ void Foam::phase::setPhaseMasks
     }
     
     dimensionedScalar one("one",dimTime/dimDensity,1.0);
+    //dimensionedScalar one("one",dimLength,1.0);
     
     //tmp<volScalarField> oldMask = cellMask_;
+    //cellMask_ = pos(alpha - maskTol + area*one - SMALL);
     cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*one - SMALL);
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     

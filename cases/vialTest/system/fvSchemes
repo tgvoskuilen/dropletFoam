@@ -1,0 +1,82 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default         Euler;
+}
+
+gradSchemes
+{
+    default           Gauss linear;
+    alphaVaporSmooth  extendedLeastSquares;
+}
+
+divSchemes
+{
+    div(rho*phi,k)      Gauss vanLeer;
+    
+    div(rho*phi,U)  Gauss upwind;
+    div(phi,alpha)  Gauss vanLeer;
+    div(phirb,alpha) Gauss interfaceCompression;
+    
+    div(phi,Yi_h)   Gauss limitedLinear01 1;
+    div(rho*phi*alpha,Yi)   Gauss upwind;
+    div(rho*phi,hs)   Gauss limitedLinear01 1;
+    div(phi,h)      Gauss limitedLinear 1;
+    div(phi,K)      Gauss limitedLinear 1;
+    div(rho*phi,K)  Gauss limitedLinear 1;
+    div(phid,p_rgh)     Gauss limitedLinear 1;
+    div(phi,p_rgh)      Gauss limitedLinear 1;
+    div(phi,p)      Gauss limitedLinear 1;
+    div(phi,epsilon) Gauss limitedLinear 1;
+    div(rho*phi,T)  Gauss limitedLinear 1;
+    div(phi,T)      Gauss limitedLinear 1;
+    div(rho*phi,Te)  Gauss upwind;
+    div(phi,Te)  Gauss upwind;
+    div(phi,k) Gauss limitedLinear 1;
+    div((muEff*dev2(T(grad(U))))) Gauss linear;
+    div(uc,Yi)      Gauss linear corrected;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;
+}
+
+fluxRequired
+{
+    default         no;
+    p_rgh;
+    pcorr;
+    "alpha(.*)";
+}
+
+
+
+
+// ************************************************************************* //

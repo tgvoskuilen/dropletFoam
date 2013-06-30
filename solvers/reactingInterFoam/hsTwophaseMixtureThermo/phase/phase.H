@@ -182,7 +182,8 @@ public:
             scalar maskTol,
             const volScalarField& p, 
             const volScalarField& T,
-            const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
+            const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels,
+            const volScalarField& area
         );
 
         //- Return the phase density
