@@ -884,8 +884,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     //Calculate interface curvature field
     // Cell gradient of alpha
     word gradScheme("grad(alphaVaporSmooth)");
-    const volVectorField gradAlpha(fvc::grad(alphaLiquid_, gradScheme));
-    //const volVectorField gradAlpha(fvc::grad(alphaVapor_,gradScheme));
+    //const volVectorField gradAlpha(fvc::grad(alphaLiquid_, gradScheme));
+    const volVectorField gradAlpha(fvc::grad(alphaVapor_,gradScheme));
     
     // Interpolated face-gradient of alpha
     surfaceVectorField gradAlphaf(fvc::interpolate(gradAlpha));
@@ -895,8 +895,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 
     surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
         
-    surfaceScalarField phiAlphaL("phiAlphaL",phi_);
-    //surfaceScalarField phiAlphaV("phiAlphaV",phi_);
+    //surfaceScalarField phiAlphaL("phiAlphaL",phi_);
+    surfaceScalarField phiAlphaV("phiAlphaV",phi_);
     
     divPhaseChange_ *= 0.0;
     volScalarField Sv
@@ -919,8 +919,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     )
     {
         divPhaseChange_ += pcmI().Vdot("Vapor") + pcmI().Vdot("Liquid"); //used in the pEqn
-        Sv += pcmI().Vdot("Liquid");
-        //Sv += pcmI().Vdot("Vapor");
+        //Sv += pcmI().Vdot("Liquid");
+        Sv += pcmI().Vdot("Vapor");
     }
     
     //dimensionedScalar sA("smallArea",dimless/dimLength,SMALL);
@@ -956,24 +956,22 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             // Divergence term is handled explicitly to be
             // consistent with the explicit transport solution
             //divU*min(alphaLiquid_, scalar(1)) + Sv - divPhaseChange_*areaFactor
-            divU*min(alphaLiquid_, scalar(1)) + Sv
+            divU*min(alphaVapor_, scalar(1)) + Sv
             //Sv
         );
         
         
-        /*
+        
         forAll(divComp_, celli)
         {
-            if (divComp_[celli] < 0.0 && alphaVapor_[celli] > 0.0)
+            if (divComp_[celli] > 0.0 && alphaVapor_[celli] > 0.0) //loss of alphaV
             {
-                //Sp[celli] += divComp_[celli]*alphaVapor_[celli];
-                //Su[celli] -= divComp_[celli]*alphaVapor_[celli];
-                Su[celli] -= divComp_[celli]*alphaVapor_[celli];
+                Sp[celli] -= divComp_[celli]*(1.0+2.0*alphaVapor_[celli]);
+                Su[celli] += divComp_[celli]*alphaVapor_[celli]*alphaVapor_[celli];
             }
-            else if (divComp_[celli] > 0.0 && alphaVapor_[celli] < 1.0)
+            else if (divComp_[celli] < 0.0 && alphaVapor_[celli] < 1.0) //gain of alphaV
             {
-                //Sp[celli] -= divComp_[celli]*(1.0 - alphaVapor_[celli]);
-                Sp[celli] -= divComp_[celli];
+                Su[celli] -= divComp_[celli]*alphaVapor_[celli]*(1.0+alphaVapor_[celli]);
             }
         }
                 
@@ -1043,10 +1041,10 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         << ", " << max(alphaVapor_).value()
         << "  Min,max alphaL = " << min(alphaLiquid_).value()
         << ", " << max(alphaLiquid_).value()
-        << endl;*/
+        << endl;
         
         
-        
+        /*
         forAll(divComp_, celli)
         {
             if (divComp_[celli] > 0.0 && alphaLiquid_[celli] > 0.0)
@@ -1126,7 +1124,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         << ", " << max(alphaVapor_).value()
         << "  Min,max alphaL = " << min(alphaLiquid_).value()
         << ", " << max(alphaLiquid_).value()
-        << endl;
+        << endl;*/
 }
 
 
