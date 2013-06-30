@@ -885,7 +885,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     // Cell gradient of alpha
     word gradScheme("grad(alphaVaporSmooth)");
     const volVectorField gradAlpha(fvc::grad(alphaLiquid_, gradScheme));
-    //const volVectorField gradAlpha(fvc::grad(alphaVapor_,gradScheme));
     
     // Interpolated face-gradient of alpha
     surfaceVectorField gradAlphaf(fvc::interpolate(gradAlpha));
@@ -920,15 +919,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     {
         divPhaseChange_ += pcmI().Vdot("Vapor") + pcmI().Vdot("Liquid"); //used in the pEqn
         Sv += pcmI().Vdot("Liquid");
-        //Sv += pcmI().Vdot("Vapor");
     }
-    
-    //dimensionedScalar sA("smallArea",dimless/dimLength,SMALL);
-    //volScalarField areaFactor = mag(fvc::grad(alphaLiquid_))/(area_+sA)*pos(area_+sA);
-
-    
-    //Maybe more stable to solve for alphaVapor??
-
     
     for (int gCorr=0; gCorr<nAlphaCorr; gCorr++)
     {
@@ -940,8 +931,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
                 mesh_.time().timeName(),
                 mesh_
             ),
-            //mesh_,
-            //dimensionedScalar("Sp", divComp_.dimensions(), 0.0)
             -divPhaseChange_
         );
         
@@ -955,98 +944,10 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
             ),
             // Divergence term is handled explicitly to be
             // consistent with the explicit transport solution
-            //divU*min(alphaLiquid_, scalar(1)) + Sv - divPhaseChange_*areaFactor
             divU*min(alphaLiquid_, scalar(1)) + Sv
-            //Sv
         );
         
-        
-        /*
-        forAll(divComp_, celli)
-        {
-            if (divComp_[celli] < 0.0 && alphaVapor_[celli] > 0.0)
-            {
-                //Sp[celli] += divComp_[celli]*alphaVapor_[celli];
-                //Su[celli] -= divComp_[celli]*alphaVapor_[celli];
-                Su[celli] -= divComp_[celli]*alphaVapor_[celli];
-            }
-            else if (divComp_[celli] > 0.0 && alphaVapor_[celli] < 1.0)
-            {
-                //Sp[celli] -= divComp_[celli]*(1.0 - alphaVapor_[celli]);
-                Sp[celli] -= divComp_[celli];
-            }
-        }
                 
-        phiAlphaV = 
-        (
-            fvc::flux
-            (
-                phi_,
-                alphaVapor_,
-                alphaScheme
-            )
-          + fvc::flux
-            (
-                -fvc::flux(-phir, 1.0 - alphaVapor_, alpharScheme),
-                alphaVapor_,
-                alpharScheme
-            )
-        );
-
-
-        //MULES::explicitSolve
-        MULES::implicitSolve
-        (
-            geometricOneField(),
-            alphaVapor_,
-            phi_,
-            phiAlphaV,
-            Sp,
-            Su,
-            1,
-            0
-        );
-        
-    }
-    
-    Info<< "Liquid phase volume fraction = "
-        << alphaLiquid_.weightedAverage(mesh_.V()).value()
-        << "  Min,max alphaV = " << min(alphaVapor_).value() 
-        << ", " << max(alphaVapor_).value()
-        << "  Min,max alphaL = " << min(alphaLiquid_).value()
-        << ", " << max(alphaLiquid_).value()
-        << endl;
-        
-    alphaVapor_.max(0.0);
-    alphaVapor_.min(1.0);
-    
-    surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
-    surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
-    
-    alphaLiquid_.rhoPhiAlpha() += f * (phi_ - phiAlphaV) * rhoLf;
-    alphaVapor_.rhoPhiAlpha() += f * phiAlphaV * rhoVf;
-
-    rhoPhi_ += f * (phiAlphaV*(rhoVf - rhoLf) + phi_*rhoLf);
-
-    alphaLiquid_ == scalar(1) - alphaVapor_;
-    alphaLiquid_.max(0.0);
-        
-    // Re-sharpen alpha field
-    //  This is not mass conserving, but prevents excessive floatsom
-    //volScalarField& alphaL = alphaLiquid_;
-    //alphaL = alphaLiquid_.sharp(1e-3);
-    //alphaVapor_ == scalar(1) - alphaLiquid_;
-        
-    Info<< "Liquid phase volume fraction = "
-        << alphaLiquid_.weightedAverage(mesh_.V()).value()
-        << "  Min,max alphaV = " << min(alphaVapor_).value() 
-        << ", " << max(alphaVapor_).value()
-        << "  Min,max alphaL = " << min(alphaLiquid_).value()
-        << ", " << max(alphaLiquid_).value()
-        << endl;*/
-        
-        
-        
         forAll(divComp_, celli)
         {
             if (divComp_[celli] > 0.0 && alphaLiquid_[celli] > 0.0)
