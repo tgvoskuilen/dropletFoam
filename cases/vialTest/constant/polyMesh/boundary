@@ -25,7 +25,7 @@ FoamFile
     }
     walls
     {
-        type            patch;
+        type            wall;
         nFaces          500;
         startFace       39800;
     }

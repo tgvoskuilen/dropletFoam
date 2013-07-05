@@ -23,7 +23,7 @@
      ==
         mixture.rCp()*
         (
-            dpdt
+            dpdt //should be DDt(p)?
           - fvc::ddt(rho, K)
           - fvc::div(mixture.rhoPhi(), K)
           + (fvc::ddt(rho) + fvc::div(mixture.rhoPhi()))*K

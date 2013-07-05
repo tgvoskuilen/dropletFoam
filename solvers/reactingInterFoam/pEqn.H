@@ -1,5 +1,6 @@
 {
     const volScalarField& alphaV = mixture.alphaVapor();
+    dimensionedScalar pMin("pMin",p.dimensions(),10000.0);
     
     rho = thermo.rho();
     
@@ -74,31 +75,11 @@
       - fvc::Sp(fvc::div(phi), p_rgh)
     );
     
+    tmp<volScalarField> p_rgh_min = pMin - p0 - rho*gh;
      
     // Solve for pressure to enforce continuity (based on phi)
     while (pimple.correctNonOrthogonal())
-    {
-        //Pair<tmp<volScalarField> > pSuSp = mixture.SuSp_evap();
-        
-        /*fvScalarMatrix p_IC
-        (
-            fvc::div(phi)
-          - fvm::laplacian(rAUf, p)
-          //- pSuSp.first()
-          //+ fvm::SuSp(pSuSp.second(), p)
-          - mixture.divPhaseChange()
-        );
-        
-        solve
-        (
-            max(alphaV,0.0)/p*p_DpDt - max(alphaV,0.0)/T*fvc::DDt(phi,T) + p_IC,
-            mesh.solver(p.select(pimple.finalInnerIter()))
-        );*/
-        
-        
-        
-        
-        
+    {   
         fvScalarMatrix p_rghEqn
         (
             fvc::div(phi)
@@ -108,16 +89,16 @@
         
         solve
         (
-            max(alphaV,0.0)/(p_rgh+p0+rho*gh)*p_rghDDtEqn
+            max(alphaV,0.0)/p*p_rghDDtEqn
           - max(alphaV,0.0)/T*fvc::DDt(phi,T)
           + p_rghEqn,
           
             mesh.solver(p_rgh.select(pimple.finalInnerIter()))
         );
-
-        
-        //p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
-
+            
+        p = p_rgh + p0 + rho*gh;
+        p.max(pMin);
+            
         if (pimple.finalNonOrthogonalIter())
         {
             // Second part of thermodynamic density update
@@ -130,7 +111,7 @@
             U.correctBoundaryConditions(); 
     
             //should be fvc::DDt(phi,psi)/psi but psi is 0 some places
-            mixture.divComp() = (p_rghDDtEqn & p_rgh)/(p_rgh+p0+rho*gh)
+            mixture.divComp() = (p_rghDDtEqn & p_rgh)/p
                               - fvc::DDt(phi,T)/T;
         }
     }
@@ -138,10 +119,10 @@
    
     
     p = p_rgh + p0 + rho*gh;
-    p.max(dimensionedScalar("pMin",p.dimensions(),10000.0));
+    p.max(pMin);
     
     K = 0.5*magSqr(U);
-    dpdt = fvc::ddt(p);
+    dpdt = fvc::ddt(p_rgh);
     
     // Continuity error check checks whether thermo.rho satisfies continuity
     // with rhoPhi field

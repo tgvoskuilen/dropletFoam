@@ -155,7 +155,38 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
 )
 {
     //Calculate the vapor pressure
+    //dimensionedScalar pZero("pZ",dimPressure,0);
     dimensionedScalar p0("p0",dimPressure,101325);
+    
+    /*p_vap_ = pZero;
+    
+    forAll(p_vap_, cellI)
+    {
+        if( area[cellI] > SMALL )
+        {
+            const scalar& Ti = T_[cellI];
+            if( Ti < Tb_.value() )
+            {
+                p_vap_[cellI] = 101325*exp
+                (
+                    -Lb_.value()/R_.value()*(1.0/Ti - 1.0/Tb_.value())
+                );
+            }
+            else if( Ti < Tc_.value()
+            {
+                p_vap_[cellI] = exp
+                (
+                   PvCoeffs_[0]
+                 - PvCoeffs_[1]/Ti
+                 - PvCoeffs_[2]/(Ti*Ti)
+                );
+            }
+            else
+            {
+                p_vap_[cellI] = Pc_.value();
+            }
+        }
+    }*/
     
     p_vap_ = p0*exp
      (

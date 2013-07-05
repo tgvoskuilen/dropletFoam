@@ -26,7 +26,8 @@ boundaryField
     }
     walls
     {
-        type            zeroGradient;
+        type            alphaSgsJayatillekeWallFunction;
+        value           uniform 1e-11;
     }
     frontAndBack
     {

@@ -50,7 +50,7 @@ boundary
     
     walls
     {
-        type patch;
+        type wall;
         faces
         (
             (0 1 2 3)

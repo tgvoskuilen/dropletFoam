@@ -27,7 +27,8 @@ boundaryField
     
     walls
     {
-        type            zeroGradient;
+        type            muSgsUSpaldingWallFunction;
+        value           uniform 1e-11;
     }
 
     frontAndBack

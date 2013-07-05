@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-LESModel        oneEqEddy;
+LESModel        Smagorinsky; //oneEqEddy;
 
 delta           smooth;
 
