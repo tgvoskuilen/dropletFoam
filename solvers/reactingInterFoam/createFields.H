@@ -19,32 +19,55 @@
     
     
     Info<< "Creating combustion model\n" << endl;
-    autoPtr<combustionModels::rhoChemistryCombustionModel> combustion
+    autoPtr<combustionModels::rhoCombustionModel> reaction
     (
-        combustionModels::rhoChemistryCombustionModel::New
-        (
-            mesh
-        )
+        combustionModels::rhoCombustionModel::New(mesh)
     );
 
-    rhoChemistryModel& chemistry = combustion->pChemistry();
-    hsReactionThermo& thermo = chemistry.thermo();
+    rhoReactionThermo& thermo = reaction->thermo();
+    thermo.validate(args.executable(), "h", "e");
 	
 	Info<< "Extracting two phase mixture thermo:" << endl;
-
-    if( !isA<hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> > >(thermo.composition()) )
+	
+    /*if( !isA<heTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> > >(thermo.composition()) )
     {
-        //TODO: Fatal error
-    }
+        FatalErrorIn
+        (
+            "reactingInterFoam::createFields.H"
+        )   << "Specified thermo must be an hsTwophaseMixtureThermo"
+            << exit(FatalError);
+    }*/
+    
+    typedef heTwophaseMixtureThermo
+    <
+        Foam::rhoReactionThermo,
+        Foam::SpecieMixture
+        <
+            Foam::reactingMixture
+            <
+                Foam::sutherlandTransport
+                <
+                    Foam::species::thermo
+                    <
+                        Foam::janafThermo<Foam::perfectGas<Foam::specie> >, 
+                        Foam::sensibleEnthalpy
+                    > 
+                > 
+            > 
+        > 
+    > reactingTwoPhaseMixtureThermo;
+    
+    
+    reactingTwoPhaseMixtureThermo& mixture = 
+        dynamic_cast<reactingTwoPhaseMixtureThermo&>(thermo.composition());
+    
 
-    hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> >& mixture =
-        dynamic_cast<hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> >& >(thermo.composition());
+    //heTwophaseMixtureThermo<rhoReactionThermo, reactingMixture<gasThermoPhysics> >& mixture =
+    //    dynamic_cast<hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics> >& >(thermo.composition());
 
 
     Info<< "Setting mixture pointers" << endl;
-	mixture.setPtrs( combustion.operator->() );
-
-    //volScalarField& rho = mixture.rho();
+	mixture.setPtrs( reaction.operator->() );
     
     volScalarField refinementField
     (
@@ -70,7 +93,7 @@
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-        mixture.rho()
+        thermo.rho()
     );
     
     // Construct turbulence model
@@ -86,7 +109,7 @@
     );
 
     // Set the turbulence into the combustion model
-    combustion->setTurbulence(turbulence());
+    reaction->setTurbulence(turbulence());
 
 
     #include "readGravitationalAcceleration.H"

@@ -42,7 +42,8 @@ SourceFiles
 #include "PtrDictionary.H"
 #include "dictionaryEntry.H"
 #include "fvCFD.H"
-#include "rhoChemistryCombustionModel.H"
+#include "rhoCombustionModel.H"
+#include "rhoChemistryCombustion.H"
 #include "turbulenceModel.H"
 #include "incompressible/viscosityModels/viscosityModel/viscosityModel.H"
 #include "reactingMixture.H"
@@ -84,13 +85,13 @@ class phase
         const phase* otherPhase_;
         
         //- Pointer to the top-level combustion model
-        const combustionModels::rhoChemistryCombustionModel* combustionPtr_;
+        const combustionModels::rhoChemistryCombustion* combustionPtr_;
 
         //- Reference to the list of specie pointers
         PtrList<volScalarField>& species_;
         
         //- Reference to the list of specie thermodynamic data objects
-        const PtrList<gasThermoPhysics>& speciesData_;
+        const PtrList<gasHThermoPhysics>& speciesData_;
 
         //- Dictionary of pointers to phase subspecies
         PtrDictionary<subSpecie> subSpecies_;
@@ -116,7 +117,7 @@ public:
             const dictionary& phaseDict,
             const fvMesh& mesh,
             PtrList<volScalarField>& species,
-            const PtrList<gasThermoPhysics>& speciesData
+            const PtrList<gasHThermoPhysics>& speciesData
         );
 
         //- Return clone
@@ -215,8 +216,17 @@ public:
         //- Get phase molar mass field
         tmp<volScalarField> W() const;
         
-        tmp<volScalarField> kappa(const volScalarField& T) const;
-        tmp<volScalarField> Cp(const volScalarField& T) const;
+        tmp<volScalarField> kappa
+        (
+            const volScalarField& p, 
+            const volScalarField& T
+        ) const;
+        
+        tmp<volScalarField> Cp
+        (
+            const volScalarField& p, 
+            const volScalarField& T
+        ) const;
                 
         //- Correct the phase properties
         void correct(const volScalarField& p, const volScalarField& T);
@@ -226,7 +236,7 @@ public:
                        
         void setCombustionPtr
         (
-            combustionModels::rhoChemistryCombustionModel* combustion
+            combustionModels::rhoCombustionModel* combustion
         );
         
         void setSpecies(const volScalarField& rho);

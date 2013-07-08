@@ -23,39 +23,59 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "hsTwophaseMixtureThermo.H"
+#include "heTwophaseMixtureThermo.H"
 #include "fvMesh.H"
 #include "fixedValueFvPatchFields.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * *  //
 
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
+template<class ThermoType, class MixtureType>
+void Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::calculate()
 {
     // Update the following stored and inherited fields:
-    //   hs_, rho_, psi_, mu_, alpha_
+    //   he_, rho_, psi_, mu_, alpha_
     // These are functions of the stored p_ and T_ fields
     //
-    const scalarField& hsCells = hs_.internalField();
-
-    scalarField& TCells = T_.internalField();
-    scalarField& alphaCells = alpha_.internalField();
+    const scalarField& hCells = this->he_.internalField();
+    const scalarField& pCells = this->p_.internalField();
+    
+    scalarField& TCells = this->T_.internalField();
+    //psi
+    //rho
+    //mu
+    scalarField& alphaCells = this->alpha_.internalField();
     
     forAll(TCells, celli)
     {
         // references multiComponentMixture.C
         const typename MixtureType::thermoType& mixture =
             this->cellMixture(celli);
-
-        TCells[celli] = mixture.THs(hsCells[celli], TCells[celli]);
-        alphaCells[celli] = mixture.alpha(TCells[celli]);
+            
+        TCells[celli] = mixture.THE
+        (
+            hCells[celli],
+            pCells[celli],
+            TCells[celli]
+        );
+        
+        //psi
+        //rho
+        
+        //mu
+        alphaCells[celli] = mixture.alphah(pCells[celli], TCells[celli]);
     }
 
-    forAll(T_.boundaryField(), patchi)
+    forAll(this->T_.boundaryField(), patchi)
     {
-        fvPatchScalarField& pT = T_.boundaryField()[patchi];
-        fvPatchScalarField& phs = hs_.boundaryField()[patchi];
-        fvPatchScalarField& palpha = alpha_.boundaryField()[patchi];
+        fvPatchScalarField& pp = this->p_.boundaryField()[patchi];
+        fvPatchScalarField& pT = this->T_.boundaryField()[patchi];
+        //psi
+        //rho
+        
+        fvPatchScalarField& ph = this->he_.boundaryField()[patchi];
+        
+        //mu
+        fvPatchScalarField& palpha = this->alpha_.boundaryField()[patchi];
 
         if (pT.fixesValue())
         {
@@ -64,9 +84,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
                 const typename MixtureType::thermoType& mixture =
                     this->patchFaceMixture(patchi, facei);
 
-                phs[facei] = mixture.Hs(pT[facei]);
-
-                palpha[facei] = mixture.alpha(pT[facei]);
+                ph[facei] = mixture.HE(pp[facei], pT[facei]);
+                
+                //psi
+                //rho
+                //mu
+                palpha[facei] = mixture.alphah(pp[facei], pT[facei]);
             }
         }
         else
@@ -76,9 +99,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
                 const typename MixtureType::thermoType& mixture =
                     this->patchFaceMixture(patchi, facei);
 
-                pT[facei] = mixture.THs(phs[facei], pT[facei]);
-
-                palpha[facei] = mixture.alpha(pT[facei]);
+                pT[facei] = mixture.THE(ph[facei], pp[facei], pT[facei]);
+                
+                //psi
+                //rho
+                //mu
+                palpha[facei] = mixture.alphah(pp[facei], pT[facei]);
             }
         }
     }
@@ -87,26 +113,29 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     correctInterface();
     
     // uses area_ and alpha to set mask
-    alphaLiquid_.setPhaseMasks(phaseMaskTol_, p_, T_, phaseChangeModels_, area_ );
-    alphaVapor_.setPhaseMasks(phaseMaskTol_, p_, T_, phaseChangeModels_, area_ );
+    alphaLiquid_.setPhaseMasks(phaseMaskTol_, this->p_, this->T_, phaseChangeModels_, area_ );
+    alphaVapor_.setPhaseMasks(phaseMaskTol_, this->p_, this->T_, phaseChangeModels_, area_ );
     
     // uses mask to set rhoAlpha
-    alphaVapor_.correct(p_,T_);
-    alphaLiquid_.correct(p_,T_);
+    alphaVapor_.correct(this->p_,this->T_);
+    alphaLiquid_.correct(this->p_,this->T_);
     
-    mu_ = alphaVapor_.sharp(0.0)*muV() + alphaLiquid_.sharp(0.0)*alphaLiquid_.mu(p_, T_);
-    mu_.correctBoundaryConditions();
     
-    psi_ = alphaVapor_.sharp(0.0)*alphaVapor_.psi(T_);
-    psi_.correctBoundaryConditions();
+    //Now do psi, rho, and mu skipped above
     
-    rho_ = alphaLiquid_.sharp(0.0)*alphaLiquid_.rho(p_,T_) + 
-            alphaVapor_.sharp(0.0)*alphaVapor_.rho(p_,T_);
-    rho_.correctBoundaryConditions();
+    this->mu_ = alphaVapor_.sharp(0.0)*muV() + alphaLiquid_.sharp(0.0)*alphaLiquid_.mu(this->p_, this->T_);
+    this->mu_.correctBoundaryConditions();
+    
+    this->psi_ = alphaVapor_.sharp(0.0)*alphaVapor_.psi(this->T_);
+    this->psi_.correctBoundaryConditions();
+    
+    this->rho_ = alphaLiquid_.sharp(0.0)*alphaLiquid_.rho(this->p_,this->T_) + 
+            alphaVapor_.sharp(0.0)*alphaVapor_.rho(this->p_,this->T_);
+    this->rho_.correctBoundaryConditions();
 }
 
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
+template<class ThermoType, class MixtureType>
+void Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::correctInterface()
 {
     //Update kappa, sigma_, alphaSmooth, area_
     
@@ -152,7 +181,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     dimensionedScalar one("one",dimLength,1.0);
     tmp<volScalarField> mask = pos(Foam::mag(kappaI_)*one - 1e-4)
                              + neg(alphaVapor_ - 0.1);
-    sigma_ = alphaLiquid_.sigma(T_, mask());
+    sigma_ = alphaLiquid_.sigma(this->T_, mask());
     
     
 
@@ -183,8 +212,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     
 }
 
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
+template<class ThermoType, class MixtureType>
+void Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::calcPhaseChange()
 {
     Foam::Info << "Calculating phase change zones" << Foam::endl;
     
@@ -240,20 +269,20 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * *  //
 
-template<class MixtureType>
-Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
+template<class ThermoType, class MixtureType>
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::heTwophaseMixtureThermo
 (
-    const fvMesh& mesh
+    const fvMesh& mesh,
+    const word& phaseName
 )
 :
-    hsReactionThermo(mesh),
-    MixtureType(*this, mesh),
+    heThermo<ThermoType,MixtureType>(mesh, phaseName),
     mesh_(mesh),
     combustionPtr_(NULL),
     alphaVapor_
     (
         "Vapor",
-        subDict("Vapor"),
+        ThermoType::subDict("Vapor"),
         mesh,
         this->Y(),
         this->speciesData()
@@ -261,14 +290,14 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     alphaLiquid_
     (
         "Liquid",
-        subDict("Liquid"),
+        ThermoType::subDict("Liquid"),
         mesh,
         this->Y(),
         this->speciesData()
     ),
     phaseChangeModels_
     (
-        lookup("phaseChangeReactions"),
+        ThermoType::lookup("phaseChangeReactions"),
         mixturePhaseChangeModel::iNew
         (
             mesh,
@@ -328,7 +357,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
-        fvc::DDt(phi_,p_)/(p_+dimensionedScalar("ps",dimPressure,1))
+        fvc::DDt(phi_,this->p_)/(this->p_+dimensionedScalar("ps",dimPressure,1))
     ),
     alphaVaporSmooth_
     (
@@ -404,21 +433,21 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         "deltaN",
         1e-8/pow(average(mesh.V()), 1.0/3.0)
     ),
-    phaseMaskTol_(readScalar(lookup("phaseMaskTol")))
+    phaseMaskTol_(readScalar(ThermoType::lookup("phaseMaskTol")))
 {
-    T_.correctBoundaryConditions();
-    p_.correctBoundaryConditions();
+    this->T_.correctBoundaryConditions();
+    this->p_.correctBoundaryConditions();
     
     divPhaseChange_.oldTime();
     divComp_.oldTime();
     alphaLiquid_.setOtherPhase( &alphaVapor_ );
     alphaVapor_.setOtherPhase( &alphaLiquid_ );
 
-    setHs();
+    setHE(); //non-private copy of 'init' from heThermo
     calculate();
     
-    rhoPhi_ = phi_ * fvc::interpolate(rho_);
-    rho_.oldTime();
+    rhoPhi_ = phi_ * fvc::interpolate(this->rho_);
+    this->rho_.oldTime();
     
     //Set Yp values and allow slight diffusion to expand to phase mask boundary
     alphaVapor_.setSpecies( alphaLiquid_.rhoAlpha() );
@@ -428,8 +457,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * //
 
-template<class MixtureType>
-Foam::hsTwophaseMixtureThermo<MixtureType>::~hsTwophaseMixtureThermo()
+template<class ThermoType, class MixtureType>
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::~heTwophaseMixtureThermo()
 {}
 
 
@@ -437,9 +466,9 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::~hsTwophaseMixtureThermo()
 
 
 // Cell centered mixture viscosity of the gas, calculated by Sutherland
-template<class MixtureType> 
+template<class ThermoType, class MixtureType> 
 Foam::tmp<Foam::volScalarField> 
-Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::muV() const
 {
     tmp<volScalarField> tmu
     (
@@ -458,19 +487,21 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
 
 
     scalarField& muCells = tmu().internalField();
-    const scalarField& TCells = T_.internalField();
-
+    const scalarField& TCells = this->T_.internalField();
+    const scalarField& pCells = this->p_.internalField();
+    
     forAll(TCells, celli)
     {
         //TODO: Cell mixture of only gas species here, or apply mu mixture rule
-        muCells[celli] = this->cellMixture(celli).mu( TCells[celli] );
+        muCells[celli] = this->cellMixture(celli).mu( pCells[celli], TCells[celli] );
     }
 
-    forAll(T_.boundaryField(), patchi)
+    forAll(this->T_.boundaryField(), patchi)
     {
         tmu().boundaryField()[patchi] = mu
         (
-            T_.boundaryField()[patchi], 
+            this->p_.boundaryField()[patchi],
+            this->T_.boundaryField()[patchi], 
             patchi
         );
     }
@@ -478,10 +509,11 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::muV() const
     return tmu;
 }
 
-template<class MixtureType>
+template<class ThermoType, class MixtureType>
 Foam::tmp<Foam::scalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::mu
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::mu
 (
+    const scalarField& p,
     const scalarField& T,
     const label patchi
 ) const
@@ -492,16 +524,16 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::mu
 
     forAll(T, facei)
     {
-        mu[facei] = this->patchFaceMixture(patchi, facei).mu(T[facei]);
+        mu[facei] = this->patchFaceMixture(patchi, facei).mu(p[facei], T[facei]);
     }
 
     return tmu;
 }
 
 
-template<class MixtureType> 
+template<class ThermoType, class MixtureType> 
 Foam::tmp<Foam::volScalarField> 
-Foam::hsTwophaseMixtureThermo<MixtureType>::dQ_phaseChange() const
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::dQ_phaseChange() const
 {
     tmp<volScalarField> dQ
     (
@@ -536,9 +568,9 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::dQ_phaseChange() const
 
 
 // Used for alphaCourant number calculations
-template<class MixtureType>
+template<class ThermoType, class MixtureType>
 Foam::tmp<Foam::volScalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::nearInterface
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::nearInterface
 (
     double lower, 
     double upper
@@ -572,9 +604,9 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::nearInterface
 
 
 // Face-centered surface tension force scalar
-template<class MixtureType>
+template<class ThermoType, class MixtureType>
 Foam::tmp<Foam::surfaceScalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::surfaceTensionForce()
 {
     tmp<surfaceScalarField> tstf
     (
@@ -611,10 +643,10 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::surfaceTensionForce()
 
 
 // Set combustion and vapor pointers
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::setPtrs
+template<class ThermoType, class MixtureType>
+void Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::setPtrs
 (
-    combustionModels::rhoChemistryCombustionModel* combustion
+    combustionModels::rhoCombustionModel* combustion
 )
 {
     combustionPtr_ = combustion;
@@ -636,9 +668,9 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::setPtrs
 
 
 // Return field used for adaptive mesh refinement criteria
-template<class MixtureType>
+template<class ThermoType, class MixtureType>
 Foam::tmp<Foam::volScalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::getRefinementField() const
 {
     tmp<volScalarField> tRefinementField
     (
@@ -694,16 +726,16 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
 
 
 
-template<class MixtureType>
-scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
+template<class ThermoType, class MixtureType>
+scalar Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::solve
 (
     volScalarField& rho
 )
 {
     //Solve for reaction rates
     Info<< "Solving combustion" << endl;
-    rho_ = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
-    rho_.correctBoundaryConditions();
+    this->rho_ = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
+    this->rho_.correctBoundaryConditions();
     alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
     alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
 
@@ -756,8 +788,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     rho = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
     rhoPhi_ = alphaLiquid_.rhoPhiAlpha() + alphaVapor_.rhoPhiAlpha();
     
-    Info<< "Min,max rho = " << Foam::min(rho_).value() << ", " 
-        << Foam::max(rho_).value() << endl;
+    Info<< "Min,max rho = " << Foam::min(this->rho_).value() << ", " 
+        << Foam::max(this->rho_).value() << endl;
         
         
     YSum_ = alphaLiquid_.Yp() + alphaVapor_.Yp();
@@ -770,8 +802,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     alphaVapor_.calculateDs( combustionPtr_->turbulence().muEff() );
        
     // Solve for subspecie transport within each phase
-    scalar FoLiq = alphaLiquid_.solveSubSpecies( p_, T_, phaseChangeModels_);
-    scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_, phaseChangeModels_);
+    scalar FoLiq = alphaLiquid_.solveSubSpecies( this->p_, this->T_, phaseChangeModels_);
+    scalar FoVap = alphaVapor_.solveSubSpecies( this->p_, this->T_, phaseChangeModels_);
 
     // Update global mass fractions based on phase-based mass fractions
     alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
@@ -800,9 +832,9 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
 
 
-template<class MixtureType>
+template<class ThermoType, class MixtureType>
 Foam::Pair<Foam::tmp<Foam::volScalarField> >
-Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::TSuSp() const
 {
 
     Pair<tmp<volScalarField> > tTSuSp
@@ -849,16 +881,16 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
         tTSuSp.second()() += pcmTSuSp.second();
     }
     
-    tTSuSp.first()() /= Cp();
-    tTSuSp.second()() /= Cp();
+    tTSuSp.first()() *= rCp();
+    tTSuSp.second()() *= rCp();
     
     return tTSuSp;
 }
 
 
 
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
+template<class ThermoType, class MixtureType>
+void Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::solveAlphas
 (
     const scalar cAlpha,
     const label nAlphaCorr,
@@ -1004,8 +1036,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     alphaLiquid_.max(0.0);
     //alphaLiquid_.min(1.0);
     
-    surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
-    surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
+    surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(this->p_,this->T_)));
+    surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(this->p_,this->T_)));
     
     alphaLiquid_.rhoPhiAlpha() += f * phiAlphaL * rhoLf;
     alphaVapor_.rhoPhiAlpha() += f * (phi_ - phiAlphaL) * rhoVf;
@@ -1031,237 +1063,27 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 }
 
 
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::correct()
+template<class ThermoType, class MixtureType>
+void Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::correct()
 {
     if (debug)
     {
-        Info<<"entering hsTwophaseMixtureThermo<MixtureType>::correct()"<<endl;
+        Info<<"entering heTwophaseMixtureThermo<ThermoType,MixtureType>::correct()"<<endl;
     }
 
     calculate();
 
     if (debug)
     {
-        Info<<"exiting hsTwophaseMixtureThermo<MixtureType>::correct()"<<endl;
+        Info<<"exiting heTwophaseMixtureThermo<ThermoType,MixtureType>::correct()"<<endl;
     }
 }
 
 
-template<class MixtureType>
-Foam::tmp<Foam::volScalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::hc() const
+template<class ThermoType, class MixtureType>
+bool Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::read()
 {
-    tmp<volScalarField> thc
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "hc",
-                mesh_.time().timeName(),
-                mesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            mesh_,
-            hs_.dimensions()
-        )
-    );
-
-    volScalarField& hcf = thc();
-    scalarField& hcCells = hcf.internalField();
-
-    forAll(hcCells, celli)
-    {
-        hcCells[celli] = this->cellMixture(celli).Hc();
-    }
-
-    forAll(hcf.boundaryField(), patchi)
-    {
-        scalarField& hcp = hcf.boundaryField()[patchi];
-
-        forAll(hcp, facei)
-        {
-            hcp[facei] = this->patchFaceMixture(patchi, facei).Hc();
-        }
-    }
-
-    return thc;
-}
-
-
-template<class MixtureType>
-Foam::tmp<Foam::scalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::hs
-(
-    const scalarField& T,
-    const labelList& cells
-) const
-{
-    tmp<scalarField> ths(new scalarField(T.size()));
-    scalarField& hs = ths();
-
-    forAll(T, celli)
-    {
-        hs[celli] = this->cellMixture(cells[celli]).Hs(T[celli]);
-    }
-
-    return ths;
-}
-
-
-template<class MixtureType>
-Foam::tmp<Foam::scalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::hs
-(
-    const scalarField& T,
-    const label patchi
-) const
-{
-    tmp<scalarField> ths(new scalarField(T.size()));
-    scalarField& hs = ths();
-
-    forAll(T, facei)
-    {
-        hs[facei] = this->patchFaceMixture(patchi, facei).Hs(T[facei]);
-    }
-
-    return ths;
-}
-
-
-template<class MixtureType>
-Foam::tmp<Foam::scalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::Cp
-(
-    const scalarField& T,
-    const label patchi
-) const
-{
-    tmp<scalarField> tCp(new scalarField(T.size()));
-
-    scalarField& cp = tCp();
-
-    forAll(T, facei)
-    {
-        cp[facei] = this->patchFaceMixture(patchi, facei).Cp(T[facei]);
-    }
-
-    return tCp;
-}
-
-
-
-template<class MixtureType>
-Foam::tmp<Foam::volScalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::Cp() const
-{
-    tmp<volScalarField> tCp
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "Cp",
-                mesh_.time().timeName(),
-                mesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            mesh_,
-            dimEnergy/dimMass/dimTemperature
-        )
-    );
-
-    volScalarField& cp = tCp();
-
-    scalarField& cpCells = cp.internalField();
-    const scalarField& TCells = T_.internalField();
-
-    forAll(TCells, celli)
-    {
-        cpCells[celli] = this->cellMixture(celli).Cp(TCells[celli]);
-    }
-
-    forAll(T_.boundaryField(), patchi)
-    {
-        cp.boundaryField()[patchi] = Cp(T_.boundaryField()[patchi], patchi);
-    }
-
-    return tCp;
-}
-
-
-
-template<class MixtureType>
-Foam::tmp<Foam::scalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::Cv
-(
-    const scalarField& T,
-    const label patchi
-) const
-{
-    tmp<scalarField> tCv(new scalarField(T.size()));
-
-    scalarField& cv = tCv();
-
-    forAll(T, facei)
-    {
-        cv[facei] = this->patchFaceMixture(patchi, facei).Cv(T[facei]);
-    }
-
-    return tCv;
-}
-
-
-
-template<class MixtureType>
-Foam::tmp<Foam::volScalarField>
-Foam::hsTwophaseMixtureThermo<MixtureType>::Cv() const
-{
-    tmp<volScalarField> tCv
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "Cv",
-                mesh_.time().timeName(),
-                mesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            mesh_,
-            dimEnergy/dimMass/dimTemperature
-        )
-    );
-
-    volScalarField& cv = tCv();
-
-    scalarField& cvCells = cv.internalField();
-    const scalarField& TCells = T_.internalField();
-
-    forAll(TCells, celli)
-    {
-        cvCells[celli] = this->cellMixture(celli).Cv(TCells[celli]);
-    }
-
-    forAll(T_.boundaryField(), patchi)
-    {
-        cv.boundaryField()[patchi] = Cv(T_.boundaryField()[patchi], patchi);
-    }
-
-    return tCv;
-}
-
-
-
-
-template<class MixtureType>
-bool Foam::hsTwophaseMixtureThermo<MixtureType>::read()
-{
-    if (hsReactionThermo::read())
+    if (rhoReactionThermo::read())
     {
         MixtureType::read(*this);
         return true;
@@ -1274,48 +1096,53 @@ bool Foam::hsTwophaseMixtureThermo<MixtureType>::read()
 
 
 
-template<class MixtureType>
+template<class ThermoType, class MixtureType>
 tmp<volScalarField> 
-Foam::hsTwophaseMixtureThermo<MixtureType>::kByCp
+Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::kByCp
 (
     const volScalarField& alphat //turbulent k/Cp contribution
 ) const
 {
    // kByCp = (alpha1*k1/Cp1 + alpha2*k2/Cp2) + alphat
 
-    return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cp(T_)
-         + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cp(T_)
+    return alphaLiquid_*alphaLiquid_.kappa(this->p_,this->T_)/alphaLiquid_.Cp(this->p_,this->T_)
+         + alphaVapor_*alphaVapor_.kappa(this->p_,this->T_)/alphaVapor_.Cp(this->p_,this->T_)
          + alphat;
 }
 
 
-template<class MixtureType>
-tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCp() const
+template<class ThermoType, class MixtureType>
+tmp<volScalarField> Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::rCp() const
 {
-    return 1.0 / Cp();
+    return 1.0 / this->Cp();
 }
 
 
-
-template<class MixtureType>
-void Foam::hsTwophaseMixtureThermo<MixtureType>::setHs()
+template<class ThermoType, class MixtureType>
+void Foam::heTwophaseMixtureThermo<ThermoType,MixtureType>::setHE()
 {
-    //Set hs based on an input T field
-    // This is a backhanded way of setting T in an hsThermo object
-    scalarField& hsCells = hs_.internalField();
-    const scalarField& TCells = T_.internalField();
+    scalarField& heCells = this->he_.internalField();
+    const scalarField& pCells = this->p_.internalField();
+    const scalarField& TCells = this->T_.internalField();
 
-    forAll(hsCells, celli)
+    forAll(heCells, celli)
     {
-        hsCells[celli] = this->cellMixture(celli).Hs(TCells[celli]);
+        heCells[celli] =
+            this->cellMixture(celli).HE(pCells[celli], TCells[celli]);
     }
 
-    forAll(hs_.boundaryField(), patchi)
+    forAll(this->he_.boundaryField(), patchi)
     {
-        hs_.boundaryField()[patchi] == hs(T_.boundaryField()[patchi], patchi);
+        this->he_.boundaryField()[patchi] == he
+        (
+            this->p_.boundaryField()[patchi],
+            this->T_.boundaryField()[patchi],
+            patchi
+        );
     }
 
-    hBoundaryCorrection(hs_);
+    this->heBoundaryCorrection(this->he_);
+
 }
 
 

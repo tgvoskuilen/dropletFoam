@@ -22,18 +22,18 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::LangmuirEvaporation
+    Foam::PhaseChangeReaction
 
 Description
-    Hertz Knudsen pressure-driven evaporation model
+    Chemical phase change
 
 SourceFiles
-    LangmuirEvaporation.C
+    PhaseChangeReaction.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef LangmuirEvaporation_H
-#define LangmuirEvaporation_H
+#ifndef PhaseChangeReaction_H
+#define PhaseChangeReaction_H
 
 #include "mixturePhaseChangeModel.H"
 
@@ -44,56 +44,39 @@ namespace Foam
 namespace mixturePhaseChangeModels
 {
 /*---------------------------------------------------------------------------*\
-                      Class LangmuirEvaporation Declaration
+                      Class PhaseChangeReaction Declaration
 \*---------------------------------------------------------------------------*/
 
-class LangmuirEvaporation
+class PhaseChangeReaction
 :
     public mixturePhaseChangeModel
 {
 
     //model-specific stuff
-        volScalarField x_;
-        volScalarField xL_;
-        volScalarField coeffC_;
-        volScalarField coeffV_;
-        volScalarField p_vap_;
-                
-        //- Vapor pressure coefficients for boiling to critical temperature
-        //  range
-        dimensionedScalar Pc_;
-        dimensionedScalar Tc_;
-        dimensionedScalar Tb_;
-        dimensionedScalar Lb_;
-        scalar La_;
-        vector PvCoeffs_;
-        scalar betaM_;
-        
-        word vapor_specie_;
-        word liquid_specie_;
-        
-        dimensionedScalar W_;
+        // all this needs for its calculations is the combustion model
+        // and const access to alphaL and alphaV
+
 
 public:
 
     //- Runtime type information
-    TypeName("LangmuirEvaporation");
+    TypeName("PhaseChangeReaction");
 
     // Constructors
 
         //- construct from components
-        LangmuirEvaporation
+        PhaseChangeReaction
         (
             const word name,
             const fvMesh& mesh,
             const phase& alphaL,
             const phase& alphaV,
-            const PtrList<gasThermoPhysics>& speciesData,
+            const PtrList<gasHThermoPhysics>& speciesData,
             dictionary phaseChangeDict
         );
         
     //- Destructor
-        virtual ~LangmuirEvaporation() {}
+        virtual ~PhaseChangeReaction() {}
 
 
     // Member Functions
@@ -102,10 +85,6 @@ public:
             const volScalarField& evapMask,
             const volScalarField& area
         );
-        
-        tmp<volScalarField> dPvdT() const;
-        tmp<volScalarField> L() const;
-        tmp<volScalarField> dLdT() const;
         
         virtual tmp<volScalarField> mdot(const word& phaseName) const;
         virtual tmp<volScalarField> Vdot(const word& phaseName) const;
@@ -116,7 +95,7 @@ public:
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-} // End namespace mixturePhaseChangeModel
+} // End namespace mixturePhaseChangeModels
 
 } // End namespace Foam
 

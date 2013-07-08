@@ -23,58 +23,50 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "mixturePhaseChangeModel.H"
+#include "makeReactionThermo.H"
+
+#include "rhoReactionThermo.H"
+#include "heTwophaseMixtureThermo.H"
+
+#include "specie.H"
+#include "perfectGas.H"
+#include "incompressiblePerfectGas.H"
+#include "hConstThermo.H"
+#include "janafThermo.H"
+#include "sensibleEnthalpy.H"
+#include "thermo.H"
+
+#include "constTransport.H"
+#include "sutherlandTransport.H"
+
+#include "homogeneousMixture.H"
+#include "inhomogeneousMixture.H"
+#include "veryInhomogeneousMixture.H"
+#include "multiComponentMixture.H"
+#include "reactingMixture.H"
+#include "singleStepReactingMixture.H"
+
+#include "thermoPhysicsTypes.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::mixturePhaseChangeModel>
-Foam::mixturePhaseChangeModel::New
-(
-    const word name,
-    const fvMesh& mesh,
-    const phase& alphaL,
-    const phase& alphaV,
-    const PtrList<gasThermoPhysics>& speciesData,
-    dictionary phaseChangeDict
-)
+namespace Foam
 {
-    word mixturePhaseChangeModelTypeName
-    (
-        phaseChangeDict.lookup("phaseChangeModel")
-    );
 
-    Info<< "Selecting phase change model "
-        << mixturePhaseChangeModelTypeName << endl;
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    componentsConstructorTable::iterator cstrIter =
-        componentsConstructorTablePtr_
-            ->find(mixturePhaseChangeModelTypeName);
+makeReactionMixtureThermo
+(
+    rhoThermo,
+    rhoReactionThermo,
+    heTwophaseMixtureThermo,
+    reactingMixture,
+    gasHThermoPhysics
+);
 
-    if (cstrIter == componentsConstructorTablePtr_->end())
-    {
-        FatalErrorIn
-        (
-            "mixturePhaseChangeModel::New"
-        )   << "Unknown mixturePhaseChangeModel type "
-            << mixturePhaseChangeModelTypeName << endl << endl
-            << "Valid  mixturePhaseChangeModel are : " << endl
-            << componentsConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
 
-    return autoPtr<mixturePhaseChangeModel>
-    (
-        cstrIter()
-        (
-            name,
-            mesh,
-            alphaL,
-            alphaV,
-            speciesData,
-            phaseChangeDict
-        )
-    );
-}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Foam
 
 // ************************************************************************* //

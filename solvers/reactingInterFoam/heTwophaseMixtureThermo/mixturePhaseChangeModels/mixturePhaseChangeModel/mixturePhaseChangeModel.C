@@ -42,7 +42,7 @@ Foam::mixturePhaseChangeModel::mixturePhaseChangeModel
     const fvMesh& mesh,
     const phase& alphaL,
     const phase& alphaV,
-    const PtrList<gasThermoPhysics>& speciesData,
+    const PtrList<gasHThermoPhysics>& speciesData,
     dictionary phaseChangeDict
 )
 :
@@ -95,7 +95,8 @@ Foam::mixturePhaseChangeModel::mixturePhaseChangeModel
         
         forAll(speciesData, s)
         {
-            if( speciesData[s].name() == R )
+            const specie& sp = speciesData[s];
+            if( sp.name() == R )
             {
                 reacThermo_.set
                 (
@@ -119,7 +120,8 @@ Foam::mixturePhaseChangeModel::mixturePhaseChangeModel
         
         forAll(speciesData, s)
         {
-            if( speciesData[s].name() == P )
+            const specie& sp = speciesData[s];
+            if( sp.name() == P )
             {
                 prodThermo_.set
                 (

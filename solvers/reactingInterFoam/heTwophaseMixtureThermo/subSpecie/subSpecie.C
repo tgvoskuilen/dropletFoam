@@ -33,7 +33,7 @@ Foam::subSpecie::subSpecie
     const dictionary& subSpecieDict,
     const fvMesh& mesh,
     volScalarField& specie,
-    const gasThermoPhysics& specieData,
+    const gasHThermoPhysics& specieData,
     label idx
 )
 :
@@ -129,37 +129,10 @@ Foam::autoPtr<Foam::subSpecie> Foam::subSpecie::clone() const
     return autoPtr<subSpecie>(NULL);
 }
 
-/*
-tmp<volScalarField> Foam::subSpecie::hs
-(
-    const volScalarField& T
-) const
-{
-    tmp<volScalarField> ths
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "ths"+name_,
-                T.mesh().time().timeName(),
-                T.mesh()
-            ),
-            T.mesh(),
-            dimensionedScalar("ths"+name_, dimEnergy/dimMass, 0.0)
-        )
-    );
-
-    forAll(ths(), cellI)
-    {
-        ths()[cellI] = thermo_.Hs( T[cellI] );
-    }
-        
-    return ths;
-}*/
 
 Foam::tmp<Foam::scalarField> Foam::subSpecie::Cp
 (
+    const scalarField& p,
     const scalarField& T,
     const label patchi
 ) const
@@ -170,7 +143,7 @@ Foam::tmp<Foam::scalarField> Foam::subSpecie::Cp
 
     forAll(T, facei)
     {
-        cp[facei] = thermo_.Cp( T[facei] );
+        cp[facei] = thermo_.Cp( p[facei], T[facei] );
     }
 
     return tCp;
@@ -178,6 +151,7 @@ Foam::tmp<Foam::scalarField> Foam::subSpecie::Cp
 
 tmp<volScalarField> Foam::subSpecie::Cp
 (
+    const volScalarField& p,
     const volScalarField& T
 ) const
 {
@@ -200,15 +174,21 @@ tmp<volScalarField> Foam::subSpecie::Cp
 
     scalarField& cpCells = cp.internalField();
     const scalarField& TCells = T.internalField();
+    const scalarField& pCells = p.internalField();
 
     forAll(TCells, celli)
     {
-        cpCells[celli] = thermo_.Cp(TCells[celli]);
+        cpCells[celli] = thermo_.Cp(pCells[celli], TCells[celli]);
     }
 
     forAll(T.boundaryField(), patchi)
     {
-        cp.boundaryField()[patchi] = Cp(T.boundaryField()[patchi], patchi);
+        cp.boundaryField()[patchi] = Cp
+        (
+            p.boundaryField()[patchi], 
+            T.boundaryField()[patchi], 
+            patchi
+        );
     }
         
         
@@ -217,17 +197,16 @@ tmp<volScalarField> Foam::subSpecie::Cp
 
 Foam::tmp<Foam::scalarField> Foam::subSpecie::kappa
 (
+    const scalarField& p,
     const scalarField& T,
     const label patchi
 ) const
 {
     tmp<scalarField> tkappa(new scalarField(T.size()));
 
-    //scalarField& kappa = tkappa();
-
     forAll(T, facei)
     {
-        tkappa()[facei] = thermo_.kappa( T[facei] );
+        tkappa()[facei] = thermo_.kappa( p[facei], T[facei] );
     }
 
     return tkappa;
@@ -235,6 +214,7 @@ Foam::tmp<Foam::scalarField> Foam::subSpecie::kappa
 
 tmp<volScalarField> Foam::subSpecie::kappa
 (
+    const volScalarField& p,
     const volScalarField& T
 ) const
 {
@@ -258,19 +238,23 @@ tmp<volScalarField> Foam::subSpecie::kappa
         )
     );        
         
-
     scalarField& kappaCells = tkappa().internalField();
     const scalarField& TCells = T.internalField();
-
+    const scalarField& pCells = p.internalField();
+    
     forAll(TCells, celli)
     {
-        kappaCells[celli] = thermo_.kappa(TCells[celli]);
+        kappaCells[celli] = thermo_.kappa(pCells[celli], TCells[celli]);
     }
 
     forAll(T.boundaryField(), patchi)
     {
-        tkappa().boundaryField()[patchi] = 
-            kappa(T.boundaryField()[patchi], patchi);
+        tkappa().boundaryField()[patchi] = kappa
+        (
+            T.boundaryField()[patchi], 
+            p.boundaryField()[patchi], 
+            patchi
+        );
     }
         
         

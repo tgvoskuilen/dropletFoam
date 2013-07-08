@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::hsTwophaseMixtureThermo
+    Foam::heTwophaseMixtureThermo
 
 Description
     A multiphase reaction thermo class. The various parts and pointers are
@@ -30,7 +30,7 @@ Description
     since the thermo class does not have access to the combustion model at
     creation)
     
-        hsTwophaseMixtureThermo constructor
+        heTwophaseMixtureThermo constructor
             combustionPtr set to NULL (can't access yet)
             phase constructor
                 evapPtr set to NULL (needs all phases created first)
@@ -38,26 +38,28 @@ Description
             for each phase with an evaporation model, create the model and
                 set phase.evapPtr (remains NULL for phases without evaporation)
                 
-        hsTwophaseMixtureThermo.setPtr( combustion )
+        heTwophaseMixtureThermo.setPtr( combustion )
             sets combustionPtr in thermo and in all its phases
             
             
 SourceFiles
-    hsTwophaseMixtureThermo.C
+    heTwophaseMixtureThermo.C
+    
+    This is based on heRhoThermo, but modified to handle two phases etc...
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef hsTwophaseMixtureThermo_H
-#define hsTwophaseMixtureThermo_H
+#ifndef heTwophaseMixtureThermo_H
+#define heTwophaseMixtureThermo_H
 
-#include "hsReactionThermo.H"
+#include "heThermo.H"
 #include "phase.H"
 #include "subSpecie.H"
 #include "mixturePhaseChangeModel.H"
 #include "PtrDictionary.H"
 #include "volFields.H"
 #include "surfaceFields.H"
-#include "rhoChemistryCombustionModel.H"
+#include "rhoCombustionModel.H"
 #include "multivariateSurfaceInterpolationScheme.H"
 #include "subCycle.H"
 
@@ -75,14 +77,13 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class hsTwophaseMixtureThermo Declaration
+                    Class heTwophaseMixtureThermo Declaration
 \*---------------------------------------------------------------------------*/
 
-template<class MixtureType>
-class hsTwophaseMixtureThermo
+template<class ThermoType, class MixtureType>
+class heTwophaseMixtureThermo
 :
-    public hsReactionThermo,
-    public MixtureType
+    public heThermo<ThermoType, MixtureType>
 {
     
 private:
@@ -92,7 +93,7 @@ private:
         const fvMesh& mesh_;
     
         //- Pointer to the combustion model (given after construction)
-        combustionModels::rhoChemistryCombustionModel* combustionPtr_;
+        combustionModels::rhoCombustionModel* combustionPtr_;
 
         //- Vapor phase
         phase alphaVapor_;
@@ -144,7 +145,7 @@ private:
         void calculate();
 
         //- Construct as copy (not implemented)
-        hsTwophaseMixtureThermo(const hsTwophaseMixtureThermo<MixtureType>&);
+        heTwophaseMixtureThermo(const heTwophaseMixtureThermo<ThermoType,MixtureType>&);
 
         //- Calculate phase change reactions
         void calcPhaseChange();
@@ -162,17 +163,17 @@ private:
 public:
 
     //- Runtime type information
-    TypeName("hsTwophaseMixtureThermo");
+    TypeName("heTwophaseMixtureThermo");
 
 
     // Constructors
 
         //- Construct from mesh
-        hsTwophaseMixtureThermo(const fvMesh&);
+        heTwophaseMixtureThermo(const fvMesh&, const word& phaseName);
 
 
     //- Destructor
-    virtual ~hsTwophaseMixtureThermo();
+    virtual ~heTwophaseMixtureThermo();
 
 
     // Member functions
@@ -196,47 +197,10 @@ public:
         // Fields derived from thermodynamic state variables - These use
         //  a cellMixture based on mass fractions (Ys)
 
-            //- Chemical enthalpy [J/kg]
-            virtual tmp<volScalarField> hc() const;
-
-
-            //- Sensible enthalpy for cell-set [J/kg]
-            virtual tmp<scalarField> hs
-            (
-                const scalarField& T,
-                const labelList& cells
-            ) const;
-
-            //- Sensible enthalpy for patch [J/kg]
-            virtual tmp<scalarField> hs
-            (
-                const scalarField& T,
-                const label patchi
-            ) const;
-
-            //- Heat capacity at constant pressure for patch [J/kg/K]
-            virtual tmp<scalarField> Cp
-            (
-                const scalarField& T,
-                const label patchi
-            ) const;
-
-            //- Heat capacity at constant pressure [J/kg/K]
-            virtual tmp<volScalarField> Cp() const;
-                        
-            //- Heat capacity at constant pressure for patch [J/kg/K]
-            virtual tmp<scalarField> Cv
-            (
-                const scalarField& T,
-                const label patchi
-            ) const;
-
-            //- Heat capacity at constant pressure [J/kg/K]
-            virtual tmp<volScalarField> Cv() const;
-            
             //- 
             virtual tmp<scalarField> mu
             (
+                const scalarField& p,
                 const scalarField& T,
                 const label patchi
             ) const;
@@ -244,15 +208,6 @@ public:
             //- 
             virtual tmp<volScalarField> muV() const;
             
-            //- 
-            /*virtual tmp<scalarField> kappa
-            (
-                const scalarField& T,
-                const label patchi
-            ) const;
-
-            //- 
-            virtual tmp<volScalarField> kappaV() const;*/
             
             
         //- Read thermophysicalProperties dictionary
@@ -283,7 +238,7 @@ public:
             
             volScalarField& T()
             {
-                return T_;
+                return this->T_;
             }
                                     
             //- Get mass flux field
@@ -313,7 +268,7 @@ public:
             //- Set the combustion model and evaporation pointers
             void setPtrs
             (
-                combustionModels::rhoChemistryCombustionModel* combustion
+                combustionModels::rhoCombustionModel* combustion
             );
 
             //- Get a 0-1 mask for cells near the interface
@@ -338,7 +293,7 @@ public:
             tmp<volScalarField> kByCp(const volScalarField& muEff) const;
             tmp<volScalarField> rCp() const;
             
-            void setHs();
+            void setHE();
 };
 
 
@@ -349,7 +304,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "hsTwophaseMixtureThermo.C"
+#   include "heTwophaseMixtureThermo.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

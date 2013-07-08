@@ -43,7 +43,8 @@ SourceFiles
 #include "dimensionedScalarFwd.H"
 #include "phase.H"
 #include "subSpecie.H"
-#include "rhoChemistryCombustionModel.H"
+#include "rhoChemistryCombustion.H"
+#include "rhoCombustionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -76,11 +77,11 @@ class mixturePhaseChangeModel
         HashTable<scalar> reactants_;
         HashTable<scalar> products_;
         
-        HashTable<const gasThermoPhysics*> reacThermo_;
-        HashTable<const gasThermoPhysics*> prodThermo_;
+        HashTable<const gasHThermoPhysics*> reacThermo_;
+        HashTable<const gasHThermoPhysics*> prodThermo_;
 
         //- Pointer to the combustion model (given after construction)
-        combustionModels::rhoChemistryCombustionModel* combustionPtr_;
+        combustionModels::rhoChemistryCombustion* combustionPtr_;
         
         //- Universal gas constant
         dimensionedScalar R_;
@@ -108,7 +109,7 @@ public:
                 const fvMesh& mesh,
                 const phase& alphaL,
                 const phase& alphaV,
-                const PtrList<gasThermoPhysics>& speciesData,
+                const PtrList<gasHThermoPhysics>& speciesData,
                 dictionary phaseChangeDict
             ),
             (name, mesh, alphaL, alphaV, speciesData, phaseChangeDict)
@@ -124,7 +125,7 @@ public:
             const fvMesh& mesh,
             const phase& alphaL,
             const phase& alphaV,
-            const PtrList<gasThermoPhysics>& speciesData,
+            const PtrList<gasHThermoPhysics>& speciesData,
             dictionary phaseChangeDict
         );
 
@@ -139,7 +140,7 @@ public:
             const fvMesh& mesh_;
             const phase& alphaL_;
             const phase& alphaV_;
-            const PtrList<gasThermoPhysics>& speciesData_;
+            const PtrList<gasHThermoPhysics>& speciesData_;
 
         public:
 
@@ -148,7 +149,7 @@ public:
                 const fvMesh& mesh,
                 const phase& alphaL,
                 const phase& alphaV,
-                const PtrList<gasThermoPhysics>& speciesData
+                const PtrList<gasHThermoPhysics>& speciesData
             )
             :
                 mesh_(mesh),
@@ -181,7 +182,7 @@ public:
             const fvMesh& mesh,
             const phase& alphaL,
             const phase& alphaV,
-            const PtrList<gasThermoPhysics>& speciesData,
+            const PtrList<gasHThermoPhysics>& speciesData,
             dictionary phaseChangeDict
         );
         
@@ -203,9 +204,9 @@ public:
         
         bool hasSpecie(const word& name) const;
         
-        void setPtr(combustionModels::rhoChemistryCombustionModel* combustion)
+        void setPtr(combustionModels::rhoCombustionModel* combustion)
         {
-            combustionPtr_ = combustion;
+            combustionPtr_ = dynamic_cast<combustionModels::rhoChemistryCombustion*>(combustion);
         }
         
     // Virtual Functions

@@ -44,7 +44,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     const fvMesh& mesh,
     const phase& alphaL,
     const phase& alphaV,
-    const PtrList<gasThermoPhysics>& speciesData,
+    const PtrList<gasHThermoPhysics>& speciesData,
     dictionary phaseChangeDict
 )
 :

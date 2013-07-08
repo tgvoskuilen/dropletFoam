@@ -27,7 +27,7 @@
           - fvc::ddt(rho, K)
           - fvc::div(mixture.rhoPhi(), K)
           + (fvc::ddt(rho) + fvc::div(mixture.rhoPhi()))*K
-          + combustion->Sh()
+          + reaction->Sh()
         )
       + TSuSp.first()
       - fvm::Sp(TSuSp.second(), T)
@@ -45,7 +45,7 @@
     T.max(200.0);
     T.min(3500.0);
     
-    mixture.setHs();
+    mixture.setHE();
     //hs = thermo.hs();
     
     //Then update other thermo properties at new temperature

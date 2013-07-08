@@ -44,7 +44,7 @@ Foam::mixturePhaseChangeModels::PhaseChangeReaction::PhaseChangeReaction
     const fvMesh& mesh,
     const phase& alphaL,
     const phase& alphaV,
-    const PtrList<gasThermoPhysics>& speciesData,
+    const PtrList<gasHThermoPhysics>& speciesData,
     dictionary phaseChangeDict
 )
 :
@@ -199,20 +199,20 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::mdot
     
     if(combustionPtr_)
     {
-        const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
+        const rhoChemistryModel& chemistry = combustionPtr_->chemistry();
         
         if( phaseName == "Vapor" )
         {
             forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
             {
-                tmdot() += chemistry.RR(specieI().idx());
+                tmdot().dimensionedInternalField() += chemistry.RR(specieI().idx());
             }
         }
         else if( phaseName == "Liquid" )
         {
             forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
             {
-                tmdot() += chemistry.RR(specieI().idx());
+                tmdot().dimensionedInternalField() += chemistry.RR(specieI().idx());
             }
         }
     }
@@ -246,21 +246,21 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::PhaseChangeReaction::Vdot
     
     if(combustionPtr_)
     {
-        const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
+        const rhoChemistryModel& chemistry = combustionPtr_->chemistry();
         
         if( phaseName == "Vapor" )
         {
             forAllConstIter(PtrDictionary<subSpecie>, alphaV_.subSpecies(), specieI)
             {
                 tmp<volScalarField> rhoV = p_*specieI().W()/(R_*T_);
-                tVdot() += chemistry.RR(specieI().idx())/rhoV;
+                tVdot().dimensionedInternalField() += chemistry.RR(specieI().idx())/rhoV().dimensionedInternalField();
             }
         }
         else if( phaseName == "Liquid" )
         {
             forAllConstIter(PtrDictionary<subSpecie>, alphaL_.subSpecies(), specieI)
             {
-                tVdot() += chemistry.RR(specieI().idx())/specieI().rho0();
+                tVdot().dimensionedInternalField() += chemistry.RR(specieI().idx())/specieI().rho0();
             }
         }
     }

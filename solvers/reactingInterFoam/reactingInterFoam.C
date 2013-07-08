@@ -35,9 +35,10 @@ Description
 
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
-#include "hsTwophaseMixtureThermo.H"
+#include "heTwophaseMixtureThermo.H"
 #include "turbulenceModel.H"
-#include "rhoChemistryCombustionModel.H"
+#include "rhoChemistryCombustion.H"
+#include "SpecieMixture.H"
 #include "pimpleControl.H"
 #include "subCycle.H"
 
@@ -148,7 +149,7 @@ int main(int argc, char *argv[])
             Info<<"Solving alpha transport equations"<<endl;
             MaxFo = mixture.solve( rho );
 
-            dQ = combustion->dQ() + mixture.dQ_phaseChange();
+            dQ = reaction->dQ() + mixture.dQ_phaseChange();
 
             #include "UEqn.H"	
             #include "TEqn.H"

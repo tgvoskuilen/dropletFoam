@@ -42,13 +42,14 @@ SourceFiles
 #include "PtrDictionary.H"
 #include "dictionaryEntry.H"
 #include "fvCFD.H"
-#include "rhoChemistryCombustionModel.H"
+#include "rhoChemistryCombustion.H"
 #include "turbulenceModel.H"
 #include "incompressible/viscosityModels/viscosityModel/viscosityModel.H"
 #include "reactingMixture.H"
 #include "reactionTypes.H"
 #include "dimensionedScalar.H"
 #include "dimensionedScalarFwd.H"
+#include "thermoPhysicsTypes.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -83,7 +84,7 @@ class subSpecie
         volScalarField Yp_;
         
         //- Thermo properties of this subspecie
-        const gasThermoPhysics& thermo_;
+        const gasHThermoPhysics& thermo_;
         
         //- Specie's position in the global specie list
         label idx_;
@@ -109,7 +110,7 @@ public:
             const dictionary& subSpecieDict,
             const fvMesh& mesh,
             volScalarField& species,
-            const gasThermoPhysics& speciesData,
+            const gasHThermoPhysics& speciesData,
             label idx
         );
 
@@ -122,7 +123,7 @@ public:
         {
             const fvMesh& mesh_;
             PtrList<volScalarField>& species_;
-            const PtrList<gasThermoPhysics>& speciesData_;
+            const PtrList<gasHThermoPhysics>& speciesData_;
 
         public:
 
@@ -130,7 +131,7 @@ public:
             (
                 const fvMesh& mesh,
                 PtrList<volScalarField>& species,
-                const PtrList<gasThermoPhysics>& speciesData
+                const PtrList<gasHThermoPhysics>& speciesData
             )
             :
                 mesh_(mesh),
@@ -235,7 +236,7 @@ public:
             
         tmp<volScalarField> sigma(const volScalarField& T) const;
                 
-        const gasThermoPhysics& thermo() const
+        const gasHThermoPhysics& thermo() const
         {
             return thermo_;
         }
@@ -262,19 +263,29 @@ public:
         
         tmp<scalarField> Cp
         (
+            const scalarField& p,
             const scalarField& T,
             const label patchi
         ) const;
         
-        tmp<volScalarField> Cp(const volScalarField& T) const;
+        tmp<volScalarField> Cp
+        (
+            const volScalarField& p,
+            const volScalarField& T
+        ) const;
         
         tmp<scalarField> kappa
         (
+            const scalarField& p,
             const scalarField& T,
             const label patchi
         ) const;
         
-        tmp<volScalarField> kappa(const volScalarField& T) const;
+        tmp<volScalarField> kappa
+        (
+            const volScalarField& p,
+            const volScalarField& T
+        ) const;
         
         void correct();
 };

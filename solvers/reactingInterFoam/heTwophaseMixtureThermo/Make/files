@@ -5,6 +5,6 @@ mixturePhaseChangeModels/mixturePhaseChangeModel/newMixturePhaseChangeModel.C
 mixturePhaseChangeModels/LangmuirEvaporation/LangmuirEvaporation.C
 mixturePhaseChangeModels/PhaseChangeReaction/PhaseChangeReaction.C
 
-hsNewReactionThermos.C
+heNewReactionThermos.C
 
 LIB = $(FOAM_USER_LIBBIN)/libreactingInterFoam
