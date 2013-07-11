@@ -59,7 +59,7 @@ SourceFiles
 #include "PtrDictionary.H"
 #include "volFields.H"
 #include "surfaceFields.H"
-#include "rhoCombustionModel.H"
+#include "combustionModel.H"
 #include "multivariateSurfaceInterpolationScheme.H"
 #include "subCycle.H"
 
@@ -93,7 +93,7 @@ private:
         const fvMesh& mesh_;
     
         //- Pointer to the combustion model (given after construction)
-        combustionModels::rhoCombustionModel* combustionPtr_;
+        combustionModel* combustionPtr_;
 
         //- Vapor phase
         phase alphaVapor_;

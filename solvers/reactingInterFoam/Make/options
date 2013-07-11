@@ -18,6 +18,9 @@ EXE_INC = \
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lreactingInterFoam \
+    -ltwoPhaseMixture \
+    -linterfaceProperties \
+    -ltwoPhaseProperties \
     -lincompressibleTransportModels \
     -lcompressibleTurbulenceModel \
     -lcompressibleRASModels \
@@ -25,6 +28,8 @@ EXE_LIBS = \
     -lfiniteVolume \
     -ldynamicMesh \
     -lmeshTools \
+    -lfvOptions \
+    -lsampling \
     -ldynamicFvMesh \
     -ltopoChangerFvMesh \
     -lreactionThermophysicalModels \

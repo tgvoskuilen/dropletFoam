@@ -104,12 +104,15 @@ Foam::subSpecie::subSpecie
     }
         
     Foam::Info<< "Created and linked subSpecie " << name << Foam::endl;
+    
+    /*
     Foam::Info<< "  idx = " << idx_ << Foam::endl;
     Foam::Info<< "  rho0 = " << rho0_ << Foam::endl;
     Foam::Info<< "  Tc = " << Tc_ << Foam::endl;
     Foam::Info<< "  sigma0 = " << sigma0_ << Foam::endl;
     Foam::Info<< "  sigmaa = " << sigmaa_ << Foam::endl;
     Foam::Info<< "  kappa = " << kappa_ << Foam::endl;
+    */
 }
 
 

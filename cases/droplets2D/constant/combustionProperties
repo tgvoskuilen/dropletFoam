@@ -15,18 +15,13 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-combustionModel  PaSR<rhoChemistryCombustionModel>;
+combustionModel  PaSR<rhoChemistryCombustion>;
 
 active  true;
 
-infinitelyFastChemistryCoeffs
-{
-    C       1000.0;
-}
-
 PaSRCoeffs
 {
-    Cmix                Cmix [ 0 0 0 0 0 0 0 ] 0.1;
+    Cmix                0.1;
     turbulentReaction   on;
 }
 

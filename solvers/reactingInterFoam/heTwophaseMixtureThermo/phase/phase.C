@@ -180,7 +180,7 @@ void Foam::phase::setSpecies( const volScalarField& otherRhoAlpha )
         if( Foam::max(Foam::mag(specieI().Yp() - specieI().Y())).value() < 1e-4 
             && Foam::max(Foam::mag(specieI().Yp())).value() > 0.01 )
         {
-            Info<<"Initializing Yp_" << specieI().name() << " from Y" << endl;
+            //Info<<"Initializing Yp_" << specieI().name() << " from Y" << endl;
             isIC = true;
             
             //only set Yp if Y == Yp (only the case if Yp not read from file)
@@ -210,9 +210,9 @@ void Foam::phase::setSpecies( const volScalarField& otherRhoAlpha )
             specieI().Yp().correctBoundaryConditions();
             specieI().Yp().oldTime();
             
-            Info<< "Min,Max values of " << specieI().name() << " = " 
-                << Foam::min(specieI().Yp()).value() << ", " 
-                << Foam::max(specieI().Yp()).value() << endl;
+            //Info<< "Min,Max values of " << specieI().name() << " = " 
+            //    << Foam::min(specieI().Yp()).value() << ", " 
+            //    << Foam::max(specieI().Yp()).value() << endl;
         }
     }
 
@@ -304,13 +304,10 @@ const Foam::volScalarField& Foam::phase::Y(const word& specie) const
 
 void Foam::phase::setCombustionPtr
 (
-    combustionModels::rhoCombustionModel* combustion
+    combustionModel* combustion
 )
 {
-    combustionPtr_ = dynamic_cast<combustionModels::rhoChemistryCombustion*>
-    (
-        combustion
-    );
+    combustionPtr_ = combustion;
 }
 
 
@@ -1197,13 +1194,13 @@ Foam::tmp<Foam::volScalarField> Foam::phase::kappa
         // xi = Y / (W * Np)
         if( name_ == "Vapor" )
         {
-            tk1() += specieI().Y() / (specieI().W() * Np()) * specieI().kappa(p,T);
-            tk2() += specieI().Y() / (specieI().W() * Np()) / specieI().kappa(p,T);
+            tk1() += specieI().Y()/(specieI().W()*Np())*specieI().kappa(p,T);
+            tk2() += specieI().Y()/(specieI().W()*Np())/specieI().kappa(p,T);
         }
         else
         {
-            tk1() += specieI().Y() / (specieI().W() * Np()) * specieI().kappaL();
-            tk2() += specieI().Y() / (specieI().W() * Np()) / specieI().kappaL();
+            tk1() += specieI().Y()/(specieI().W()*Np())*specieI().kappaL();
+            tk2() += specieI().Y()/(specieI().W()*Np())/specieI().kappaL();
         }
     }
     
@@ -1398,23 +1395,11 @@ scalar Foam::phase::solveSubSpecies
         
         volScalarField& Yi = specieI().Yp();
         
-        //tmp<volScalarField> SuEvap = Su_Yi_evap( specieI() );
-        
         Pair<tmp<volScalarField> > YSuSp = YiSuSp( specieI(), phaseChangeModels );
-        
-        //dimensionedScalar ss("ss",dimDensity/dimTime,SMALL);
-        //scalar mindT = Foam::min(0.02 * rho(p,T) / (Foam::mag(SuEvap())+ss)).value();
-        //dTsrc = (mindT < dTsrc) ? mindT : dTsrc;
-        
-        // TODO TODO TODO!!!!
-        const rhoChemistryModel& chemistry = combustionPtr_->chemistry();
-        const volScalarField& PaSRkappa = mesh().lookupObject<volScalarField>("PaSR::kappa");
-        
-        tmp<volScalarField> R = PaSRkappa;
-        R().dimensionedInternalField() *= chemistry.RR( specieI().idx() );
-        
-        //tmp<fvScalarMatrix> RYi = combustionPtr_->R(specieI().Y());
-        
+
+        YSuSp.first()().internalField() += 
+            combustionPtr_->R(specieI().Y())().source() / mesh().V();
+
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoAlpha_, Yi)
@@ -1422,8 +1407,7 @@ scalar Foam::phase::solveSubSpecies
           - fvm::Sp(fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - mdot_phase, Yi)
           - fvm::laplacian(D_, Yi)
          ==
-            R()
-          + YSuSp.first()
+            YSuSp.first()
           - fvm::Sp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
         );

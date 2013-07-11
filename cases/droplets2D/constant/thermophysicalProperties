@@ -17,7 +17,7 @@ FoamFile
 
 thermoType
 {
-    type            hsTwophaseMixtureThermo;
+    type            heTwophaseMixtureThermo;
     mixture         reactingMixture;
     transport       sutherland;
     thermo          janaf;
@@ -42,8 +42,6 @@ Vapor
    subspecies
    (
         CH3ONO2      {}
-        N2O          {}
-        CH3N3        {}
         CH3NHNH2     {}
         CH3NNH2      {}
         CH3NNH       {}
@@ -105,7 +103,7 @@ Liquid
             sigmaa          0.884;
         }
         
-        CH3NHNH*
+        /*CH3NHNH*
         {
             transportModel  Newtonian;
             nu              nu [ 0 2 -1 0 0 0 0 ] 9.2e-7; //rocketdyne
@@ -116,9 +114,9 @@ Liquid
             
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
             sigmaa          0.884;
-        }
+        }*/
         
-        CH3NN*
+        /*CH3NN*
         {
             transportModel  Newtonian;
             nu              nu [ 0 2 -1 0 0 0 0 ] 9.2e-7; //rocketdyne
@@ -129,7 +127,7 @@ Liquid
             
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
             sigmaa          0.884;
-        }
+        }*/
         
         CH3ONO2L
         {
@@ -218,7 +216,7 @@ Liquid
             sigmaa          1;
         }
         
-        H3O*
+        /*H3O*
         {
             transportModel  Newtonian;
             nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
@@ -229,7 +227,7 @@ Liquid
               
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.07;
             sigmaa          1;
-        }
+        }*/
    );
 }
 

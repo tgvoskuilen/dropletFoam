@@ -42,8 +42,7 @@ SourceFiles
 #include "PtrDictionary.H"
 #include "dictionaryEntry.H"
 #include "fvCFD.H"
-#include "rhoCombustionModel.H"
-#include "rhoChemistryCombustion.H"
+#include "combustionModel.H"
 #include "turbulenceModel.H"
 #include "incompressible/viscosityModels/viscosityModel/viscosityModel.H"
 #include "reactingMixture.H"
@@ -85,7 +84,7 @@ class phase
         const phase* otherPhase_;
         
         //- Pointer to the top-level combustion model
-        const combustionModels::rhoChemistryCombustion* combustionPtr_;
+        const combustionModel* combustionPtr_;
 
         //- Reference to the list of specie pointers
         PtrList<volScalarField>& species_;
@@ -236,7 +235,7 @@ public:
                        
         void setCombustionPtr
         (
-            combustionModels::rhoCombustionModel* combustion
+            combustionModel* combustion
         );
         
         void setSpecies(const volScalarField& rho);

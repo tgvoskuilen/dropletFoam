@@ -43,8 +43,7 @@ SourceFiles
 #include "dimensionedScalarFwd.H"
 #include "phase.H"
 #include "subSpecie.H"
-#include "rhoChemistryCombustion.H"
-#include "rhoCombustionModel.H"
+#include "combustionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -81,7 +80,7 @@ class mixturePhaseChangeModel
         HashTable<const gasHThermoPhysics*> prodThermo_;
 
         //- Pointer to the combustion model (given after construction)
-        combustionModels::rhoChemistryCombustion* combustionPtr_;
+        combustionModel* combustionPtr_;
         
         //- Universal gas constant
         dimensionedScalar R_;
@@ -204,9 +203,9 @@ public:
         
         bool hasSpecie(const word& name) const;
         
-        void setPtr(combustionModels::rhoCombustionModel* combustion)
+        void setPtr(combustionModel* combustion)
         {
-            combustionPtr_ = dynamic_cast<combustionModels::rhoChemistryCombustion*>(combustion);
+            combustionPtr_ = combustion;
         }
         
     // Virtual Functions
