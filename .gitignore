@@ -17,8 +17,16 @@
 lnInclude/
 linux64GccDPOpt/
 
-# Decomposed case folders
+# Decomposed case folders and solution files
 processor*/
+*.gz
 
-# Text backup files
+# Text backup files and misc
 *~
+Thumbs.db
+*.asv
+*.png
+*.tif
+*.foam
+log*
+images*/
