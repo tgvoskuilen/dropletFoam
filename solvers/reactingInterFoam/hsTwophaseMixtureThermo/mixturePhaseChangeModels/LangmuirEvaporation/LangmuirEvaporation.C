@@ -129,22 +129,24 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     Lb_(phaseChangeDict_.lookup("Lb")),
     La_(readScalar(phaseChangeDict_.lookup("La"))),
     PvCoeffs_(phaseChangeDict_.lookup("PvCoeffs")),
-    betaM_(readScalar(phaseChangeDict_.lookup("betaM"))),
+    betaV_(readScalar(phaseChangeDict_.lookup("betaV"))),
+    betaC_(readScalar(phaseChangeDict_.lookup("betaC"))),
     W_(dimensionedScalar("W", dimMass/dimMoles, 0.0)) // kg/kmol
 {    
     List<word> prodList = products_.toc();
     List<word> reacList = reactants_.toc();
     
-    //TODO: Warn if length of either products or reactants > 1
+    //TODO: Warn if length of reactants > 1
+    
+    
     
     vapor_specie_ = prodList[0];
     liquid_specie_ = reacList[0];
     
     //W_ = alphaV_.subSpecies()[vapor_specie_]->W();
-    W_.value() = prodThermo_[vapor_specie_]->W();
+    W_.value() = reacThermo_[liquid_specie_]->W();
     
-    Info<< "Liquid/Vapor evaporation configured for " << liquid_specie_ 
-        << "->" << vapor_specie_ << endl;
+    Info<< "Liquid/Vapor evaporation configured for " << liquid_specie_ << endl;
 }
     
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
@@ -210,7 +212,7 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
                           
     //Calculate the mole fractions
 
-    xL_ = alphaL_.x(liquid_specie_);
+    xL_ = alphaL_.x(liquid_specie_)*pos(alphaL_.Yp() - 1e-6);
     
     tmp<volScalarField> xSat = p_vap_/p_*xL_;
     xSat().min(1.0);
@@ -218,18 +220,29 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
     //set x to xSat in areas with trace mass fractions
     x_ = alphaV_.x(vapor_specie_)*pos(alphaV_.Yp() - 1e-4) 
          + xSat*neg(alphaV_.Yp() - 1e-4);
+
+    
+    /*x_ *= 0.0;
+    List<word> prodList = products_.toc();
+    forAll(prodList, p)
+    {
+        //TODO: Wrong with multiple product species!
+        x_ += (alphaV_.x(prodList[p])*pos(alphaV_.Yp() - 1e-4) 
+              + xSat*neg(alphaV_.Yp() - 1e-4))*products_[prodList[p]];
+    }*/
+    
     
     scalar pi = constant::mathematical::pi;
 
     tmp<volScalarField> coeff = area*Foam::sqrt(W_/(2*pi*R_*T_))*mask_;
     
     dimensionedScalar sp("sp",dimPressure,1e-2);
-    coeffC_ = 0.0*coeff()*neg(p_vap_*xL_ + sp - p_*x_); //no condensation
-    coeffV_ = 2.0*betaM_/(2.0-betaM_)*coeff()*pos(p_vap_*xL_ - sp - p_*x_);
+    coeffC_ = 2.0*betaC_/(2.0-betaC_)*coeff()*neg(p_vap_*xL_ + sp - p_*x_);
+    coeffV_ = 2.0*betaV_/(2.0-betaV_)*coeff()*pos(p_vap_*xL_ - sp - p_*x_);
     
     omega_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_) / W_;
 
-    Foam::Info<< "Min,max evaporation flux for " << vapor_specie_ << " = "
+    Foam::Info<< "Min,max evaporation flux for " << liquid_specie_ << " = "
               << Foam::min(omega_).value() << ", " 
               << Foam::max(omega_).value() << " kmol/m3/s" << Foam::endl;
 }
@@ -298,6 +311,15 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::Vdot
     else if( phaseName == "Vapor" )
     {
         tVdot() += omega_*R_*T_/p_;
+        
+        /*scalar sumF = 0.0;
+        
+        forAllConstIter(HashTable<scalar>, products_, fpI)
+        {
+            sumF += fpI();
+        }
+        
+        tVdot() += omega_*R_*T_/p_ * sumF;*/
     }
     else
     {
@@ -356,12 +378,21 @@ Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::
         tYSuSp.first() = (coeffC_+coeffV_)*p_vap_*xL_;
         tYSuSp.second() = (coeffC_+coeffV_)*xByY*p_;
     }
+    
     else if( specie == liquid_specie_ )
     {
         //S_YL = explicit
         //tYSuSp.first() = -(coeffC_+coeffV_)*(p_vap_*xL_ - x_*p_);
         tYSuSp.first() = -omega_*W_;
     }
+    /*else if( products_.found(specie) )
+    {
+        scalar Wp = prodThermo_[specie]->W()/W_.value() * products_[specie];
+        
+        tmp<volScalarField> xByY = alphaV_.xByY(specie);
+        tYSuSp.first() = (coeffC_+coeffV_)*p_vap_*xL_ * Wp;
+        tYSuSp.second() = (coeffC_+coeffV_)*xByY*p_ * Wp;
+    }*/
 
     return tYSuSp;
 }

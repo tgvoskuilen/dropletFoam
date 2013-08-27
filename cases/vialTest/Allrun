@@ -63,7 +63,7 @@ print "Running the problem"
 if np > 1:
     os.system('foamJob -parallel -screen reactingInterFoam')
 else:
-    os.system('foamJob -screen reactingInterFoam')
+    os.system('reactingInterFoam')
 
 print "Finished!"
 

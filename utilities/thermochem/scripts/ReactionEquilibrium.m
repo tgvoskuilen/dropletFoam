@@ -21,68 +21,41 @@ Nr = zeros(size(x));
 
 for i = 1:length(x)
 
-    rxn.reactants(1).name = 'CH3NHNH2';
+    rxn.reactants(1).name = 'CH3NHNH2L';
     rxn.reactants(1).e = 1;
-    rxn.reactants(2).name = 'HNO3';
-    rxn.reactants(2).e = 3;
+    rxn.reactants(2).name = 'HNO3L';
+    rxn.reactants(2).e = 4;
 
 
-    rxn.products(1).name = 'CH3ONO2';
+    rxn.products(1).name = 'MMHN';
     rxn.products(1).e = 1;
-    rxn.products(2).name = 'HONO';
-    rxn.products(2).e = 2*(1-x(i));
-    rxn.products(3).name = 'OH';
-    rxn.products(3).e = 2*x(i);
-    rxn.products(4).name = 'NO';
-    rxn.products(4).e = 2*x(i);
-    rxn.products(5).name = 'H2O';
-    rxn.products(5).e = 2;
-    rxn.products(6).name = 'N2';
-    rxn.products(6).e = 1;
+    rxn.products(2).name = 'HNO3L';
+    rxn.products(2).e = 3;
 
 
     T = 280:5:1000;
     Kp = CalcKp(rxn,T,db);
     dH = CalcHeatRelease(rxn,T,db); %J/mol
     dH400(i) = dH(T==400);
-    Nr(i) = 2*x(i)/(sum([rxn.products.e])-1-2*(1-x(i))-2);
+    Nr(i) = 2*x(i)/(sum([rxn.products.e]));
 end
 
-figure
+figure;
 subplot(1,2,1)
-plot(x,dH400./1000)
-hold on
-plot([0,1],[0,0],'--k')
-xlabel('x')
-xlim([0 1])
-ylabel('dH (kJ/mol)')
+plot(T,dH./1000)
 
 subplot(1,2,2)
-plot(x,Nr)
-xlabel('x')
-ylabel('N_{rad} / N_{prod}')
+semilogy(T,Kp)
 
-% 
-% figure;
-% hold all
-% h = [];
-% for r = 1:length(rxn.reactants)
-%     hN=plot(T,H(db.(rxn.reactants(r).name),T)./1000 );
-%     set(hN,'DisplayName',rxn.reactants(r).name);
-%     h = [h; hN];
-% end
-% ylabel('dH (kJ/mol)')
-% 
-% for p = 1:length(rxn.products)
-%     hN=plot(T,H(db.(rxn.products(p).name),T)./1000 );
-%     set(hN,'DisplayName',rxn.products(p).name);
-%     h = [h; hN];
-% end
-% lh = legend(h);
-% 
-% 
-% figure;
-% plot(T,dH./1000) %kJ/mol
-% 
-% figure;
-% semilogy(T,Kp)
+figure;
+hold all
+plot(T,H(db.(rxn.reactants(1).name),T)./1000,'-b')
+plot(T,H(db.(rxn.reactants(2).name),T)./1000,'-k')
+plot(T,H(db.(rxn.products(1).name),T)./1000,'-r')
+
+
+Hn = db.MMHN.high + 3*db.HNO3L.high;
+Ln = db.MMHN.low + 3*db.HNO3L.low;
+fprintf('%+10.8E%+10.8E%+10.8E%+10.8E%+10.8E    2\n',Hn(1),Hn(2),Hn(3),Hn(4),Hn(5));
+fprintf('%+10.8E%+10.8E%+10.8E%+10.8E%+10.8E    3\n',Hn(6),Hn(7),Ln(1),Ln(2),Ln(3));
+fprintf('%+10.8E%+10.8E%+10.8E%+10.8E                   4\n\n',Ln(4),Ln(5),Ln(6),Ln(7));

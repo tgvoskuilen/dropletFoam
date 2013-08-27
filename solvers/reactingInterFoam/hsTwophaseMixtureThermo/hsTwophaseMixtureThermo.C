@@ -123,16 +123,13 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     alphaVaporSmooth_.max(0.0);
     alphaVaporSmooth_.correctBoundaryConditions();
     
-    
-    /*
+
     //Sharpen the remaining field
-    scalar Cpc = 0.02;
-    alphaVaporSharp_ = (Foam::min(Foam::max(alphaVapor_, 0.5*Cpc),1.0-0.5*Cpc)
-                         - 0.5*Cpc)/(1.0-Cpc);
-    alphaVaporSharp_.correctBoundaryConditions();
-    */
-    
-    
+    //scalar Cpc = 0.02;
+    //alphaVaporSmooth_ = (Foam::min(Foam::max(alphaVaporSmooth_, 0.5*Cpc),1.0-0.5*Cpc)
+    //                     - 0.5*Cpc)/(1.0-Cpc);
+    //alphaVaporSmooth_.correctBoundaryConditions();
+
     
     //Calculate interface curvature field
     // Cell gradient of alphaVaporSmooth
@@ -313,7 +310,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("divPhaseChange", dimless/dimTime, 0.0)
@@ -326,7 +323,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         fvc::DDt(phi_,p_)/(p_+dimensionedScalar("ps",dimPressure,1))
     ),
@@ -849,8 +846,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
         tTSuSp.second()() += pcmTSuSp.second();
     }
     
-    tTSuSp.first()() /= Cp();
-    tTSuSp.second()() /= Cp();
+    tTSuSp.first()() *= rCv();
+    tTSuSp.second()() *= rCv();
     
     return tTSuSp;
 }
@@ -931,7 +928,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
                 mesh_.time().timeName(),
                 mesh_
             ),
-            -divPhaseChange_
+            divU - divPhaseChange_
         );
         
         volScalarField::DimensionedInternalField Su
@@ -942,9 +939,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
                 mesh_.time().timeName(),
                 mesh_
             ),
-            // Divergence term is handled explicitly to be
-            // consistent with the explicit transport solution
-            divU*min(alphaLiquid_, scalar(1)) + Sv
+            Sv
         );
         
                 
@@ -1293,6 +1288,27 @@ template<class MixtureType>
 tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCp() const
 {
     return 1.0 / Cp();
+}
+
+template<class MixtureType>
+tmp<volScalarField> 
+Foam::hsTwophaseMixtureThermo<MixtureType>::kByCv
+(
+    const volScalarField& alphat //turbulent k/Cv contribution
+) const
+{
+   // kByCp = (alpha1*k1/Cp1 + alpha2*k2/Cp2) + alphat
+
+    return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cv(T_)
+         + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cv(T_)
+         + alphat;
+}
+
+
+template<class MixtureType>
+tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCv() const
+{
+    return alphaLiquid_/alphaLiquid_.Cv(T_) + alphaVapor_/alphaVapor_.Cv(T_);
 }
 
 

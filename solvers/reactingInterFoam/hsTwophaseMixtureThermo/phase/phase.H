@@ -80,7 +80,7 @@ class phase
         volScalarField rhoAlpha_;
         
         volScalarField Ypsum_;
-        
+                
         const phase* otherPhase_;
         
         //- Pointer to the top-level combustion model
@@ -217,7 +217,8 @@ public:
         
         tmp<volScalarField> kappa(const volScalarField& T) const;
         tmp<volScalarField> Cp(const volScalarField& T) const;
-                
+        tmp<volScalarField> Cv(const volScalarField& T) const;
+              
         //- Correct the phase properties
         void correct(const volScalarField& p, const volScalarField& T);
         

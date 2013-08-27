@@ -73,7 +73,7 @@ dCp = 0; %J/mol/K (guessed)
 MakeLiquid('NO2L',db.NO2, dH, dH*1000/Tb, Tb, dCp);
 
 %HNO3
-dH = 33.6; %kJ/mol, Schmidt p 296
+dH = 33.6; %kJ/mol
 Tb = 330; %K
 dCp = 0; %J/mol/K (guessed)
 

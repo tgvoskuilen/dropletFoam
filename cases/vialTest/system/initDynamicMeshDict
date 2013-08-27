@@ -24,6 +24,7 @@ volScalarFields //don't put "alphaName" in here
     k
     muSgs
     N2
+    O2
     p
     p_rgh
     T

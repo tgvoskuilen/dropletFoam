@@ -91,7 +91,6 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("Ypsum_"+name, dimless, 0.0)
     ),
-    
     otherPhase_(NULL),
     combustionPtr_(NULL),
     species_(species),
@@ -1295,6 +1294,43 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Cp
     return tCp;
 }
 
+Foam::tmp<Foam::volScalarField> Foam::phase::Cv
+(
+    const volScalarField& T
+) const
+{
+    tmp<volScalarField> tCv
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tCv"+name_,
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("Cv",dimEnergy/dimMass/dimTemperature,SMALL)
+        )
+    );
+    
+    label ns = subSpecies_.size();
+    
+    tmp<volScalarField> tYp = Yp();
+    tmp<volScalarField> mask1 = pos(tYp() - 1e-4);
+    tmp<volScalarField> mask2 = (1 - mask1()) / scalar(ns);
+    mask1() /= (tYp + SMALL);
+    
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        tCv() += ( mask1()*specieI().Y() + mask2() )*specieI().Cv(T);
+    }
+    
+    tCv().correctBoundaryConditions();
+    
+    return tCv;
+}
+
 // Returns a sharpened version of the phase volume fraction
 Foam::tmp<Foam::volScalarField> Foam::phase::sharp
 (
@@ -1406,6 +1442,9 @@ scalar Foam::phase::solveSubSpecies
         
         tmp<volScalarField> R = kappa * chemistry.RR( specieI().idx() );
         
+        
+        
+        
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoAlpha_, Yi)
@@ -1415,7 +1454,7 @@ scalar Foam::phase::solveSubSpecies
          ==
             R()
           + YSuSp.first()
-          - fvm::Sp(YSuSp.second(), Yi)
+          - fvm::SuSp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
         );
         /*

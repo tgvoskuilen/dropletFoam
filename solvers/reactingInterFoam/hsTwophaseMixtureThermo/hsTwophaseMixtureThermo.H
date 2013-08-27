@@ -338,6 +338,9 @@ public:
             tmp<volScalarField> kByCp(const volScalarField& muEff) const;
             tmp<volScalarField> rCp() const;
             
+            tmp<volScalarField> kByCv(const volScalarField& muEff) const;
+            tmp<volScalarField> rCv() const;
+            
             void setHs();
 };
 

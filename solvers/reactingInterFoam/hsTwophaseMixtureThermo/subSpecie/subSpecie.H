@@ -268,6 +268,14 @@ public:
         
         tmp<volScalarField> Cp(const volScalarField& T) const;
         
+        tmp<scalarField> Cv
+        (
+            const scalarField& T,
+            const label patchi
+        ) const;
+        
+        tmp<volScalarField> Cv(const volScalarField& T) const;
+        
         tmp<scalarField> kappa
         (
             const scalarField& T,

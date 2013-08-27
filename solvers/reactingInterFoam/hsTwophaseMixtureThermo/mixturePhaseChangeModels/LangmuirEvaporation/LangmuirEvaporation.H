@@ -67,7 +67,8 @@ class LangmuirEvaporation
         dimensionedScalar Lb_;
         scalar La_;
         vector PvCoeffs_;
-        scalar betaM_;
+        scalar betaV_;
+        scalar betaC_;
         
         word vapor_specie_;
         word liquid_specie_;

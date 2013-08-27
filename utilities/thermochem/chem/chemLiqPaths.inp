@@ -8,10 +8,10 @@ SPECIES
 CH3NHNH2L HNO3L NO2L HONOL CH3ONO2L H2OL
 
 ! Ions in solution
-CH3NHNH3* NO3- !CH3NHNH* CH3NN* H3O*
+CH3NHNH3* NO3-
 
 ! Extra gasses required for liquid treatment
-CH3ONO2 !N2O CH3N3
+CH3ONO2
 
 ! Gas species for the 25 specie mech (only 24 added, no N2O4)
 CH3NHNH2 CH3NNH2 CH3NNH CH3NN H H2 O2 H2O CO2 CO N2 NO2 NO HONO
@@ -25,7 +25,7 @@ REACTIONS
 !Thynell reactions
 ! Neutralization - forms an aqueous salt solution, ~100 kJ/mol exothermic
 ! "very rapid", "encounter limited" reaction
-CH3NHNH2L + HNO3L => CH3NHNH3* + NO3-          1.00E+16    0.0        0.0
+!CH3NHNH2L + HNO3L => CH3NHNH3* + NO3-          1.00E+16    0.0        0.0
 
 ! Pathway 1 - hydrogen abstraction of methylhydrazinium ion in solution by HNO3
 
@@ -59,12 +59,12 @@ CH3NHNH2L + HNO3L => CH3NHNH3* + NO3-          1.00E+16    0.0        0.0
 !CH3NHNH2+2HNO3L=>CH3ONO2+0.5N2O+2.5H2O+N2           1.00E+13    0.0     5900.0
 !CH3NHNH2+2HNO3=>CH3ONO2+0.5N2O+2.5H2O+N2            1.00E+13    0.0     5900.0
 
-! x = 0.1 for HONO broken into radicals
+! x = 0.2 for HONO broken into radicals
 ! still exothermic though
-CH3NHNH2L + 3HNO3L => CH3ONO2L + 2H2OL + 1.6HONOL + 0.4OH + 0.4NO + N2     1.00E+13  0.0   5900.0
-!CH3NHNH2L + 3HNO3  => CH3ONO2L + 2H2OL + 1.6HONO + 0.4OH + 0.4NO + N2      1.00E+13  0.0   5900.0
-!CH3NHNH2  + 3HNO3L => CH3ONO2 + 2H2OL + 1.6HONOL + 0.4OH + 0.4NO + N2      1.00E+13  0.0   5900.0
-!CH3NHNH2  + 3HNO3  => CH3ONO2 + 2H2O + 1.6HONO + 0.4OH + 0.4NO + N2        1.00E+13  0.0   5900.0
+CH3NHNH2L + 3HNO3L => CH3ONO2L + 2H2OL + 1.6HONOL + 0.4OH + 0.4NO + N2     1.00E+16  0.0   5900.0
+!CH3NHNH2L + 3HNO3  => CH3ONO2L + 2H2OL + 1.6HONO + 0.4OH + 0.4NO + N2      1.00E+16  0.0   5900.0
+!CH3NHNH2  + 3HNO3L => CH3ONO2 + 2H2OL + 1.6HONOL + 0.4OH + 0.4NO + N2      1.00E+16  0.0   5900.0
+!CH3NHNH2  + 3HNO3  => CH3ONO2 + 2H2O + 1.6HONO + 0.4OH + 0.4NO + N2        1.00E+16  0.0   5900.0
 
 !H abstraction reactions by NO2, added for liquid NO2
 CH3NHNH2L+NO2=>CH3NNH2+HONO                    2.20E+11    0.0     5900.0
@@ -72,8 +72,8 @@ CH3NHNH2L+NO2L=>CH3NNH2+HONO                   2.20E+11    0.0     5900.0
 CH3NNH2+NO2L=>CH3NNH+HONO                      1.00E+08    2.0        0.0
 CH3NNH+NO2L=>CH3NN+HONO                        2.20E+11    0.0     5900.0
 
-!1000x slower because of higher liquid density
-CH3NHNH2L+OH=CH3NNH2+H2O                3.92E10      0.0       0.
+! liquid-gas interaction with OH
+!CH3NHNH2L+OH => CH3NNH2+H2O                3.92E13      0.0       0.
 
 !New H-abstraction by N2O route
 !CH3NHNH2L+N2O=>CH3NNH2+N2+OH           2.2E13       0.0    5900.
@@ -92,17 +92,7 @@ CH3O+NO2(+M)<=>CH3ONO2(+M)                     1.20E+13    0.0        0.0
       LOW/  0.14000E+31 -0.45000E+01  0.00000E+00 /
       CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
       H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
-!N2O+H<=>N2+OH                                  3.30E+10    0.0     4729.0
-!N2O+H<=>N2+OH                                  4.40E+14    0.0    19254.0
-!N2O+NO<=>NO2+N2                                5.30E+05    2.2    46280.0
-!N2O(+M)<=>N2+O(+M)                             1.30E+12    0.0    62570.0
-!      LOW/  0.40000E+15  0.00000E+00  0.56600E+05 /
-!      N2/  1.7/
-!      CO2/ 3.0/
-!      H2O/ 12.0/
-!      CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-!      H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ CH3NHNH*/ 0.0/ CH3NN*/ 0.0/ 
-!      H3O*/ 0.0/
+
 !-----------------------------------------------------------------------------
 ! Direct from the 25 specie mechanism
 !  NTO reaction commented out

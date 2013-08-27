@@ -215,6 +215,64 @@ tmp<volScalarField> Foam::subSpecie::Cp
     return tCp;
 }
 
+
+Foam::tmp<Foam::scalarField> Foam::subSpecie::Cv
+(
+    const scalarField& T,
+    const label patchi
+) const
+{
+    tmp<scalarField> tCv(new scalarField(T.size()));
+
+    scalarField& cv = tCv();
+
+    forAll(T, facei)
+    {
+        cv[facei] = thermo_.Cv( T[facei] );
+    }
+
+    return tCv;
+}
+
+tmp<volScalarField> Foam::subSpecie::Cv
+(
+    const volScalarField& T
+) const
+{
+    tmp<volScalarField> tCv
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tCv"+name_,
+                T.mesh().time().timeName(),
+                T.mesh()
+            ),
+            T.mesh(),
+            dimensionedScalar("tCv"+name_,dimEnergy/dimMass/dimTemperature,0.0)
+        )
+    );        
+        
+    volScalarField& cv = tCv();
+
+    scalarField& cvCells = cv.internalField();
+    const scalarField& TCells = T.internalField();
+
+    forAll(TCells, celli)
+    {
+        cvCells[celli] = thermo_.Cv(TCells[celli]);
+    }
+
+    forAll(T.boundaryField(), patchi)
+    {
+        cv.boundaryField()[patchi] = Cv(T.boundaryField()[patchi], patchi);
+    }
+        
+        
+    return tCv;
+}
+
 Foam::tmp<Foam::scalarField> Foam::subSpecie::kappa
 (
     const scalarField& T,

@@ -1,9 +1,9 @@
 {
     Info<< "Building TEqn" << endl;
     
-    Pair<tmp<volScalarField> > TSuSp = mixture.TSuSp(); //<- includes rCp, linearized evaporation enthalpy sink
+    Pair<tmp<volScalarField> > TSuSp = mixture.TSuSp(); //<- includes rCv, linearized evaporation enthalpy sink
 
-    tmp<volScalarField> rCp = mixture.rCp();
+    //tmp<volScalarField> rCv = mixture.rCv();
     
     /*tmp<surfaceScalarField> rhoD = fvc::interpolate(mixture.alphaVapor()) * mixture.vapor().D() + fvc::interpolate(mixture.alphaLiquid()) * mixture.liquid().D();
     
@@ -19,18 +19,19 @@
         fvm::ddt(rho, T)
       + fvc::div(mixture.rhoPhi(), T)
       - fvm::Sp((fvc::ddt(rho) + fvc::div(mixture.rhoPhi())), T)
-      - fvm::laplacian(mixture.kByCp(turbulence->alphat()), T)
+      - fvm::laplacian(mixture.kByCv(turbulence->alphat()), T)
      ==
-        mixture.rCp()*
+        mixture.rCv()*
         (
-            dpdt //should be DDt(p)?
+          /*  dpdt //should be DDt(p)?
           - fvc::ddt(rho, K)
           - fvc::div(mixture.rhoPhi(), K)
-          + (fvc::ddt(rho) + fvc::div(mixture.rhoPhi()))*K
+          + (fvc::ddt(rho) + fvc::div(mixture.rhoPhi()))*K*/
+          - p*fvc::div(phi)
           + combustion->Sh()
         )
       + TSuSp.first()
-      - fvm::Sp(TSuSp.second(), T)
+      - fvm::SuSp(TSuSp.second(), T)
     );
     
     TEqn.relax();

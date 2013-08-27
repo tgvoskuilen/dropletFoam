@@ -182,7 +182,7 @@ def calc_NASA_mu(Tmax,muCoeffs):
     mu = np.zeros_like(T)
     
     for c in muCoeffs:
-        muC = 1e-5*np.exp(c['A']*np.log(T) + c['B']/T + c['C']/T/T + c['D'])
+        muC = 1e-7*np.exp(c['A']*np.log(T) + c['B']/T + c['C']/T/T + c['D'])
         for i in np.ndindex(T.shape):
             if T[i] >= c['T1'] and T[i] < c['T2']:
                 mu[i] = muC[i]

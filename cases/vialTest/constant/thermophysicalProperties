@@ -246,7 +246,8 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
             La              0.38;
-            betaM           0.6;
+            betaV           0.6;
+            betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
             Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
@@ -273,7 +274,8 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 32990492.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 338.5;
             La              0.38;
-            betaM           0.6;
+            betaV           0.6;
+            betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
             Pc              Pc [ 1 -1 -2 0 0 0 0] 6000000.0;
@@ -301,7 +303,8 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 38094729.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 360.8;
             La              0.38;
-            betaM           0.6;
+            betaV           0.6;
+            betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 546.48;
             Pc              Pc [ 1 -1 -2 0 0 0 0] 9535000.0;
@@ -328,7 +331,8 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 38094729.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 360.8;
             La              0.38;
-            betaM           0.6;
+            betaV           0.6;
+            betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 546.48;
             Pc              Pc [ 1 -1 -2 0 0 0 0] 9535000.0;
@@ -357,7 +361,8 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 33709918.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 294;
             La              0.38;
-            betaM           0.6;
+            betaV           0.6;
+            betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
             Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
@@ -384,7 +389,8 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 41236897.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 375.5;
             La              0.38;
-            betaM           0.6;
+            betaV           0.6;
+            betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 647.3;
             Pc              Pc [ 1 -1 -2 0 0 0 0] 22120000.0;
