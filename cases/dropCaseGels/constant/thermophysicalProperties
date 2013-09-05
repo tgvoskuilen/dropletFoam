@@ -1,0 +1,418 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      thermophysicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+thermoType hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics>>;
+
+chemistryReader foamChemistryReader;
+
+foamChemistryFile "$FOAM_CASE/constant/reactions";
+
+foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
+
+// Phase volume fraction tolerance for diffusion mask
+phaseMaskTol 0.01;
+
+Vapor
+{
+   SchmidtNo  0.9;
+   
+   subspecies
+   (
+        CH3ONO2      {}
+        CH3NHNH2     {}
+        CH3NNH2      {}
+        CH3NNH       {}
+        CH3NN        {}
+        H            {}
+        H2           {}
+        O2           {}
+        H2O          {}
+        CO2          {}
+        CO           {}
+        N2           {}
+        NO2          {}
+        NO           {}
+        HONO         {}
+        OH           {}
+        O            {}
+        HO2          {}
+        CH3O         {}
+        CH3          {}
+        CH2O         {}
+        CH3OH        {}
+        HCO          {}
+        HNO          {}
+        HNO3         {}
+   );
+}
+
+
+
+Liquid
+{
+   SchmidtNo  200.0; //100-200
+   
+   subspecies
+   (
+        CH3NHNH2L
+        {
+            transportModel  BirdCarreau; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 9.2e-7; //rocketdyne
+
+            BirdCarreauCoeffs //fit to 6% Aerosil/MMH data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.11494;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 3.44e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 1.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.25;
+            }
+
+            rho0         rho0 [ 1 -3 0 0 0 0 0 ] 870.0;
+            Tc           Tc   [ 0 0 0 1 0 0 0] 585.0;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.25; //mmh bible, 300 K 
+            
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
+            sigmaa          0.884;
+        }
+        
+        MMHN-3HNO3
+        {   // same properties as HNO3
+            transportModel  BirdCarreau; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            
+            BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.1;
+            }
+            
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1550.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 546.5;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0887;
+            sigmaa          1;
+        }
+
+        CH3ONO2L
+        {
+            transportModel  BirdCarreau; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 9.2e-7; //rocketdyne
+            
+            BirdCarreauCoeffs //fit to 6% Aerosil/MMH data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.11494;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 3.44e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 1.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.25;
+            }
+            
+            rho0         rho0 [ 1 -3 0 0 0 0 0 ] 870.0;
+            Tc           Tc   [ 0 0 0 1 0 0 0] 585.0;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.25; //mmh bible, 300 K 
+            
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
+            sigmaa          0.884;
+        }
+        
+        NO2L
+        {
+            transportModel  BirdCarreau; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            
+            BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.1;
+            }
+            
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1447.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 431.35;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.062;
+            sigmaa          0.745;
+        }
+        
+        HNO3L
+        {
+            transportModel  BirdCarreau; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            
+            BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.1;
+            }
+            
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1550.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 546.5;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0887;
+            sigmaa          1;
+        }
+
+        HONOL
+        {
+            transportModel  BirdCarreau; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            
+            BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.1;
+            }
+            
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1550.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 546.5;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0887;
+            sigmaa          1;
+        }
+        
+        H2OL
+        {
+            transportModel  BirdCarreau; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            
+            BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.1;
+            }
+            
+            rho0      rho0  [ 1 -3 0 0 0 0 0 ] 1000.0;
+            Tc        Tc    [ 0 0 0 1 0 0 0] 647.3;
+            kappa     kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.07;
+            sigmaa          1;
+        }
+   );
+}
+
+
+
+phaseChangeReactions
+(
+
+    MMHEvap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            CH3NHNH2L   1.0
+        );
+        
+        gasSpecies
+        (
+            CH3NHNH2   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
+            La              0.38;
+            betaV           0.6;
+            betaC           0.0;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 8210000.0;
+            PvCoeffs        (9.1834 1943.89 492587.8);
+        }
+    }
+    
+    MethylNitrateEvap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            CH3ONO2L   1.0
+        );
+        
+        gasSpecies
+        (
+            CH3ONO2   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 32990492.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 338.5;
+            La              0.38;
+            betaV           0.6;
+            betaC           0.0;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 6000000.0;
+            PvCoeffs        (7.032199 792.219942 537453.773429);
+        }
+    }
+        
+        
+    NAEvap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            HNO3L   1.0
+        );
+        
+        gasSpecies
+        (
+            HNO3   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 38094729.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 360.8;
+            La              0.38;
+            betaV           0.6;
+            betaC           0.0;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 546.48;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 9535000.0;
+            PvCoeffs        (14.922185 6186.610617 -289492.595);
+        }
+    }
+    
+    HONOEvap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            HONOL   1.0
+        );
+        
+        gasSpecies
+        (
+            HONO   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 38094729.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 360.8;
+            La              0.38;
+            betaV           0.6;
+            betaC           0.0;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 546.48;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 9535000.0;
+            PvCoeffs        (14.922185 6186.610617 -289492.595);
+        }
+    }
+    
+    NO2Evap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            NO2L   1.0
+        );
+        
+        gasSpecies
+        (
+            NO2   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 33709918.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 294;
+            La              0.38;
+            betaV           0.6;
+            betaC           0.0;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 10100000.0;
+            PvCoeffs        (16.046357 5374.83122 -193954.549332);
+        }
+    }
+    
+    H2OEvap
+    {
+        phaseChangeModel LangmuirEvaporation;
+        
+        liquidSpecies
+        (
+            H2OL   1.0
+        );
+        
+        gasSpecies
+        (
+            H2O   1.0
+        );
+        
+        LangmuirEvaporationCoeffs
+        {
+            Lb              Lb [ 1 2 -2 0 -1 0 0] 41236897.0;
+            Tb              Tb [ 0 0 0 1 0 0 0] 375.5;
+            La              0.38;
+            betaV           0.6;
+            betaC           0.0;
+
+            Tc              Tc [ 0 0 0 1 0 0 0] 647.3;
+            Pc              Pc [ 1 -1 -2 0 0 0 0] 22120000.0;
+            PvCoeffs        (12.450952 4391.192311 106786.654764);
+        }
+    }
+        
+    //simply including this then accounts for all liquid-gas reactions in the
+    // chemistry set. no arguments are needed other than the model type
+    LiquidReaction
+    {
+        phaseChangeModel   PhaseChangeReaction;
+        
+        liquidSpecies
+        (
+        );
+        
+        gasSpecies
+        (
+        );
+        
+        PhaseChangeReactionCoeffs
+        {
+        }
+    }
+    
+);
+
+
+
+
+// ************************************************************************* //
