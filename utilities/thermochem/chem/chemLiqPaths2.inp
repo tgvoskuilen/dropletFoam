@@ -11,7 +11,7 @@ CH3NHNH2L HNO3L NO2L HONOL CH3ONO2L H2OL
 MMHN-3HNO3
 
 ! Extra gasses required for liquid treatment
-CH3ONO2
+CH3ONO2 !MMHN
 
 ! Gas species for the 25 specie mech (only 24 added, no N2O4)
 CH3NHNH2 CH3NNH2 CH3NNH CH3NN H H2 O2 H2O CO2 CO N2 NO2 NO HONO
@@ -34,6 +34,9 @@ CH3NNH+NO2L=>CH3NN+HONO                        2.20E+11    0.0     5900.0
 ! Forward aerosol reaction
 CH3NHNH2 + 4HNO3L => MMHN-3HNO3  1.42E+05    1.861   0.0
 FORD/ HNO3L 1.0 /
+
+! reversible gas-gas aerosol reaction more like Thynell
+!CH3NHNH2 + HNO3 = MMHN           1.42E+05    1.861   0.0
 
 ! 400 K cut-in version
 !CH3NHNH2 + 4HNO3L => MMHN-3HNO3  1.489E+78   -20.0   0.0

@@ -1,5 +1,5 @@
 ELEMENTS
-H C O N E
+H C O N
 END
 
 SPECIES
@@ -7,11 +7,8 @@ SPECIES
 ! Liquids
 CH3NHNH2L HNO3L NO2L HONOL CH3ONO2L H2OL
 
-! Ions in solution
-CH3NHNH3* NO3-
-
 ! Extra gasses required for liquid treatment
-CH3ONO2
+CH3ONO2 MMHN
 
 ! Gas species for the 25 specie mech (only 24 added, no N2O4)
 CH3NHNH2 CH3NNH2 CH3NNH CH3NN H H2 O2 H2O CO2 CO N2 NO2 NO HONO
@@ -22,64 +19,19 @@ END
 
 
 REACTIONS
-!Thynell reactions
-! Neutralization - forms an aqueous salt solution, ~100 kJ/mol exothermic
-! "very rapid", "encounter limited" reaction
-!CH3NHNH2L + HNO3L => CH3NHNH3* + NO3-          1.00E+16    0.0        0.0
-
-! Pathway 1 - hydrogen abstraction of methylhydrazinium ion in solution by HNO3
-
-! exothermic by about 110 kJ/mol
-!CH3NHNH3* + HNO3L => CH3NHNH* + H2OL + HONOL   2.20E+11  0.0  5200.0
-
-! exothermic by about 195 kJ/mol
-!CH3NHNH* + HNO3L => CH3NN* + H2OL + HONOL      1.00E+08  2.0     0.0
-
-! exothermic by about 60 kJ/mol
-!CH3NN* + NO3- => CH3ONO2L + N2                 2.20E+11  0.0  5200.0
-
-
-! Pathway 2 - hydrogen abstraction of methylhydrazinium ion in solution by HONO
-!CH3NHNH3* + HONOL => CH3N3 + H2OL + H3O*    1.00E+16  0.0      0.0
-!CH3N3 + HNO3 <=> CH3OH + 2N2O               2.20E+13  0.0   5200.0  !165 kJ/mol exothermic
-!CH3N3 + HONO <=> CH3OH + N2O + N2           2.20E+13  0.0   5200.0  !300 kJ/mol exothermic
-!CH3N3 + HNO3L => CH3OH + 2N2O               2.20E+13  0.0   5200.0  !165 kJ/mol exothermic
-!CH3N3 + HONOL => CH3OH + N2O + N2           2.20E+13  0.0   5200.0  !300 kJ/mol exothermic
-
-! J. Chem. Soc., 1953, 2380-2385
-!CH3OH + HNO3 <=> CH3ONO2 + H2O              1.00E+14  0.0   22000.0  ! 18 kJ/mol exothermic
-
-! Gray and Rogers, 1953, The Explosion and Decomposition of Methyl Nitrate in the gas phase
-! CH3ONO2 -> 0.95NO + 0.025N2 + 0.75CO + 0.25CO2 + 0.7H2 + 0.8H2O  at >266 C
-
-
-!  Reaction rate guessed, Ea from Catoire observation, rate to give a small delay
-!CH3NHNH2L+2HNO3L=>CH3ONO2+0.5N2O+2.5H2O+N2          1.00E+13    0.0     5900.0
-!CH3NHNH2L+2HNO3=>CH3ONO2+0.5N2O+2.5H2O+N2           1.00E+13    0.0     5900.0
-!CH3NHNH2+2HNO3L=>CH3ONO2+0.5N2O+2.5H2O+N2           1.00E+13    0.0     5900.0
-!CH3NHNH2+2HNO3=>CH3ONO2+0.5N2O+2.5H2O+N2            1.00E+13    0.0     5900.0
 
 ! x = 0.2 for HONO broken into radicals
 ! still exothermic though
 CH3NHNH2L + 3HNO3L => CH3ONO2L + 2H2OL + 1.6HONOL + 0.4OH + 0.4NO + N2     1.00E+16  0.0   5900.0
-!CH3NHNH2L + 3HNO3  => CH3ONO2L + 2H2OL + 1.6HONO + 0.4OH + 0.4NO + N2      1.00E+16  0.0   5900.0
-!CH3NHNH2  + 3HNO3L => CH3ONO2 + 2H2OL + 1.6HONOL + 0.4OH + 0.4NO + N2      1.00E+16  0.0   5900.0
-!CH3NHNH2  + 3HNO3  => CH3ONO2 + 2H2O + 1.6HONO + 0.4OH + 0.4NO + N2        1.00E+16  0.0   5900.0
+
+! reversible gas-gas aerosol reaction more like Thynell, reverses about 600 K
+CH3NHNH2 + HNO3 = MMHN                         1.42E+07    1.861   5200.0
 
 !H abstraction reactions by NO2, added for liquid NO2
 CH3NHNH2L+NO2=>CH3NNH2+HONO                    2.20E+11    0.0     5900.0
 CH3NHNH2L+NO2L=>CH3NNH2+HONO                   2.20E+11    0.0     5900.0
 CH3NNH2+NO2L=>CH3NNH+HONO                      1.00E+08    2.0        0.0
 CH3NNH+NO2L=>CH3NN+HONO                        2.20E+11    0.0     5900.0
-
-! liquid-gas interaction with OH
-!CH3NHNH2L+OH => CH3NNH2+H2O                3.92E13      0.0       0.
-
-!New H-abstraction by N2O route
-!CH3NHNH2L+N2O=>CH3NNH2+N2+OH           2.2E13       0.0    5900.
-!CH3NHNH2+N2O=CH3NNH2+N2+OH             2.2E13       0.0    5900.
-!CH3NNH+N2O=CH3NN+N2+OH                 2.2E13       0.0    5900.
-!CH3NNH2+N2O=CH3NNH+N2+OH               1.0E08       2.0       0.
 
 
 !-----------------------------------------------------------------------------
@@ -91,7 +43,7 @@ CH3NNH+NO2L=>CH3NN+HONO                        2.20E+11    0.0     5900.0
 CH3O+NO2(+M)<=>CH3ONO2(+M)                     1.20E+13    0.0        0.0
       LOW/  0.14000E+31 -0.45000E+01  0.00000E+00 /
       CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-      H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+      H2OL/ 0.0/ 
 
 !-----------------------------------------------------------------------------
 ! Direct from the 25 specie mechanism
@@ -103,21 +55,21 @@ NO2(+M)=NO+O(+M)                       7.60E18    -1.27   73290.0
     N2/  1.0/
     CO2/ 2.3/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 H+NO(+M)=HNO(+M)                       1.52E15    -0.41       0.
                                   LOW/ 4.00E20    -1.75       0./
     H2O/ 5.0/
     N2/  1.0/
     CO2/ 1.3/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 NO+OH(+M)=HONO(+M)                     1.988E12   -0.05    -721.
                                   LOW/ 5.08E23    -2.51     -67.6/
     H2O/ 8.3/
     N2/  1.0/
     CO2/ 1.5/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 NO2+NO2=NO+NO+O2                       4.51E12     0.0    27600.
 HNO+O2=HO2+NO                          1.00E13     0.0    25000.
 HNO+NO2=HONO+NO                        4.42E4      2.64    4042.
@@ -131,7 +83,7 @@ HCO+M=H+CO+M                           2.50E14     0.0    16802.
     CO2/ 3.0/
     H2O/ 5.0/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 HCO+H=CO+H2                            1.19E13     0.25       0.
 HCO+O=CO+OH                            3.00E13     0.0        0.
 HCO+O=CO2+H                            3.00E13     0.0        0.
@@ -143,7 +95,7 @@ CO+O(+M)=CO2(+M)                       1.80E10     0.0     2380.
     CO/   1.9/
     CO2/  3.8/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 CO+OH=CO2+H                            1.51E07     1.3     -758.
 CO+O2=CO2+O                            2.53E12     0.0    47688.
 HO2+CO=CO2+OH                          5.80E13     0.0    22934.
@@ -157,7 +109,7 @@ H+O2+M=HO2+M                           3.61E17    -0.72       0.
     CO/   2.1/
     N2/   1.3/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 OH+HO2=H2O+O2                          7.50E12     0.0        0.
 H+HO2=2OH                              1.69E14     0.0      874.
 H+HO2=H2+O2                            4.28E13     0.0     1411.
@@ -168,21 +120,21 @@ OH+OH=H2O+O                            3.57E04    2.40     2112.
     H2/   2.5/
     H2O/ 12.0/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 2H+H2=2H2                              9.20E16    -0.6        0.
 2H+H2O=H2+H2O                          6.00E19    -1.25       0.
 2H+CO2=H2+CO2                          5.49E20    -2.0        0.
 H+OH+M=H2O+M                           1.60E22    -2.0        0.
     H2O/  5.0/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/
+    H2OL/ 0.0/
 H+O+M=OH+M                             6.20E16    -0.6        0.
     H2O/  5.0/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 O+O+M=O2+M                             1.89E13     0.0    -1788.
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 NO+HO2=NO2+OH                          2.11E12     0.0     -479.
 NO2+H=NO+OH                            1.30E14     0.0      361.
 NO2+O=NO+O2                            3.90E12     0.0     -238.
@@ -206,7 +158,7 @@ H+HCO(+M)=CH2O(+M)                     1.090E+12   0.48    -260.
     CO/  1.50/
     CO2/ 2.00/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 H+CH2O=HCO+H2                          5.740E+07   1.900   2742.
 H+CH3O(+M)=CH3OH(+M)                   2.430E+12   0.515     50.
                                LOW /   4.660E+41  -7.440  14080.0/
@@ -216,7 +168,7 @@ H+CH3O(+M)=CH3OH(+M)                   2.430E+12   0.515     50.
     CO/  1.50/
     CO2/ 2.00/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 H+CH3O=H2+CH2O                         2.000E+13    0.0       0.
 H+CH3O=OH+CH3                          1.500E+12    0.5    -110.
 H+CH3OH=CH3O+H2                        4.200E+06    2.1    4870.
@@ -228,7 +180,7 @@ H2+CO(+M)=CH2O(+M)                     4.300E+07    1.5   79600.
     CO/  1.50/
     CO2/ 2.00/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 OH+CH3(+M)=CH3OH(+M)                   2.790E+18   -1.43   1330.
                                LOW /   4.000E+36   -5.92   3140.0/
                                TROE/   0.4120  195.0  5900.00  6394.00/
@@ -237,7 +189,7 @@ OH+CH3(+M)=CH3OH(+M)                   2.790E+18   -1.43   1330.
     CO/  1.50/
     CO2/ 2.00/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 OH+CH2O=HCO+H2O                        3.430E+09    1.18   -447.
 OH+CH3O=H2O+CH2O                       5.000E+12     .00      0.
 OH+CH3OH=CH3O+H2O                      6.300E+06    2.00   1500.
@@ -251,7 +203,7 @@ OH+NO2(+M)=HNO3(+M)                    2.41E13      0.0       0.
     N2/   1.0/
     HNO3/ 5.0/
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 HNO3+H=NO2+H2O                         6.00E13      0.0    9800.
 HNO3+H=HONO+OH                         2.00E13      0.0    8000.
 HNO3+NO=HONO+NO2                       8.00E06      2.0   11000.
@@ -266,7 +218,7 @@ CH3+NO2=CH3O+NO                        1.40E13      0.0       0.
 CH3NHNH2+H=CH3NNH2+H2                  1.3E13       0.0    2500.
 CH3NNH2+M=CH3NNH+H+M                   1.0E17       0.0   35770.
     CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-    H2OL/ 0.0/ CH3NHNH3*/ 0.0/ NO3-/ 0.0/ 
+    H2OL/ 0.0/ 
 CH3NN=CH3+N2                           3.0E06       0.0       0.
 CH3NHNH2=CH3NNH+H2                     3.16E13      0.0   57000.
 CH3NNH2+HO2=CH3NHNH2+O2                1.0E06       2.0       0.

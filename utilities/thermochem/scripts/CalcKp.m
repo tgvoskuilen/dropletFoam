@@ -8,11 +8,11 @@ function Kp = CalcKp(rxn,T,thermo)
     Np = length(rxn.products);
     
     for r = 1:Nr
-        dG = dG + G(thermo.(rxn.reactants(r).name),T)*rxn.reactants(r).e;
+        dG = dG - G(thermo.(rxn.reactants(r).name),T)*rxn.reactants(r).e;
     end
     
     for p = 1:Np
-        dG = dG - G(thermo.(rxn.products(p).name),T)*rxn.products(p).e;
+        dG = dG + G(thermo.(rxn.products(p).name),T)*rxn.products(p).e;
     end
     
     Kp = exp(-dG./(Rsi.*T));

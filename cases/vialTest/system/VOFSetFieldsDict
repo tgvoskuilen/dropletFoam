@@ -17,8 +17,7 @@ FoamFile
 
 defaultSpecies
 (
-    N2   0.79
-    O2   0.21
+    N2   1
 );
 
 vaporPhaseName   alphaVapor;

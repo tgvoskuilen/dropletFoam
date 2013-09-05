@@ -212,7 +212,7 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
                           
     //Calculate the mole fractions
 
-    xL_ = alphaL_.x(liquid_specie_)*pos(alphaL_.Yp() - 1e-6);
+    xL_ = alphaL_.x(liquid_specie_); // *pos(alphaL_.Yp() - 1e-6);
     
     tmp<volScalarField> xSat = p_vap_/p_*xL_;
     xSat().min(1.0);

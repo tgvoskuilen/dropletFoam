@@ -1,5 +1,5 @@
 species
-33
+32
 (
 CH3NHNH2L
 HNO3L
@@ -7,9 +7,8 @@ NO2L
 HONOL
 CH3ONO2L
 H2OL
-CH3NHNH3*
-NO3-
 CH3ONO2
+MMHN
 CH3NHNH2
 CH3NNH2
 CH3NNH
@@ -49,11 +48,11 @@ reactions
     }
     un-named-reaction-1
     {
-        type            irreversibleArrheniusReaction;
-        reaction        "CH3NHNH2 + 3HNO3L = CH3ONO2 + 2H2OL + 1.6HONOL + 0.4OH + 0.4NO + N2";
-        A               1e+07;
-        beta            0;
-        Ta              2968.83;
+        type            reversibleArrheniusReaction;
+        reaction        "CH3NHNH2 + HNO3 = MMHN";
+        A               14200;
+        beta            1.861;
+        Ta              2616.59;
     }
     un-named-reaction-2
     {
@@ -109,7 +108,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -117,9 +116,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -170,7 +168,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -178,9 +176,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -231,7 +228,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -239,9 +236,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -292,7 +288,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -300,9 +296,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -395,7 +390,7 @@ reactions
         beta            0;
         Ta              8454.62;
         coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -403,9 +398,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -487,7 +481,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -495,9 +489,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -582,7 +575,7 @@ reactions
         beta            -0.72;
         Ta              0;
         coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -590,9 +583,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -676,7 +668,7 @@ reactions
         beta            -1;
         Ta              0;
         coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -684,9 +676,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -746,7 +737,7 @@ reactions
         beta            -2;
         Ta              0;
         coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -754,9 +745,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -792,7 +782,7 @@ reactions
         beta            -0.6;
         Ta              0;
         coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -800,9 +790,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -838,7 +827,7 @@ reactions
         beta            0;
         Ta              -899.706;
         coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -846,9 +835,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -1022,7 +1010,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -1030,9 +1018,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -1095,7 +1082,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -1103,9 +1090,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -1184,7 +1170,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -1192,9 +1178,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -1249,7 +1234,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -1257,9 +1242,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -1366,7 +1350,7 @@ reactions
         thirdBodyEfficiencies
         {
             coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -1374,9 +1358,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
@@ -1509,7 +1492,7 @@ reactions
         beta            0;
         Ta              17999.2;
         coeffs          
-33
+32
 (
 (CH3NHNH2L 0)
 (HNO3L 0)
@@ -1517,9 +1500,8 @@ reactions
 (HONOL 0)
 (CH3ONO2L 0)
 (H2OL 0)
-(CH3NHNH3* 0)
-(NO3- 0)
 (CH3ONO2 1)
+(MMHN 1)
 (CH3NHNH2 1)
 (CH3NNH2 1)
 (CH3NNH 1)
