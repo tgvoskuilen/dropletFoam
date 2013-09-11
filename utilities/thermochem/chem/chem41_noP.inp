@@ -1,0 +1,249 @@
+!&prop_file
+! thermfile = "thermo41g.dat",
+! tranfile = "trans_new2.dat",
+! ljfile = "lennardjones.dat",
+!&end
+
+ELEMENTS
+H  HE  C  O  N  AR
+END
+
+SPECIES
+H       H2      O       OH      H2O     HO2     CH2     CH3     
+CH4     CO      HCO     CH2O    CH3O    CO2     N       NH      
+NH2     NH3     N2      NNH     N2H2    NO      HNO     N2O     
+NO2     HONO    HNO3    N2O4    CN      HCN     HNC     NCO     
+CH3NHNH2        CH2NHNH2        CH3NNH2 CH3NHNH CH3NN   CH2NNH2 
+HNCO    CH3NNH  CH3ONO2
+END
+
+REACTIONS
+!200
+O+H+M <=> OH+M                           4.71E+018       -1       0.00
+   H2O /12/   H2 /2.5/
+H2+M <=> 2H+M                            4.58E+019     -1.4  104380.00
+   H2O /12/   H2 /2.5/
+H+OH+M <=> H2O+M                         2.21E+022       -2       0.00
+   H2O /12/   H2 /2.5/
+H2O+O <=> OH+OH                          2.97E+006     2.02   13400.00
+O+H2 <=> H+OH                                50800     2.67    6290.00
+OH+H2 <=> H+H2O                          2.16E+008     1.51    3430.00
+H+HO2 <=> 2OH                            7.08E+013        0     300.00
+H2+CO <=> CH2O                    4.3E+007      1.5   79600.00
+   H2 /2/   H2O /6/   CH4 /2/   CO /1.5/   CO2 /2/
+OH+CO <=> H+CO2                              41000     2.11   -1578.00
+HO2+CO <=> OH+CO2                         1.5E+014        0   23600.00
+O+HCO <=> H+CO2                             3E+013        0       0.00
+H+HCO <=> CH2O                   1.09E+012     0.48    -260.00
+   H2 /2/   H2O /6/   CH4 /2/   CO /1.5/   CO2 /2/
+H+HCO <=> H2+CO                           7.3E+013        0       0.00
+OH+HCO <=> H2O+CO                           3E+013        0       0.00
+HCO+M <=> H+CO+M                         1.87E+017       -1   17000.00
+   H2 /2/   H2O /6/   CH4 /2/   CO /1.5/   CO2 /2/
+HCO+HO2 <=> CO2+OH+H                        3E+013        0       0.00
+H+CH2O <=> HCO+H2                        5.18E+007     1.66    1834.00
+H+CH2O <=> CH3O                   5.4E+011     0.45    2600.00
+   H2 /2/   H2O /6/   CH4 /2/   CO /1.5/   CO2 /2/
+OH+CH2O <=> HCO+H2O                      3.43E+009     1.18    -447.00
+H+CH3O <=> H2+CH2O                          2E+013        0       0.00
+H+CH3O <=> OH+CH3                         3.2E+013        0       0.00
+OH+CH3O <=> H2O+CH2O                      1.8E+013        0       0.00
+CH3O+CO <=> CH3+CO2                      1.57E+013        0   11800.00
+O+CH4 <=> OH+CH3                         1.02E+009      1.5    8600.00
+H+CH4 <=> CH3+H2                          6.6E+008     1.62   10840.00
+OH+CH4 <=> CH3+H2O                          1E+008      1.6    3120.00
+CH2+CH4 <=> 2CH3                         2.46E+006        2    8270.00
+O+CH3 <=> H+CH2O                         5.06E+013        0       0.00
+O+CH3 <=> H+H2+CO                        3.37E+013        0       0.00
+H+CH3 <=> CH4                    1.39E+016    -0.53     536.00
+   H2 /2/   H2O /6/   CH4 /2/   CO /1.5/   CO2 /2/
+OH+CH3 <=> CH2+H2O                        5.6E+007      1.6    5420.00
+HO2+CH3 <=> OH+CH3O                         2E+013        0       0.00
+CH3+HCO <=> CH4+CO                       1.21E+014        0       0.00
+CH3+CH2O <=> HCO+CH4                          3320     2.81    5860.00
+O+CH2 <=> H+HCO                             8E+013        0       0.00
+OH+CH2 <=> H+CH2O                           2E+013        0       0.00
+CH2+H2 <=> H+CH3                            500000        2    7230.00
+NH+H <=> N+H2                             3.2E+013        0     325.00
+NH+OH <=> N+H2O                           1.6E+007    1.733    -576.00
+NH2+H <=> NH+H2                             4E+013        0    3650.00
+NH2+O <=> NH+OH                             7E+012        0       0.00
+     DUPLICATE
+NH2+O <=> NH+OH                               0.86     4.01    1673.00
+     DUPLICATE
+NH2+OH <=> NH+H2O                         3.3E+006    1.949    -217.00
+NH3+H <=> NH2+H2                            636000     2.39   10171.00
+NH3+O <=> NH2+OH                               280     3.29    4471.00
+NH3+OH <=> NH2+H2O                          2E+006        2     566.00
+NH2+NH2 <=> NH3+NH                             5.6     3.53     552.00
+NNH <=> N2+H                                1E+009        0       0.00
+N2H2+M <=> NNH+H+M                          5E+016        0   50000.00
+   H2O /15/   N2 /2/   H2 /2/
+N2H2+H <=> NNH+H2                            85000     2.63     230.00
+NH2+NH2 <=> N2H2+H2                       1.7E+008     1.62   11783.00
+N2H2+OH <=> NNH+H2O                             59      3.4    1360.00
+N+OH <=> NO+H                             3.8E+013        0       0.00
+NH+O <=> NO+H                             9.2E+013        0       0.00
+NH+OH <=> NO+H2                             2E+013        0       0.00
+N+NO <=> N2+O                             3.3E+012      0.3       0.00
+NH+NO <=> N2+OH                           2.2E+013     -0.2       0.00
+NNH+O <=> NH+NO                           5.2E+011    0.381    -409.00
+NH2+NO <=> N2+H2O                         2.8E+020     -2.7    1258.00
+NH2+NO <=> NNH+OH                        2.29E+010    0.425    -814.00
+NO+H <=> HNO                      1.5E+015    -0.41       0.00
+   N2 /1.6/
+HNO+H <=> H2+NO                           4.5E+011     0.72     655.00
+NH+OH <=> HNO+H                           3.2E+014   -0.376     -46.00
+NH+H2O <=> HNO+H2                           2E+013        0   13850.00
+HNO+O <=> OH+NO                          1.81E+013        0       0.00
+HNO+OH <=> NO+H2O                         3.6E+013        0       0.00
+NNH+NO <=> N2+HNO                           5E+013        0       0.00
+H+NO+N2 <=> HNO+N2                          4E+020    -1.75       0.00
+N2O <=> N2+O                      1.3E+012        0   62570.00
+   N2 /1.7/   CO2 /3/   H2O /12/
+N2O+H <=> N2+OH                           3.3E+010        0    4729.00
+     DUPLICATE
+N2O+H <=> N2+OH                           4.4E+014        0   19254.00
+     DUPLICATE
+NH+NO <=> N2O+H                           2.9E+014     -0.4       0.00
+     DUPLICATE
+NH+NO <=> N2O+H                          -2.2E+013    -0.23       0.00
+     DUPLICATE
+NNH+O <=> N2O+H                             1E+014        0       0.00
+NH2+NO <=> H2+N2O                           1E+013        0   33700.00
+N2O+OH <=> HNO+NO                          0.00012      4.3   25080.00
+N2O+OH <=> N2+HO2                           1E+014        0   30000.00
+N2H2+NO <=> N2O+NH2                         3E+010        0       0.00
+NO2 <=> NO+O                      7.6E+018    -1.27   73245.00
+   N2O /1.5/   H2O /4.4/   N2 /1/   CO2 /2.3/
+     DUPLICATE
+NO+O <=> NO2                      1.3E+015    -0.75       0.00
+     DUPLICATE
+NO2+H <=> NO+OH                           1.3E+014        0     357.00
+NO2+OH <=> HO2+NO                        1.81E+013        0    6673.00
+NH+NO2 <=> N2O+OH                         4.1E+012        0       0.00
+NH+NO2 <=> HNO+NO                         5.9E+012        0       0.00
+NH2+NO2 <=> N2O+H2O                         3E+014    -0.77     242.00
+N2O+NO <=> NO2+N2                           530000     2.23   46280.00
+HONO <=> OH+NO                    1.2E+019    -1.23   49667.00
+     DUPLICATE
+NO+OH <=> HONO                   1.99E+012    -0.05    -721.00
+     DUPLICATE
+NO2+H2 <=> HONO+H                            13000     2.76   29770.00
+HONO+H <=> H2O+NO                         8.1E+006     1.89    3843.00
+HONO+H <=> OH+HNO                         5.6E+010     0.86    4965.00
+HONO+OH <=> H2O+NO2                      1.26E+010        1     135.00
+NH+HONO <=> NH2+NO2                         1E+013        0       0.00
+NH2+HONO <=> NH3+NO2                            71        3   -4940.00
+HNO+NO2 <=> HONO+NO                          44000     2.64    4040.00
+HONO+HONO <=> NO+NO2+H2O                      0.35     3.64   12140.00
+NO2+OH <=> HNO3                  2.41E+013        0       0.00
+   N2O /5/   H2O /9/   N2 /1/   HNO3 /5/   NH3 /5/
+N2O4 <=> NO2+NO2                 4.05E+018     -1.1   12840.00
+CH3+NH2 <=> CH4+NH                        2.8E+006     1.94    9205.00
+CH3+NH2 <=> CH2+NH3                       1.6E+006     1.87    7566.00
+CH4+NH2 <=> CH3+NH3                           1500     3.01    9940.00
+CH2+NO <=> NH2+CO                         2.3E+016    -1.43    1331.00
+N+CO2 <=> NO+CO                             3E+012        0   11300.00
+NH+CO2 <=> HNO+CO                           1E+013        0   14350.00
+HNO+CH3 <=> NO+CH4                          820000     1.87     480.00
+HCO+NO <=> HNO+CO                        7.23E+012        0       0.00
+CH3O+NO <=> HNO+CH2O                      7.5E+012        0    2017.00
+     DUPLICATE
+CH3O+NO <=> HNO+CH2O                      2.5E+018    -2.56       0.00
+     DUPLICATE
+CH2+NO2 <=> CH2O+NO                         5E+013        0       0.00
+NO2+CH3 <=> NO+CH3O                       1.4E+013        0       0.00
+CO+NO2 <=> NO+CO2                        9.04E+013        0   33780.00
+HCO+NO2 <=> CO+NO+OH                      1.2E+023     -3.3    2355.00
+HCO+NO2 <=> H+CO2+NO                     8.39E+015    -0.75    1930.00
+CH4+NO2 <=> HONO+CH3                      6.5E+014        0   45800.00
+HCO+NO2 <=> CO+HONO                      1.24E+023    -3.29    2355.00
+CH2O+NO2 <=> HCO+HONO                          802     2.77   13730.00
+CH3O+NO2 <=> CH2O+HONO                      6E+012        0    2285.00
+CO+N2O <=> N2+CO2                         2.7E+011        0   20237.00
+CN+O <=> CO+N                             1.9E+012     0.46     723.00
+CN+H2 <=> HCN+H                           3.6E+008     1.55    2999.00
+CH4+CN <=> CH3+HCN                          860000      2.3     -32.00
+HCN+O <=> NH+CO                               3500      2.6    4980.00
+HCN+OH <=> CN+H2O                         3.9E+006     1.83   10287.00
+OH+HCN <=> NH2+CO                         0.000783        4    4000.00
+CH2+NO <=> HCN+OH                         2.9E+014    -0.69     755.00
+CH3+NO <=> HCN+H2O                        4.9E+008     0.46   12392.00
+HCN <=> HNC                               1.5E+023     -4.2   49428.00
+HCN+M <=> HNC+M                           1.6E+026     -3.2   54600.00
+   H2O /7/   CO2 /2/
+HNC+H <=> HCN+H                           7.8E+013        0    3600.00
+O+HNC <=> NH+CO                           4.6E+012        0    2184.00
+CH3NN+M <=> CH3+N2+M                        1E+011        0    5900.00
+CH3NNH <=> CH3+NNH                3.3E+016     -0.1   55000.00
+CH3NNH+O <=> CH3NN+OH                     9.6E+012        0       0.00
+CH3NNH+OH <=> CH3NN+H2O                  3.92E+013        0       0.00
+CH3NNH+CH3 <=> CH4+CH3NN                  7.4E+013        0    5210.00
+CH3NNH+NH2 <=> NH3+CH3NN                  7.4E+013        0    5210.00
+CH3NNH+NO2 <=> CH3NN+HONO                 2.2E+011        0    5900.00
+CH3NNH2 <=> CH3NNH+H             1.35E+008      1.7   47280.00
+CH3NNH2 <=> CH2NNH2+H            1.15E+009      1.2   50330.00
+CH3NNH2+O <=> CH3NNH+OH                     1E+008        2       0.00
+CH3NNH2+OH <=> CH3NNH+H2O                   1E+008        2       0.00
+CH3NNH2+NO2 <=> CH3NNH+HONO                 1E+008        2       0.00
+CH2NHNH2 <=> CH2NNH2+H           5.92E+011      0.3   36300.00
+CH3NHNH <=> CH3+N2H2             4.64E+009      1.6   35620.00
+CH3NHNH <=> CH3NNH+H              1.4E+007        2   44660.00
+CH3NHNH2 <=> CH3NNH2+H           4.66E+016     -0.2   77610.00
+CH3NHNH2 <=> CH3NHNH+H           4.69E+016     -0.2   80120.00
+CH3NHNH2 <=> CH2NHNH2+H          6.42E+016     -0.2   91800.00
+CH3NHNH2 <=> CH3NNH+H2            9.7E+008      1.3  107500.00
+CH3NHNH2 <=> CH2NNH2+H2          2.69E+009      1.2  105430.00
+CH3NHNH2 <=> N2H2+CH4            1.61E+010      1.1  108880.00
+CH3NHNH2+H <=> CH3NNH2+H2                2.08E+007      1.8    4488.10
+CH3NHNH2+H <=> CH3NHNH+H2                1.68E+009      1.1    7289.00
+CH3NHNH2+H <=> CH2NHNH2+H2               7.88E+007      1.7   11162.00
+CH3NHNH2+O <=> CH3NNH+H2O                 9.6E+012        0       0.00
+CH3NHNH2+O <=> CH3NNH2+OH                 9.6E+012        0       0.00
+CH3NHNH2+O <=> CH3NHNH+OH                2.69E+012        0       0.00
+CH3NHNH2+O <=> CH2NHNH2+OH                1.3E+012        0       0.00
+CH3NHNH2+OH <=> CH3NNH2+H2O              3.92E+013        0       0.00
+CH3NHNH2+OH <=> CH3NHNH+H2O               1.1E+013        0       0.00
+CH3NHNH2+OH <=> CH2NHNH2+H2O              5.3E+012        0       0.00
+CH3NHNH2+CH3 <=> CH4+CH3NNH2                  47.9      3.4    3578.30
+CH3NHNH2+CH3 <=> CH3NHNH+CH4                   321      3.1    5748.10
+CH3NHNH2+CH3 <=> CH2NHNH2+CH4                 22.7      3.5    7669.40
+CH3NHNH2+NH <=> CH3NNH2+NH2                    145      3.3    4435.50
+CH3NHNH2+NH <=> CH3NHNH+NH2                    620      3.1    7062.40
+CH3NHNH2+NH <=> CH2NHNH2+NH2                  39.3      3.6   10910.00
+CH3NHNH2+NH2 <=> CH3NNH2+NH3                   165        3     870.10
+CH3NHNH2+NH2 <=> CH3NHNH+NH3                  59.8      3.1    2110.20
+CH3NHNH2+NH2 <=> CH2NHNH2+NH3                 1.04      3.6    1894.10
+CH3NHNH2+NO2 <=> CH3NNH2+HONO             2.2E+011        0    5900.00
+CH3NHNH2+NO2 <=> CH3NHNH+HONO            7.87E+010        0    8839.00
+CH3NHNH2+NO2 <=> CH2NHNH2+HONO           1.39E+009        0    9803.00
+CH3NHNH2+NO <=> CH3NNH2+HNO              1.85E+013        0    8524.00
+CH3NHNH2+NO <=> CH3NHNH+HNO              1.24E+012        0    9605.00
+CH3NHNH2+NO <=> CH2NHNH2+HNO             5.05E+012        0   11310.00
+CN+OH <=> NCO+H                             4E+013        0       0.00
+HCN+O <=> NCO+H                              14000      2.6    4980.00
+NCO+H <=> NH+CO                           5.2E+013        0       0.00
+CN+CO2 <=> NCO+CO                        3.67E+006     2.16   26900.00
+CN+NO2 <=> NCO+NO                         5.3E+015     -0.8     344.00
+NCO+NO <=> N2+CO2                         1.5E+021     -2.7    1824.00
+NCO+NO <=> N2O+CO                           4E+019     -2.2    1743.00
+NCO+NO2 <=> CO2+N2O                         3E+012        0    -707.00
+HNCO <=> NH+CO                      6E+013        0   99800.00
+   N2O /5/   H2O /5/   N2 /1/   CO2 /1.6/
+CH2+NO <=> HNCO+H                         3.1E+017    -1.38    1271.00
+OH+HCN <=> HNCO+H                          0.00198        4    1000.00
+OH+HNC <=> HNCO+H                         2.8E+013        0    3694.00
+HNCO+H <=> NCO+H2                           9E+007      1.7   13900.00
+HNCO+H <=> NH2+CO                            36000     2.49    2343.00
+HNCO+O <=> CO2+NH                         9.8E+007     1.41    8524.00
+HNCO+O <=> NCO+OH                         2.2E+006     2.11   11430.00
+HNCO+OH <=> NCO+H2O                       3.6E+007      1.5    3594.00
+NCO+CH4 <=> HNCO+CH3                      9.8E+012        0    8122.00
+CH2O+NCO <=> HNCO+HCO                       6E+012        0       0.00
+HNCO+N <=> NH+NCO                        2.32E+019        0   52500.00
+NCO+NH3 <=> HNCO+NH2                         28000     2.48     983.00
+NCO+HNO <=> HNCO+NO                       1.8E+013        0       0.00
+CN+HNCO <=> HCN+NCO                         1E+013        0       0.00
+CH3O+NO2 <=> CH3ONO2              1.2E+013        0       0.00
+END

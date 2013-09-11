@@ -21,18 +21,13 @@ Nr = zeros(size(x));
 
 for i = 1:length(x)
 
-    rxn.reactants(1).name = 'MMHN';
+    rxn.reactants(1).name = 'CH3NHNH2L';
     rxn.reactants(1).e = 1;
+    rxn.reactants(2).name = 'HNO3L';
+    rxn.reactants(2).e = 4;
 
-
-    rxn.products(1).name = 'CH3O';
+    rxn.products(1).name = 'MMHN0x2D3HNO3';
     rxn.products(1).e = 1;
-    rxn.products(2).name = 'NO2';
-    rxn.products(2).e = 1;
-    rxn.products(3).name = 'N2';
-    rxn.products(3).e = 1;
-    rxn.products(4).name = 'H2';
-    rxn.products(4).e = 2;
 
     T = 280:5:1000;
     Kp = CalcKp(rxn,T,db);

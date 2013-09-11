@@ -1,0 +1,24 @@
+ELEMENTS
+H C O N
+END
+
+SPECIES
+
+! Liquids
+CH3NHNH2L HNO3L
+
+! Salts in solution
+MMH2N
+
+END
+
+
+
+REACTIONS
+
+! Rapid aqueous salt formation
+CH3NHNH2L + 2HNO3L -> MMH2N               1e16     0.0       0.0
+
+! 
+
+END
