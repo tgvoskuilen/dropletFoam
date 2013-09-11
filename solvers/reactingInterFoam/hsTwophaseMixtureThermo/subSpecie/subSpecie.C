@@ -34,7 +34,8 @@ Foam::subSpecie::subSpecie
     const fvMesh& mesh,
     volScalarField& specie,
     const gasThermoPhysics& specieData,
-    label idx
+    label idx,
+    dimensionedScalar phaseSc
 )
 :
     name_(name),
@@ -85,6 +86,35 @@ Foam::subSpecie::subSpecie
             "kappa",
             dimensionedScalar("kappa",dimPower/dimLength/dimTemperature,0.0)
         )
+    ),
+    D_
+    (
+        IOobject
+        (
+            "D_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
+    ),
+    D0_
+    (
+        subSpecieDict.lookupOrDefault
+        (
+            "D0",
+            dimensionedScalar("D0",dimArea/dimTime,0.0)
+        )
+    ),
+    Sc_
+    (
+        subSpecieDict.lookupOrDefault
+        (
+            "Sc",
+            phaseSc
+        )
     )
 {
 
@@ -102,7 +132,7 @@ Foam::subSpecie::subSpecie
             mesh.lookupObject<surfaceScalarField>("phi")
         );
     }
-        
+    
     Foam::Info<< "Created and linked subSpecie " << name << Foam::endl;
     Foam::Info<< "  idx = " << idx_ << Foam::endl;
     Foam::Info<< "  rho0 = " << rho0_ << Foam::endl;
@@ -110,6 +140,15 @@ Foam::subSpecie::subSpecie
     Foam::Info<< "  sigma0 = " << sigma0_ << Foam::endl;
     Foam::Info<< "  sigmaa = " << sigmaa_ << Foam::endl;
     Foam::Info<< "  kappa = " << kappa_ << Foam::endl;
+    
+    if( D0_.value() > 0.0 )
+    {
+        Foam::Info<<"  D0 = " << D0_.value() << Foam::endl;
+    }
+    else
+    {
+        Foam::Info<<"  Sc = " << Sc_.value() << Foam::endl;
+    }
 }
 
 
@@ -342,5 +381,68 @@ tmp<volScalarField> Foam::subSpecie::sigma
 {
     return sigma0_ * Foam::pow(1.0 - Foam::min(T,Tc_)/Tc_,sigmaa_);
 }
+
+
+// Calculate mu on patches
+Foam::tmp<Foam::scalarField> Foam::subSpecie::mu
+(
+    const scalarField& T,
+    const label patchi
+) const
+{
+    tmp<scalarField> tmu(new scalarField(T.size()));
+
+    forAll(T, facei)
+    {
+        tmu()[facei] = thermo_.mu( T[facei] );
+    }
+
+    return tmu;
+}
+
+
+void Foam::subSpecie::calculateDs
+(
+    const volScalarField& mut,
+    const volScalarField& rho,
+    const volScalarField& T
+)
+{
+    if( D0_.value() > 0.0 )
+    {
+        D_ = D0_*fvc::interpolate(rho);
+    }
+    else
+    {
+        //D = (mu + mut) / Sc
+        volScalarField muEff = mut;
+    
+        if( hasNuModel() )
+        {
+            // Liquid is laminar, do not include mut in liquid diffusion
+            muEff = nuModel().nu()*rho;
+        }
+        else
+        {
+            // Calculate mu using Sutherland transport
+            scalarField& muCells = muEff.internalField();
+            const scalarField& TCells = T.internalField();
+
+            forAll(TCells, celli)
+            {
+                muCells[celli] += thermo_.mu(TCells[celli]);
+            }
+
+            forAll(T.boundaryField(), patchi)
+            {
+                muEff.boundaryField()[patchi] += 
+                    mu(T.boundaryField()[patchi], patchi);
+            }
+        }
+        
+        D_ = fvc::interpolate(muEff) / Sc_;
+    }
+}
+
 
 // ************************************************************************* //

@@ -9,14 +9,38 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      balanceParDict;
+    class       volScalarField;
+    object      p;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 18;
+dimensions      [1 -1 -2 0 0 0 0];
 
-method          ptscotch;
+internalField   uniform 1e5;
+
+boundaryField
+{
+    atmosphere
+    {
+        type            calculated;
+        value           $internalField;
+    }
+
+    frontAndBack
+    {
+        type            symmetryPlane;
+    }
+    
+    walls
+    {
+        type            calculated;
+        value           $internalField;
+    }
+    
+    defaultFaces
+    {
+        type            empty;
+    }
+}
 
 // ************************************************************************* //

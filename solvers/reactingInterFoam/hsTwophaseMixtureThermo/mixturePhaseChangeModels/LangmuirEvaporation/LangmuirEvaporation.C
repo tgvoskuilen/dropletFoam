@@ -211,8 +211,23 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
           * pos(area-sA);
                           
     //Calculate the mole fractions
+    volScalarField xL_avg = alphaL_.x(liquid_specie_);
+    dimensionedScalar dA = pow(min(mesh_.V()),2.0/3.0)/25.0;
+    
+    for( label i = 0; i < 20; ++i )
+    {
+        xL_avg += fvc::laplacian(dA*alphaL_.faceMask(), xL_avg);
+    }
+    xL_avg.min(1.0);
+    xL_avg.max(0.0);
+    xL_avg.correctBoundaryConditions();
 
-    xL_ = alphaL_.x(liquid_specie_); // *pos(alphaL_.Yp() - 1e-6);
+    xL_ = alphaL_.x(liquid_specie_)*pos(alphaL_.Yp() - 1e-2)
+          + xL_avg * neg(alphaL_.Yp() - 1e-2);
+          
+    //xL_ = alphaL_.x(liquid_specie_);
+    
+    Info<<"Max xL_"<<liquid_specie_<<" = " << Foam::max(xL_).value() << endl;
     
     tmp<volScalarField> xSat = p_vap_/p_*xL_;
     xSat().min(1.0);

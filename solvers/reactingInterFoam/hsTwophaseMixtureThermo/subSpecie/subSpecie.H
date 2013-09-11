@@ -98,6 +98,11 @@ class subSpecie
         
         dimensionedScalar kappa_;
         
+        surfaceScalarField D_;
+        
+        dimensionedScalar D0_;
+        dimensionedScalar Sc_;
+        
 public:
 
     // Constructors
@@ -110,7 +115,8 @@ public:
             const fvMesh& mesh,
             volScalarField& species,
             const gasThermoPhysics& speciesData,
-            label idx
+            label idx,
+            dimensionedScalar phaseSc
         );
 
         //- Return clone
@@ -123,6 +129,7 @@ public:
             const fvMesh& mesh_;
             PtrList<volScalarField>& species_;
             const PtrList<gasThermoPhysics>& speciesData_;
+            dimensionedScalar phaseSc_;
 
         public:
 
@@ -130,12 +137,14 @@ public:
             (
                 const fvMesh& mesh,
                 PtrList<volScalarField>& species,
-                const PtrList<gasThermoPhysics>& speciesData
+                const PtrList<gasThermoPhysics>& speciesData,
+                dimensionedScalar phaseSc
             )
             :
                 mesh_(mesh),
                 species_(species),
-                speciesData_(speciesData)
+                speciesData_(speciesData),
+                phaseSc_(phaseSc)
             {}
 
             autoPtr<subSpecie> operator()(Istream& is) const
@@ -160,6 +169,7 @@ public:
                         << "\n    with any specie in thermo.composition() "
                         << exit(FatalError);
                 }
+                
                 return autoPtr<subSpecie>
                 (
                     new subSpecie
@@ -169,7 +179,8 @@ public:
                         mesh_, 
                         species_[s], 
                         speciesData_[s], 
-                        s
+                        s,
+                        phaseSc_
                     )
                 );
             }
@@ -216,6 +227,11 @@ public:
         const volScalarField& Yp() const
         {
             return Yp_;
+        }
+        
+        const surfaceScalarField& D() const
+        {
+            return D_;
         }
                 
         volScalarField& Yp()
@@ -285,6 +301,19 @@ public:
         tmp<volScalarField> kappa(const volScalarField& T) const;
         
         void correct();
+        
+        void calculateDs
+        (
+            const volScalarField& mut,
+            const volScalarField& rho,
+            const volScalarField& T
+        );
+        
+        tmp<scalarField> mu
+        (
+            const scalarField& T,
+            const label patchi
+        ) const;
 };
 
 

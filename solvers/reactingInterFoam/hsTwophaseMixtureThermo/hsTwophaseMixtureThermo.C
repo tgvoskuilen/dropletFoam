@@ -96,6 +96,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     
     mu_ = alphaVapor_.sharp(0.0)*muV() + alphaLiquid_.sharp(0.0)*alphaLiquid_.mu(p_, T_);
     mu_.correctBoundaryConditions();
+    muAll_ = mu_;
     
     psi_ = alphaVapor_.sharp(0.0)*alphaVapor_.psi(T_);
     psi_.correctBoundaryConditions();
@@ -158,15 +159,20 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     //Calculate area
     //hardt method
     tmp<volScalarField> C = alphaLiquid_.sharp(0.0,0.01);
+    /*scalar tolL = 0.0;
+    scalar tolH = 0.01;
+    scalar Cpc = tolL+tolH;
+    tmp<volScalarField> C = (Foam::min(Foam::max(1.0 - alphaVaporSmooth_, tolL),1.0-tolH) - tolL)/(1.0-Cpc); */
     
     word gradScheme("grad(alphaVaporSmooth)");
     
     dimensionedScalar eps("eps",dimArea,SMALL);
     tmp<volScalarField> Cp = Foam::mag(fvc::grad(C(),gradScheme));
+    
     dimensionedScalar N = fvc::domainIntegrate(Cp()) 
         / (fvc::domainIntegrate((1-C())*(1-C())*Cp()) + eps);
 
-    area_ = N*(1-C())*(1-C())*Cp;
+    area_ = N*(1-C())*(1-C())*Cp; 
     //area_ = Cp;
     
     /*const volScalarField::DimensionedInternalField& V = mesh_.V();
@@ -187,48 +193,79 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
     
     if( alphaLiquid_.subSpecies().size() > 1 )
     {
-        tmp<volScalarField> tgradProd
+        tmp<volScalarField> toverlap
         (
             new volScalarField
             (
                 IOobject
                 (
-                    "tgradProd",
+                    "toverlap",
                     mesh_.time().timeName(),
                     mesh_
                 ),
                 mesh_,
-                dimensionedScalar("tgradProd", dimless, 1.0)
+                dimensionedScalar("toverlap", dimless, -0.1)
             )
         );
+        volScalarField& overlap = toverlap();
         
-        dimensionedScalar one("one",dimLength,1.0);
+        forAll(noVaporPairs_, pairI)
+        {
+            const word& specieA = noVaporPairs_[pairI].first();
+            const word& specieB = noVaporPairs_[pairI].second();
+            
+            const volScalarField& YA = alphaLiquid_.subSpecies()[specieA]->Y();
+            const volScalarField& YB = alphaLiquid_.subSpecies()[specieB]->Y();
+        
+            overlap += pos(YA-SMALL)*pos(YB-SMALL);
+        }
+        
+        overlap = neg(overlap);
     
-        forAllIter
+        /*forAllIter
         (
             PtrDictionary<subSpecie>, alphaLiquid_.subSpecies(), specieI
         )
         {
             tgradProd() *= Foam::mag( fvc::grad(specieI().Y())*one );
-        }
+        }*/
         
-        Info<< "Max grad prod = " << Foam::max(tgradProd()).value() << endl;
+        //Info<< "Max grad prod = " << Foam::max(tgradProd()).value() << endl;
         
         // only allow evaporation if gradprod < 1e5 OR alphav > 0.5
-        evap_mask_ = pos(neg(tgradProd() - 100000.0)
-                         + pos(alphaVapor_ - 0.5) - SMALL);
+        //evap_mask_ = pos(neg(tgradProd() - 100000.0)
+        //                 + pos(alphaVapor_ - 0.5) - SMALL);
+        evap_mask_ = pos(overlap + pos(alphaVapor_-0.5) - SMALL);
+        
     }
     else
     {
         evap_mask_ = pos(alphaVapor_+1.0); //no multi-liquid mask
     }
     
+    // Calculate very smoothed alphaV field
+    /*volScalarField alphaVSmooth = alphaV_.sharp(0.01);
+    dimensionedScalar dA = pow(min(mesh_.V()),2.0/3.0)/20.0;
+    
+    for( label i = 0; i < 20; ++i )
+    {
+        alphaVSmooth += dA * fvc::laplacian(alphaVSmooth);
+    }
+    alphaVSmooth.min(1.0);
+    alphaVSmooth.max(0.0);
+    alphaVSmooth.correctBoundaryConditions();
+    dimensionedScalar sG("SG",dimless/dimLength,SMALL);
+    dimensionedScalar Uo("U0",dimVelocity,1.0);
+    
+    volVectorField UI = fvc::grad(alphaVSmooth) / (mag(fvc::grad(alphaVSmooth)) + sG)*U0;
+    surfaceScalarField phiPhase("phiPhase",fvc::interpolate(UI) & mesh_.Sf());*/
+    
     
     forAllIter(PtrDictionary<mixturePhaseChangeModel>, phaseChangeModels_, pcmI)
     {
         pcmI().calculate
         (
-            evap_mask_, //legacy, maybe remove
+            evap_mask_,
             area_
         );
     }
@@ -369,6 +406,20 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0),
         zeroGradientFvPatchScalarField::typeName
     ),
+    muAll_
+    (
+        IOobject
+        (
+            "muAll",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("muAll", dimDensity*dimArea/dimTime, 0.0),
+        zeroGradientFvPatchScalarField::typeName
+    ),
     evap_mask_
     (
         IOobject
@@ -401,7 +452,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         "deltaN",
         1e-8/pow(average(mesh.V()), 1.0/3.0)
     ),
-    phaseMaskTol_(readScalar(lookup("phaseMaskTol")))
+    phaseMaskTol_(readScalar(lookup("phaseMaskTol"))),
+    noVaporPairs_(lookup("noVaporPairs"))
 {
     T_.correctBoundaryConditions();
     p_.correctBoundaryConditions();
@@ -763,8 +815,8 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
         << ", " << Foam::max(YSum_).value() << endl;
     
     // Calculate diffusion coefficient for each phase
-    alphaLiquid_.calculateDs( combustionPtr_->turbulence().muEff() );
-    alphaVapor_.calculateDs( combustionPtr_->turbulence().muEff() );
+    alphaLiquid_.calculateDs( combustionPtr_->turbulence().mut(), p_, T_ );
+    alphaVapor_.calculateDs( combustionPtr_->turbulence().mut(), p_, T_ );
        
     // Solve for subspecie transport within each phase
     scalar FoLiq = alphaLiquid_.solveSubSpecies( p_, T_, phaseChangeModels_);

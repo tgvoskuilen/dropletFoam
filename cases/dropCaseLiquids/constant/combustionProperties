@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.1                                 |
+|  \\    /   O peration     | Version:  2.1.x                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,13 +10,25 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      balanceParDict;
+    location    "constant";
+    object      combustionProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 18;
+combustionModel  PaSR<rhoChemistryCombustionModel>;
 
-method          ptscotch;
+active  false;
+
+infinitelyFastChemistryCoeffs
+{
+    C       1000.0;
+}
+
+PaSRCoeffs
+{
+    Cmix                Cmix [ 0 0 0 0 0 0 0 ] 0.1;
+    turbulentReaction   on;
+}
+
 
 // ************************************************************************* //

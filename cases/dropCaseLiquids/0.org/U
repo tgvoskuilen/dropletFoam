@@ -9,14 +9,40 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      balanceParDict;
+    class       volVectorField;
+    location    "0";
+    object      U;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 18;
+dimensions      [0 1 -1 0 0 0 0];
 
-method          ptscotch;
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    atmosphere
+    {
+        type            fluxCorrectedVelocity;
+        value           uniform (0 0 0);
+    }
+    
+    walls
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    
+    frontAndBack
+    {
+        type            symmetryPlane;
+    }
+    
+    defaultFaces
+    {
+        type            symmetryPlane;
+    }
+}
+
 
 // ************************************************************************* //
