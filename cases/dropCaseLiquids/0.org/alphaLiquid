@@ -9,14 +9,40 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      balanceParDict;
+    class       volScalarField;
+    location    "0";
+    object      alphaLiquid;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 18;
+dimensions      [0 0 0 0 0 0 0];
 
-method          ptscotch;
+internalField   uniform 0.0;
+
+boundaryField
+{
+    atmosphere
+    {
+        type            inletOutlet;
+        inletValue      uniform 0.0;
+        value           uniform 0.0;
+    }
+    
+    walls
+    {
+        type            zeroGradient;
+    }
+      
+    frontAndBack
+    {
+        type            symmetryPlane;
+    }
+    
+    defaultFaces
+    {
+        type            symmetryPlane;
+    }
+}
+
 
 // ************************************************************************* //

@@ -126,6 +126,8 @@ private:
         
         //- Surface tension
         volScalarField sigma_;
+        
+        volScalarField muAll_;
                 
         //- Evaporation mask to stop evaporation at diffuse liquid interfaces
         volScalarField evap_mask_;
@@ -137,6 +139,8 @@ private:
         const dimensionedScalar deltaN_;
                 
         scalar phaseMaskTol_;
+        
+        List<Pair<word> > noVaporPairs_;
         
     // Private methods
 

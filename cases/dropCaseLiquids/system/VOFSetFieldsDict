@@ -41,9 +41,8 @@ shapes
         
         liquidSpecies
         (
-            HNO3L  0.83
-            NO2L   0.14
-            SIO2   0.03
+            HNO3L  0.85
+            NO2L   0.15
         );
         
         vaporSpecies
@@ -70,8 +69,7 @@ shapes
         
         liquidSpecies
         (
-            CH3NHNH2L  0.94
-            SIO2       0.06
+            CH3NHNH2L  1.0
         );
         
         vaporSpecies

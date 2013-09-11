@@ -57,6 +57,7 @@ Vapor
         HCO          {}
         HNO          {}
         HNO3         {}
+        SIO2         {}
    );
 }
 
@@ -68,38 +69,16 @@ Liquid
    
    subspecies
    (
-        SIO2
-        {
-            transportModel  BirdCarreau; //BirdCarreau
-
-            BirdCarreauCoeffs //fit to 6% Aerosil/MMH data
-            {
-                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.11494;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.145e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
-                n               n [ 0 0 0 0 0 0 0 ] -0.25;
-            }
-
-            D0           D0   [ 0 2 -1 0 0 0 0 ] 1e-10;
-            rho0         rho0 [ 1 -3 0 0 0 0 0 ] 2650.0;
-            Tc           Tc   [ 0 0 0 1 0 0 0] 585.0;
-            kappa        kappa [1 1 -3 -1 0 0 0] 0.25; //mmh bible, 300 K 
-            
-            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0626;
-            sigmaa          0.884;
-        }
-        
-        
         CH3NHNH2L
         {
-            transportModel  BirdCarreau; //BirdCarreau
+            transportModel  Newtonian; //BirdCarreau
             nu              nu [ 0 2 -1 0 0 0 0 ] 8e-7; //rocketdyne
 
             BirdCarreauCoeffs //fit to 6% Aerosil/MMH data
             {
                 nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.11494;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.145e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 3.44e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 1.5;
                 n               n [ 0 0 0 0 0 0 0 ] -0.25;
             }
 
@@ -114,14 +93,14 @@ Liquid
         
         MMHN-3HNO3
         {   // same properties as HNO3
-            transportModel  BirdCarreau; //BirdCarreau
-            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            transportModel  Newtonian; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 7.94e-7;
             
             BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
             {
                 nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.135e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
                 n               n [ 0 0 0 0 0 0 0 ] -0.1;
             }
             
@@ -136,14 +115,14 @@ Liquid
 
         CH3ONO2L
         {
-            transportModel  BirdCarreau; //BirdCarreau
-            nu              nu [ 0 2 -1 0 0 0 0 ] 9.2e-7; //rocketdyne
+            transportModel  Newtonian; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 8e-7; //rocketdyne
             
             BirdCarreauCoeffs //fit to 6% Aerosil/MMH data
             {
                 nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.11494;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.145e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 3.44e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 1.5;
                 n               n [ 0 0 0 0 0 0 0 ] -0.25;
             }
             
@@ -158,14 +137,14 @@ Liquid
         
         NO2L
         {
-            transportModel  BirdCarreau; //BirdCarreau
-            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            transportModel  Newtonian; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 7.94e-7;
             
             BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
             {
                 nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.135e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
                 n               n [ 0 0 0 0 0 0 0 ] -0.1;
             }
             
@@ -180,14 +159,14 @@ Liquid
         
         HNO3L
         {
-            transportModel  BirdCarreau; //BirdCarreau
-            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            transportModel  Newtonian; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 7.94e-7;
             
             BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
             {
                 nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.135e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
                 n               n [ 0 0 0 0 0 0 0 ] -0.1;
             }
             
@@ -202,14 +181,14 @@ Liquid
 
         HONOL
         {
-            transportModel  BirdCarreau; //BirdCarreau
-            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            transportModel  Newtonian; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 7.94e-7;
             
             BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
             {
                 nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.135e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
                 n               n [ 0 0 0 0 0 0 0 ] -0.1;
             }
             
@@ -224,14 +203,14 @@ Liquid
         
         H2OL
         {
-            transportModel  BirdCarreau; //BirdCarreau
-            nu              nu [ 0 2 -1 0 0 0 0 ] 6.5e-7;
+            transportModel  Newtonian; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 1e-6;
             
             BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
             {
                 nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
-                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 1.135e-5;
-                k               k [ 0 0 1 0 0 0 0 ] 0.75;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
                 n               n [ 0 0 0 0 0 0 0 ] -0.1;
             }
             
@@ -274,7 +253,7 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 38884000.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 360.476;
             La              0.38;
-            betaV           0.0;
+            betaV           0.6;
             betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
@@ -302,7 +281,7 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 32990492.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 338.5;
             La              0.38;
-            betaV           0.0;
+            betaV           0.6;
             betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 585.0;
@@ -331,7 +310,7 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 38094729.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 360.8;
             La              0.38;
-            betaV           0.0;
+            betaV           0.6;
             betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 546.48;
@@ -359,7 +338,7 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 38094729.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 360.8;
             La              0.38;
-            betaV           0.0;
+            betaV           0.6;
             betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 546.48;
@@ -387,7 +366,7 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 33709918.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 294;
             La              0.38;
-            betaV           0.0;
+            betaV           0.6;
             betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 431.35;
@@ -415,7 +394,7 @@ phaseChangeReactions
             Lb              Lb [ 1 2 -2 0 -1 0 0] 41236897.0;
             Tb              Tb [ 0 0 0 1 0 0 0] 375.5;
             La              0.38;
-            betaV           0.0;
+            betaV           0.6;
             betaC           0.0;
 
             Tc              Tc [ 0 0 0 1 0 0 0] 647.3;

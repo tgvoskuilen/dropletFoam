@@ -11,6 +11,7 @@ function data = ReadDb()
     Ws.O = 15.999;
     Ws.AR = 39.948;
     Ws.HE = 4.0026;
+    Ws.SI = 28.085;
     Ws.E = 0;
     
     data = struct();

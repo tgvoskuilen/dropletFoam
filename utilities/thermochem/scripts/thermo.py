@@ -38,6 +38,7 @@ def molwt(atoms):
           'O':  15.999,
           'AR': 39.948,
           'HE': 4.0026,
+          'SI': 28.085,
           'E':  0.0} #electrons have essentially 0 mass
           
     W = 0.

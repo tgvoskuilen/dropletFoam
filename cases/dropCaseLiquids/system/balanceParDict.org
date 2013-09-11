@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 18;
+numberOfSubdomains NUMPROCS;
 
 method          ptscotch;
 

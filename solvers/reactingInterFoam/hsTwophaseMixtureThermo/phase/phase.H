@@ -91,19 +91,19 @@ class phase
         
         //- Reference to the list of specie thermodynamic data objects
         const PtrList<gasThermoPhysics>& speciesData_;
-
+        
+        //- Schmidt number
+        dimensionedScalar Sc_;
+        
         //- Dictionary of pointers to phase subspecies
         PtrDictionary<subSpecie> subSpecies_;
-               
-        //- Schmidt number
-        scalar Sc_;
-        
-        //- Mass diffusion coefficient
-        surfaceScalarField D_;
 
         volScalarField cellMask_;
         
         surfaceScalarField faceMask_;
+        
+        volScalarField diffErr_;
+        
 
 public:
 
@@ -165,9 +165,9 @@ public:
             return rhoPhiAlpha_;
         }
         
-        const surfaceScalarField& D() const
+        const surfaceScalarField& faceMask() const
         {
-            return D_;
+            return faceMask_;
         }
                 
         const volScalarField& rhoAlpha() const
@@ -245,7 +245,12 @@ public:
             const volScalarField& kappaMask
         ) const;
                                         
-        void calculateDs(const volScalarField& muEff);
+        void calculateDs
+        (
+            const volScalarField& mut,
+            const volScalarField& p,
+            const volScalarField& T
+        );
 
         scalar solveSubSpecies
         (

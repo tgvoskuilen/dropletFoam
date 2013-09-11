@@ -95,24 +95,18 @@ Foam::phase::phase
     combustionPtr_(NULL),
     species_(species),
     speciesData_(speciesData),
+    Sc_
+    (
+        phaseDict_.lookupOrDefault
+        (
+            "Sc",
+            dimensionedScalar("Sc",dimDensity*dimArea/dimTime,1.0)
+        )
+    ),
     subSpecies_
     (
         phaseDict_.lookup("subspecies"),
-        subSpecie::iNew(mesh, species, speciesData)
-    ),
-    Sc_(1.0),
-    D_
-    (
-        IOobject
-        (
-            "D_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 0.0)
+        subSpecie::iNew(mesh, species, speciesData, Sc_)
     ),
     cellMask_
     (
@@ -139,14 +133,23 @@ Foam::phase::phase
         ),
         mesh,
         dimensionedScalar("faceMask_"+name, dimless, 1.0)
+    ),
+    diffErr_
+    (
+        IOobject
+        (
+            "diffErr_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("diffErr_"+name, dimDensity, 0.0)
     )
 {  
     this->oldTime();
     cellMask_.oldTime();
-    if( phaseDict_.found("SchmidtNo") )
-    {
-        Sc_ = readScalar(phaseDict_.lookup("SchmidtNo"));
-    }
     
     Info<< "Created phase " << name << endl;
 }
@@ -1212,10 +1215,19 @@ Foam::tmp<Foam::volScalarField> Foam::phase::kappa
 
 void Foam::phase::calculateDs
 (
-    const volScalarField& muEff
+    const volScalarField& mut,
+    const volScalarField& p,
+    const volScalarField& T
 )
 {
-    D_ = fvc::interpolate(muEff) * faceMask_ / Sc_;
+    tmp<volScalarField> trho = rho(p,T);
+    
+    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        specieI().calculateDs(mut, trho(), T);
+    }
+
+    //D_ = fvc::interpolate(muEff) * faceMask_ / Sc_;
 }
 
 
@@ -1379,19 +1391,8 @@ scalar Foam::phase::solveSubSpecies
 )
 {   
     word divScheme("div(rho*phi*alpha,Yi)");
-
-    tmp<volScalarField> DbyRho = fvc::average(D_) / rho(p,T);
-    
-    surfaceScalarField DbyDelta // m/s diffusion velocity
-    (
-        mesh().surfaceInterpolation::deltaCoeffs()
-      * fvc::interpolate(DbyRho)
-    );
-    
-    scalar DiNum = gMax(DbyDelta.internalField())*mesh().time().deltaTValue();
-    
-    Info<< "Max DiNum = " << DiNum << endl;
-        
+    word divSchemeCorr("div(rho*phiCorr,Yi)");
+            
     Info<< "Solving "<<subSpecies_.size()
         <<" subspecie(s) for phase: " 
         << name_ << endl;
@@ -1421,13 +1422,22 @@ scalar Foam::phase::solveSubSpecies
            
     //Arbitrary diagonal term for cells outside normal region
     volScalarField Sp = (1.0 - cellMask_)*rho(p,T)/mesh().time().deltaT();
-
+    
+    // Calculate the conservation error from variable diffusion coefficients
+    diffErr_ = diffErr_*0.0;
+    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
+    {
+        const volScalarField& Yi = specieI().Yp();
+        const surfaceScalarField& Di = specieI().D();
+        diffErr_ += fvc::laplacian(Di*faceMask_, Yi) * mesh().time().deltaT();
+    }
     
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
         Info<<"Solving specie " << specieI().Y().name() << endl;
         
         volScalarField& Yi = specieI().Yp();
+        const surfaceScalarField& Di = specieI().D();
         
         //tmp<volScalarField> SuEvap = Su_Yi_evap( specieI() );
         
@@ -1442,15 +1452,13 @@ scalar Foam::phase::solveSubSpecies
         
         tmp<volScalarField> R = kappa * chemistry.RR( specieI().idx() );
         
-        
-        
-        
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoAlpha_, Yi)
           + fvm::div(rhoPhiAlpha_, Yi, divScheme)
           - fvm::Sp(fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - mdot_phase, Yi)
-          - fvm::laplacian(D_, Yi)
+          - fvm::laplacian(Di*faceMask_, Yi)
+          //- fvm::div(rhoPhiCorr_, Yi, divSchemeCorr)
          ==
             R()
           + YSuSp.first()
@@ -1525,7 +1533,7 @@ scalar Foam::phase::solveSubSpecies
     
     //Info<< "Min source dT = " << dTsrc << endl;
      
-    return DiNum;
+    return 0.0;
 }
 
 
@@ -1578,12 +1586,12 @@ void Foam::phase::setPhaseMasks
         mdot_phase += pcmI().mdot(name_);
     }
     
-    dimensionedScalar one("one",dimTime/dimDensity,1.0);
-    //dimensionedScalar one("one",dimLength,1.0);
+    dimensionedScalar oneM("oneM",dimTime/dimDensity,1.0);
+    //dimensionedScalar oneA("oneA",dimLength,1.0);
     
     //tmp<volScalarField> oldMask = cellMask_;
     //cellMask_ = pos(alpha - maskTol + area*one - SMALL);
-    cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*one - SMALL);
+    cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM - SMALL);
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     
     //apply the current-time mask to the old-time rhoAlpha
