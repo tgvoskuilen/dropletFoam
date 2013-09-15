@@ -131,9 +131,12 @@ private:
                 
         //- Evaporation mask to stop evaporation at diffuse liquid interfaces
         volScalarField evap_mask_;
+        volScalarField overlap_;
         
         //- Sum of all mass fractions
         volScalarField YSum_;
+        
+        surfaceScalarField DgradY_;
         
         //- Stabilisation for normalisation of the interface normal
         const dimensionedScalar deltaN_;
@@ -296,6 +299,11 @@ public:
                 return rhoPhi_;
             }
             
+            const surfaceScalarField& DgradY() const
+            {
+                return DgradY_;
+            }
+            
             volScalarField& divComp()
             {
                 return divComp_;
@@ -334,7 +342,7 @@ public:
             tmp<volScalarField> Sv_phaseChange() const;
             
             //- Get the implicit and explicit total energy source terms
-            Pair<tmp<volScalarField> > TSuSp() const;
+            Pair<tmp<volScalarField> > TSuSp(word mode) const;
                                     
             //- Get the total phase change heat generation
             tmp<volScalarField> dQ_phaseChange() const;

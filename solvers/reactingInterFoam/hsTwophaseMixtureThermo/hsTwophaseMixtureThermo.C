@@ -175,13 +175,13 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     area_ = N*(1-C())*(1-C())*Cp; 
     //area_ = Cp;
     
-    /*const volScalarField::DimensionedInternalField& V = mesh_.V();
+    const volScalarField::DimensionedInternalField& V = mesh_.V();
     area_.dimensionedInternalField() *= pos
     (
         area_.dimensionedInternalField()
-      - Foam::pow(V,-1.0/3.0)/150.0
+      - Foam::pow(V,-1.0/3.0)/250.0
     );
-    area_.correctBoundaryConditions();*/
+    area_.correctBoundaryConditions();
     
     
 }
@@ -193,7 +193,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
     
     if( alphaLiquid_.subSpecies().size() > 1 )
     {
-        tmp<volScalarField> toverlap
+        /*tmp<volScalarField> toverlap
         (
             new volScalarField
             (
@@ -204,10 +204,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
                     mesh_
                 ),
                 mesh_,
-                dimensionedScalar("toverlap", dimless, -0.1)
+                dimensionedScalar("toverlap", dimless, 0.0)
             )
         );
-        volScalarField& overlap = toverlap();
+        volScalarField& overlap = toverlap();*/
+        dimensionedScalar one("one",dimArea,1.0);
+        overlap_ *= 0.0;
         
         forAll(noVaporPairs_, pairI)
         {
@@ -217,10 +219,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
             const volScalarField& YA = alphaLiquid_.subSpecies()[specieA]->Y();
             const volScalarField& YB = alphaLiquid_.subSpecies()[specieB]->Y();
         
-            overlap += pos(YA-SMALL)*pos(YB-SMALL);
+            //overlap += pos(YA-SMALL)*pos(YB-SMALL);
+            overlap_ += Foam::mag(fvc::grad(YA))*Foam::mag(fvc::grad(YB))*one;
+            
         }
         
-        overlap = neg(overlap);
+        //overlap = neg(overlap);
     
         /*forAllIter
         (
@@ -235,7 +239,12 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calcPhaseChange()
         // only allow evaporation if gradprod < 1e5 OR alphav > 0.5
         //evap_mask_ = pos(neg(tgradProd() - 100000.0)
         //                 + pos(alphaVapor_ - 0.5) - SMALL);
-        evap_mask_ = pos(overlap + pos(alphaVapor_-0.5) - SMALL);
+        //evap_mask_ = pos(overlap + pos(alphaVapor_ - 0.5) - SMALL);
+        
+        // allow evaporation if overlap < 1e3 OR alphaV > 0.7
+        evap_mask_ = pos(neg(overlap_ - 1e5)
+                         + pos(alphaVapor_ - 0.5) - SMALL);
+        //evap_mask_ = pos(alphaVapor_ + 1.0); //no mask
         
     }
     else
@@ -434,6 +443,20 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         dimensionedScalar("evap_mask", dimless, 0.0),
         zeroGradientFvPatchScalarField::typeName
     ),
+    overlap_
+    (
+        IOobject
+        (
+            "overlap",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("overlap", dimless, 0.0),
+        zeroGradientFvPatchScalarField::typeName
+    ),
     YSum_
     (
         IOobject
@@ -447,6 +470,19 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         mesh,
         dimensionedScalar("Ysum", dimless, 0.0)
     ),
+    DgradY_
+    (
+        IOobject
+        (
+            "DgradY",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("DgradY", dimMass/dimTime, 0.0)
+    ),
     deltaN_
     (
         "deltaN",
@@ -455,6 +491,24 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     phaseMaskTol_(readScalar(lookup("phaseMaskTol"))),
     noVaporPairs_(lookup("noVaporPairs"))
 {
+    // Check that the noVaporPairs are all valid
+    forAll(noVaporPairs_, pairI)
+    {
+        const word& specieA = noVaporPairs_[pairI].first();
+        const word& specieB = noVaporPairs_[pairI].second();
+        
+        if( !alphaLiquid_.subSpecies().found(specieA) ||
+            !alphaLiquid_.subSpecies().found(specieB) )
+        {
+            FatalErrorIn
+            (
+                "hsTwophaseMixtureThermo::hsTwophaseMixtureThermo"
+            )   << "Species " << specieA << " and " << specieB
+                << "\n    are not both liquid subspecies."
+                << exit(FatalError);
+        }
+    }
+    
     T_.correctBoundaryConditions();
     p_.correctBoundaryConditions();
     
@@ -749,15 +803,37 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     volScalarField& rho
 )
 {
-    //Solve for reaction rates
+    // Solve for reaction rates
+    //  Create a highly sharpened rhoAlpha set to set Y with for reactions
+    //
     Info<< "Solving combustion" << endl;
+    
+    // Make sharp Y fields for reaction calculations
+    
+    /*tmp<volScalarField> alphaLS = alphaLiquid_.sharp(0.6,0.2);
+    tmp<volScalarField> rhoAlphaLS = alphaLiquid_.rho(p_,T_)*alphaLS();
+    tmp<volScalarField> rhoAlphaVS = alphaVapor_.rho(p_,T_)*(1-alphaLS());
+    
+    rho_ = rhoAlphaLS() + rhoAlphaVS();
+    rho_.correctBoundaryConditions();
+    
+    alphaLiquid_.updateGlobalYs( rhoAlphaLS(), rhoAlphaVS() );
+    alphaVapor_.updateGlobalYs( rhoAlphaVS(), rhoAlphaLS() );*/
+    
     rho_ = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
     rho_.correctBoundaryConditions();
-    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
-    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
-
+    alphaLiquid_.updateGlobalYs( alphaLiquid_.rhoAlpha(), alphaVapor_.rhoAlpha() );
+    alphaVapor_.updateGlobalYs( alphaVapor_.rhoAlpha(), alphaLiquid_.rhoAlpha() );
+    
+    
     combustionPtr_->correct();
 
+    // Update global mass fractions based on phase-based mass fractions
+    /*rho_ = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha();
+    rho_.correctBoundaryConditions();
+    alphaLiquid_.updateGlobalYs( alphaLiquid_.rhoAlpha(), alphaVapor_.rhoAlpha() );
+    alphaVapor_.updateGlobalYs( alphaVapor_.rhoAlpha(), alphaLiquid_.rhoAlpha() );*/
+    
     //Solve for evaporation rates
     Info<< "Solving phase change" << endl;
     calcPhaseChange();
@@ -819,12 +895,14 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     alphaVapor_.calculateDs( combustionPtr_->turbulence().mut(), p_, T_ );
        
     // Solve for subspecie transport within each phase
-    scalar FoLiq = alphaLiquid_.solveSubSpecies( p_, T_, phaseChangeModels_);
-    scalar FoVap = alphaVapor_.solveSubSpecies( p_, T_, phaseChangeModels_);
+    tmp<surfaceScalarField> DgradYLCv = alphaLiquid_.solveSubSpecies( p_, T_, phaseChangeModels_);
+    tmp<surfaceScalarField> DgradYVCv = alphaVapor_.solveSubSpecies( p_, T_, phaseChangeModels_);
+    
+    DgradY_ = (DgradYLCv*fvc::interpolate(alphaLiquid_) + DgradYVCv*fvc::interpolate(alphaVapor_))*fvc::interpolate(rCv());
 
     // Update global mass fractions based on phase-based mass fractions
-    alphaLiquid_.updateGlobalYs( alphaVapor_.rhoAlpha() );
-    alphaVapor_.updateGlobalYs( alphaLiquid_.rhoAlpha() );
+    alphaLiquid_.updateGlobalYs( alphaLiquid_.rhoAlpha(), alphaVapor_.rhoAlpha() );
+    alphaVapor_.updateGlobalYs( alphaVapor_.rhoAlpha(), alphaLiquid_.rhoAlpha() );
     
     //scalar MaxFo = (FoVap > FoLiq) ? FoVap : FoLiq;
     
@@ -851,7 +929,10 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 
 template<class MixtureType>
 Foam::Pair<Foam::tmp<Foam::volScalarField> >
-Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
+Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp
+(
+    word mode
+) const
 {
 
     Pair<tmp<volScalarField> > tTSuSp
@@ -898,8 +979,16 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::TSuSp() const
         tTSuSp.second()() += pcmTSuSp.second();
     }
     
-    tTSuSp.first()() *= rCv();
-    tTSuSp.second()() *= rCv();
+    if( mode == "Cv" )
+    {
+        tTSuSp.first()() *= rCv();
+        tTSuSp.second()() *= rCv();
+    }
+    else
+    {
+        tTSuSp.first()() *= rCp();
+        tTSuSp.second()() *= rCp();
+    }
     
     return tTSuSp;
 }
@@ -1339,7 +1428,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::kByCp
 template<class MixtureType>
 tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCp() const
 {
-    return 1.0 / Cp();
+    //return 1.0 / Cp();
+    return alphaLiquid_/alphaLiquid_.Cp(T_) + alphaVapor_/alphaVapor_.Cp(T_);
 }
 
 template<class MixtureType>
@@ -1349,8 +1439,6 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::kByCv
     const volScalarField& alphat //turbulent k/Cv contribution
 ) const
 {
-   // kByCp = (alpha1*k1/Cp1 + alpha2*k2/Cp2) + alphat
-
     return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cv(T_)
          + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cv(T_)
          + alphat;

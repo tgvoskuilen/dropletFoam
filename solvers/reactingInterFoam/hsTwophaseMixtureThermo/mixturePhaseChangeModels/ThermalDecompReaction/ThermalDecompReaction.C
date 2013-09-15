@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "LangmuirEvaporation.H"
+#include "ThermalDecompReaction.H"
 #include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -32,13 +32,13 @@ namespace Foam
 {
 namespace mixturePhaseChangeModels
 {
-    defineTypeNameAndDebug(LangmuirEvaporation, 0);
-    addToRunTimeSelectionTable(mixturePhaseChangeModel, LangmuirEvaporation, components);
+    defineTypeNameAndDebug(ThermalDecompReaction, 0);
+    addToRunTimeSelectionTable(mixturePhaseChangeModel, ThermalDecompReaction, components);
 }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
+Foam::mixturePhaseChangeModels::ThermalDecompReaction::ThermalDecompReaction
 (
     const word name,
     const fvMesh& mesh,
@@ -58,19 +58,6 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
         speciesData, 
         phaseChangeDict
     ),
-    x_
-    (
-        IOobject
-        (
-            "x_" + name_,
-            mesh_.time().timeName(),
-            mesh_,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh_,
-        dimensionedScalar("x",dimless,0.0)
-    ),
     xL_
     (
         IOobject
@@ -83,32 +70,6 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
         ),
         mesh_,
         dimensionedScalar("xL",dimless,0.0)
-    ),
-    coeffC_
-    (
-        IOobject
-        (
-            "coeffC_" + name_,
-            mesh_.time().timeName(),
-            mesh_,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh_,
-        dimensionedScalar("coeffC",dimTime/dimArea,0.0)
-    ),
-    coeffV_
-    (
-        IOobject
-        (
-            "coeffV_" + name_,
-            mesh_.time().timeName(),
-            mesh_,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh_,
-        dimensionedScalar("coeffV",dimTime/dimArea,0.0)
     ),
     p_vap_
     (
@@ -127,10 +88,9 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     Tc_(phaseChangeDict_.lookup("Tc")),
     Tb_(phaseChangeDict_.lookup("Tb")),
     Lb_(phaseChangeDict_.lookup("Lb")),
-    La_(readScalar(phaseChangeDict_.lookup("La"))),
+    dH_(phaseChangeDict_.lookup("dH")),
     PvCoeffs_(phaseChangeDict_.lookup("PvCoeffs")),
-    betaV_(readScalar(phaseChangeDict_.lookup("betaV"))),
-    betaC_(readScalar(phaseChangeDict_.lookup("betaC"))),
+    betaTD_(phaseChangeDict_.lookup("betaTD")),
     W_(dimensionedScalar("W", dimMass/dimMoles, 0.0)) // kg/kmol
 {    
     List<word> prodList = products_.toc();
@@ -140,56 +100,26 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
     
     
     
-    vapor_specie_ = prodList[0];
+    //vapor_specie_ = prodList[0];
     liquid_specie_ = reacList[0];
     
     //W_ = alphaV_.subSpecies()[vapor_specie_]->W();
     W_.value() = reacThermo_[liquid_specie_]->W();
     
-    Info<< "Liquid/Vapor evaporation configured for " << liquid_specie_ << endl;
+    Info<< "Liquid decomposition reaction configured for " 
+        << liquid_specie_ << endl;
 }
     
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
+void Foam::mixturePhaseChangeModels::ThermalDecompReaction::calculate
 (
     const volScalarField& phaseChangeZones,
     const volScalarField& area
 )
 {
     //Calculate the vapor pressure
-    //dimensionedScalar pZero("pZ",dimPressure,0);
     dimensionedScalar p0("p0",dimPressure,101325);
-    
-    /*p_vap_ = pZero;
-    
-    forAll(p_vap_, cellI)
-    {
-        if( area[cellI] > SMALL )
-        {
-            const scalar& Ti = T_[cellI];
-            if( Ti < Tb_.value() )
-            {
-                p_vap_[cellI] = 101325*exp
-                (
-                    -Lb_.value()/R_.value()*(1.0/Ti - 1.0/Tb_.value())
-                );
-            }
-            else if( Ti < Tc_.value()
-            {
-                p_vap_[cellI] = exp
-                (
-                   PvCoeffs_[0]
-                 - PvCoeffs_[1]/Ti
-                 - PvCoeffs_[2]/(Ti*Ti)
-                );
-            }
-            else
-            {
-                p_vap_[cellI] = Pc_.value();
-            }
-        }
-    }*/
-    
+        
     p_vap_ = p0*exp
      (
         (-Lb_/R_*(1.0/T_ - 1.0/Tb_))*neg(T_ - Tb_)
@@ -206,65 +136,20 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
     
     dimensionedScalar sA("sA",dimless/dimLength,SMALL);
     
-    // Allow new phase nucleation only on interfaces, and supress where
-    // non-boiling interfaces overlap
-    mask_ = (phaseChangeZones * neg(T_ - 0.9*Tc_) +  pos(T_ - 0.9*Tc_)) 
-          * pos(area-sA);
-                          
-    //Calculate the mole fractions
-    /*volScalarField xL_avg = alphaL_.x(liquid_specie_);
-    dimensionedScalar dA = pow(min(mesh_.V()),2.0/3.0)/25.0;
-    
-    for( label i = 0; i < 20; ++i )
-    {
-        xL_avg += fvc::laplacian(dA*alphaL_.faceMask(), xL_avg);
-    }
-    xL_avg.min(1.0);
-    xL_avg.max(0.0);
-    xL_avg.correctBoundaryConditions();
-
-    xL_ = alphaL_.x(liquid_specie_)*pos(alphaL_.Yp() - 1e-2)
-          + xL_avg * neg(alphaL_.Yp() - 1e-2);*/
-          
+    // Only decompose above Tb
+    mask_ = pos(p_vap_ - p_) * pos(area-sA) * phaseChangeZones;
+                        
+    //Calculate the mole fraction of liquid specie
     xL_ = alphaL_.x(liquid_specie_);
-    //xL_ = alphaL_.x(liquid_specie_)*pos(alphaL_.Yp() - 1e-6);
     
-    Info<<"Max xL_"<<liquid_specie_<<" = " << Foam::max(xL_).value() << endl;
-    
-    tmp<volScalarField> xSat = p_vap_/p_*xL_;
-    xSat().min(1.0);
-    
-    //set x to xSat in areas with trace mass fractions
-    x_ = alphaV_.x(vapor_specie_)*pos(alphaV_.Yp() - 1e-4) 
-         + xSat*neg(alphaV_.Yp() - 1e-4);
+    omega_ = area * betaTD_ * mask_ * xL_ * (p_vap_ - p_);
 
-    
-    /*x_ *= 0.0;
-    List<word> prodList = products_.toc();
-    forAll(prodList, p)
-    {
-        //TODO: Wrong with multiple product species!
-        x_ += (alphaV_.x(prodList[p])*pos(alphaV_.Yp() - 1e-4) 
-              + xSat*neg(alphaV_.Yp() - 1e-4))*products_[prodList[p]];
-    }*/
-    
-    
-    scalar pi = constant::mathematical::pi;
-
-    tmp<volScalarField> coeff = area*Foam::sqrt(W_/(2*pi*R_*T_))*mask_;
-    
-    dimensionedScalar sp("sp",dimPressure,1e-2);
-    coeffC_ = 2.0*betaC_/(2.0-betaC_)*coeff()*neg(p_vap_*xL_ + sp - p_*x_);
-    coeffV_ = 2.0*betaV_/(2.0-betaV_)*coeff()*pos(p_vap_*xL_ - sp - p_*x_);
-    
-    omega_ = (coeffC_ + coeffV_) * (p_vap_*xL_ - p_*x_) / W_;
-
-    Foam::Info<< "Min,max evaporation flux for " << liquid_specie_ << " = "
+    Foam::Info<< "Min,max thermal decomposition flux for " << liquid_specie_ << " = "
               << Foam::min(omega_).value() << ", " 
               << Foam::max(omega_).value() << " kmol/m3/s" << Foam::endl;
 }
 
-tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::mdot
+tmp<volScalarField> Foam::mixturePhaseChangeModels::ThermalDecompReaction::mdot
 (
     const word& phaseName
 ) const
@@ -300,7 +185,7 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::mdot
     return tmdot;
 }
 
-tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::Vdot
+tmp<volScalarField> Foam::mixturePhaseChangeModels::ThermalDecompReaction::Vdot
 (
     const word& phaseName
 ) const
@@ -327,16 +212,16 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::Vdot
     }
     else if( phaseName == "Vapor" )
     {
-        tVdot() += omega_*R_*T_/p_;
+        //tVdot() += omega_*R_*T_/p_;
         
-        /*scalar sumF = 0.0;
+        scalar sumF = 0.0;
         
         forAllConstIter(HashTable<scalar>, products_, fpI)
         {
             sumF += fpI();
         }
         
-        tVdot() += omega_*R_*T_/p_ * sumF;*/
+        tVdot() += omega_*R_*T_/p_ * sumF;
     }
     else
     {
@@ -348,7 +233,7 @@ tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::Vdot
 
 
 // get the explicit and implicit source terms for Yvapor
-Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::YSuSp
+Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::ThermalDecompReaction::YSuSp
 (
     const word& specie
 ) const
@@ -386,7 +271,7 @@ Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::
     );
     
     
-    if( specie == vapor_specie_ )
+    /*if( specie == vapor_specie_ )
     {
         //S_Yv = explicit - implicit*Yv
         // This casts the evaporation in the form C*(Ysat - Y)
@@ -394,60 +279,65 @@ Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::
         tmp<volScalarField> xByY = alphaV_.xByY(vapor_specie_);
         tYSuSp.first() = (coeffC_+coeffV_)*p_vap_*xL_;
         tYSuSp.second() = (coeffC_+coeffV_)*xByY*p_;
-    }
+    }*/
     
-    else if( specie == liquid_specie_ )
+    if( specie == liquid_specie_ )
     {
         //S_YL = explicit
         //tYSuSp.first() = -(coeffC_+coeffV_)*(p_vap_*xL_ - x_*p_);
         tYSuSp.first() = -omega_*W_;
     }
-    /*else if( products_.found(specie) )
+    else if( products_.found(specie) )
     {
-        scalar Wp = prodThermo_[specie]->W()/W_.value() * products_[specie];
+        //scalar Wp = prodThermo_[specie]->W()/W_.value() * products_[specie];
         
-        tmp<volScalarField> xByY = alphaV_.xByY(specie);
+        dimensionedScalar Wp("Wp",dimMass/dimMoles,prodThermo_[specie]->W());
+        tYSuSp.first() = omega_ * Wp * products_[specie];
+        
+        /*tmp<volScalarField> xByY = alphaV_.xByY(specie);
         tYSuSp.first() = (coeffC_+coeffV_)*p_vap_*xL_ * Wp;
-        tYSuSp.second() = (coeffC_+coeffV_)*xByY*p_ * Wp;
-    }*/
+        tYSuSp.second() = (coeffC_+coeffV_)*xByY*p_ * Wp;*/
+    }
 
     return tYSuSp;
 }
 
 
 
-tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::dPvdT() const
+
+Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::ThermalDecompReaction::TSuSp() const
 {
-    tmp<volScalarField> tdPvdT
+    Pair<tmp<volScalarField> > tTSuSp
     (
-        new volScalarField
+        tmp<volScalarField>
         (
-            IOobject
+            new volScalarField
             (
-                "tdPvdT",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            dimensionedScalar("dPdT",dimPressure/dimTemperature,0.0)
+                IOobject
+                (
+                    "tTSu",
+                    mesh_.time().timeName(),
+                    mesh_
+                ),
+                mesh_,
+                dimensionedScalar("TSu", dimPower/dimVolume, 0.0)
+            )
+        ),
+        tmp<volScalarField>
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "tTSp",
+                    mesh_.time().timeName(),
+                    mesh_
+                ),
+                mesh_,
+                dimensionedScalar("TSp", dimPower/dimVolume/dimTemperature, 0.0)
+            )
         )
     );
-
-    tdPvdT() = p_vap_/T_/T_*
-       (
-           Lb_/R_*neg(T_ - Tb_)
-         + (
-               dimensionedScalar("B",dimTemperature,PvCoeffs_[1])
-             + 2*dimensionedScalar("C",dimTemperature*dimTemperature,PvCoeffs_[2])/T_
-           )*pos(T_ - Tb_)
-       );
-
-
-    return tdPvdT * neg(p_vap_ - Pc_);
-}
-
-Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::TSuSp() const
-{
 
     //Sh = -omega_*L()
     //
@@ -458,7 +348,7 @@ Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::
     //    dcoeff/dT = -coeff/(2*T)
     //    dpv/dT = pv * L / (R*T^2)
 
-    tmp<volScalarField> tL = L();
+    /*tmp<volScalarField> tL = L();
     tmp<volScalarField> dodT = -omega_/(2*T_) + (coeffC_+coeffV_)/W_*xL_*dPvdT();
     tmp<volScalarField> Sp = dodT*tL() + omega_*dLdT();
     tmp<volScalarField> Su = -omega_*tL() + Sp()*T_;
@@ -467,59 +357,15 @@ Pair<tmp<volScalarField> > Foam::mixturePhaseChangeModels::LangmuirEvaporation::
     (
         Su,
         Sp
-    );
-
-}
-
-tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::L() const
-{
-    tmp<volScalarField> tL
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tL",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            Lb_ 
-        )
-    );
-        
-    if( La_ > 0.0 )
-    {
-        tL() *= Foam::pow(Foam::mag(Tc_ - T_)/(Tc_ - Tb_),La_)*pos(Tc_ - T_);
-    }
+    );*/
     
-    return tL;
+    tTSuSp.first() = omega_ * dH_;
+    
+    return tTSuSp;
+
 }
 
-tmp<volScalarField> Foam::mixturePhaseChangeModels::LangmuirEvaporation::dLdT() const
-{
-    tmp<volScalarField> tdLdT
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tdLdT",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            dimensionedScalar("dLdT",dimEnergy/dimMoles/dimTemperature,0.0)
-        )
-    );
-        
-    if( La_ > 0.0 )
-    {
-        tdLdT() = -Lb_*La_/(Tc_-Tb_)*
-            Foam::pow(Foam::mag(Tc_ - T_)/(Tc_ - Tb_),La_-1.0)*pos(Tc_ - T_);
-    }
-    
-    return tdLdT;
-}
+
+
 
 // ************************************************************************* //

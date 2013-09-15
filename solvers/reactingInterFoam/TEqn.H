@@ -1,7 +1,7 @@
 {
     Info<< "Building TEqn" << endl;
     
-    Pair<tmp<volScalarField> > TSuSp = mixture.TSuSp(); //<- includes rCv, linearized evaporation enthalpy sink
+    Pair<tmp<volScalarField> > TSuSp = mixture.TSuSp("Cv"); //<- includes rCv, linearized evaporation enthalpy sink
 
     //tmp<volScalarField> rCv = mixture.rCv();
     
@@ -13,6 +13,9 @@
     
     Info<<"max test1 = " << Foam::max(test1()) << endl;
     Info<<"max test2 = " << Foam::max(test2()) << endl;*/
+    
+    tmp<volScalarField> cdT = fvc::div(mixture.DgradY(), T) / rho * runTime.deltaT();
+    Info<<"Max T rise from diffusion = " << Foam::max(Foam::mag(cdT)).value() << endl;
 
     fvScalarMatrix TEqn
     (
@@ -20,6 +23,7 @@
       + fvc::div(mixture.rhoPhi(), T)
       - fvm::Sp((fvc::ddt(rho) + fvc::div(mixture.rhoPhi())), T)
       - fvm::laplacian(mixture.kByCv(turbulence->alphat()), T)
+      - fvm::div(mixture.DgradY(), T)
      ==
         mixture.rCv()*
         (

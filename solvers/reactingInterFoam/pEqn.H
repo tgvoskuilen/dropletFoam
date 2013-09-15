@@ -116,6 +116,27 @@
         }
     }
     
+    if(clipDir=="x")
+    {
+        forAll(U,cellI)
+        {
+            U[cellI].x() = 0.0;
+        }
+    }
+    else if(clipDir=="y")
+    {
+        forAll(U,cellI)
+        {
+            U[cellI].y() = 0.0;
+        }
+    }
+    else if(clipDir=="z")
+    {
+        forAll(U,cellI)
+        {
+            U[cellI].z() = 0.0;
+        }
+    }
    
     
     p = p_rgh + p0 + rho*gh;

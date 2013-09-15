@@ -416,7 +416,7 @@ void Foam::subSpecie::calculateDs
     {
         //D = (mu + mut) / Sc
         volScalarField muEff = mut;
-    
+
         if( hasNuModel() )
         {
             // Liquid is laminar, do not include mut in liquid diffusion

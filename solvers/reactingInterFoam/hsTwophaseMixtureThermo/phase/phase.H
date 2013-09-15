@@ -102,6 +102,8 @@ class phase
         
         surfaceScalarField faceMask_;
         
+        surfaceScalarField D_;
+        
         volScalarField diffErr_;
         
 
@@ -252,7 +254,7 @@ public:
             const volScalarField& T
         );
 
-        scalar solveSubSpecies
+        tmp<surfaceScalarField> solveSubSpecies
         (
             const volScalarField& p,
             const volScalarField& T,
@@ -261,7 +263,8 @@ public:
         
         void updateGlobalYs
         (
-            const volScalarField& rhoAlphaOther
+            const volScalarField& myRhoAlpha,
+            const volScalarField& otherRhoAlpha
         );
         
         tmp<volScalarField> x(const word& name) const;

@@ -134,6 +134,19 @@ Foam::phase::phase
         mesh,
         dimensionedScalar("faceMask_"+name, dimless, 1.0)
     ),
+    D_
+    (
+        IOobject
+        (
+            "D_"+name,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 1.0)
+    ),
     diffErr_
     (
         IOobject
@@ -1383,7 +1396,7 @@ Foam::tmp<Foam::volScalarField> Foam::phase::sharp
         
 // Solve the mass fraction governing equation (YEqn) for each subspecie of
 // this phase.
-scalar Foam::phase::solveSubSpecies
+Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
 (
     const volScalarField& p,
     const volScalarField& T,
@@ -1432,12 +1445,29 @@ scalar Foam::phase::solveSubSpecies
         diffErr_ += fvc::laplacian(Di*faceMask_, Yi) * mesh().time().deltaT();
     }
     
+    tmp<surfaceScalarField> tDgradYCp
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "DgradY",
+                mesh().time().timeName(),
+                mesh()
+            ),
+            mesh(),
+            dimensionedScalar("DgradY",dimPower/dimTemperature,0.0)
+        )
+    );
+    surfaceScalarField& DgradYCp = tDgradYCp();
+    
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
         Info<<"Solving specie " << specieI().Y().name() << endl;
         
         volScalarField& Yi = specieI().Yp();
         const surfaceScalarField& Di = specieI().D();
+        //const surfaceScalarField& Di = D_;
         
         //tmp<volScalarField> SuEvap = Su_Yi_evap( specieI() );
         
@@ -1465,49 +1495,13 @@ scalar Foam::phase::solveSubSpecies
           - fvm::SuSp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
         );
-        /*
-        Pout<<"YiEqn.A() min,max = " << Foam::min(YiEqn.A()) << ", " << Foam::max(YiEqn.A()) << endl;
-        Pout<<"max ddt(rhoAlpha) = " << Foam::max(fvc::ddt(rhoAlpha_)).value() << endl;
-        Pout<<"max ddt(rhoAlpha).if = " << Foam::max(fvc::ddt(rhoAlpha_)().internalField()) << endl;
         
-        if( Foam::min(YiEqn.A()).value() < SMALL )
-        {
-            tmp<volScalarField> A = YiEqn.A();
-            tmp<volScalarField> ddtdiv = fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - mdot_phase;
-            tmp<volScalarField> div = fvc::div(rhoPhiAlpha_);
-            tmp<volScalarField> ddt = fvc::ddt(rhoAlpha_);
-            tmp<volScalarField> avgFaceMask = fvc::average(faceMask_);
-            tmp<volScalarField> avgD = fvc::average(D_);
-            
-            forAll(A(), cellI)
-            {
-                if( A()[cellI] < SMALL || ddt()[cellI] > 1e9)
-                {
-                    
-                    Pout<<"A = " << A()[cellI] << " where" << endl;
-                    Pout<<"  rhoAlpha = " << rhoAlpha_[cellI] << endl;
-                    Pout<<"  rhoAlphaOld = " << rhoAlpha_.oldTime()[cellI] << endl;
-                    Pout<<"  Sp = " << Sp[cellI] << endl;
-                    Pout<<"  cellMask = " << cellMask_[cellI] << endl;
-                    Pout<<"  cellMaskOld = " << cellMask_.oldTime()[cellI] << endl;
-                    Pout<<"  alpha = " << this->operator[](cellI) << endl;
-                    Pout<<"  alphaOld = " << this->oldTime()[cellI] << endl;
-                    Pout<<"  ddtdiv = " << ddtdiv()[cellI] << endl;
-                    Pout<<"  ddt = " << ddt()[cellI] << endl;
-                    Pout<<"  div = " << div()[cellI] << endl;
-                    Pout<<"  mdot_evap = " << mdot_phase[cellI] << endl;
-                    Pout<<"  avgFM = " << avgFaceMask()[cellI] << endl;
-                    Pout<<"  avgD = " << avgD()[cellI] << endl;
-                    Pout<<"  Y = " << Yi[cellI] << endl;
-                }
-            
-            }
-        
-        }*/
-
         //Info<<"Doing solve, min diag = " << Foam::min(YiEqn.A()) << endl;
         YiEqn.relax();
         YiEqn.solve(mesh().solver("Yi"));
+        
+        // add diffusion mass flux
+        DgradYCp += Di * faceMask_ * fvc::snGrad(Yi) * mesh().magSf() * fvc::interpolate(specieI().Cv(T));
         
         Yi.max(0.0);
         Yi.min(1.0);
@@ -1516,24 +1510,8 @@ scalar Foam::phase::solveSubSpecies
             << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
             << ", " << Yi.weightedAverage(mesh().V()).value() << endl;  
     }
-    
-    
-    /*tmp<volScalarField> Ysum = Ypp() + SMALL;
-    
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        volScalarField& Yi = specieI().Yp();
-        
-        Yi *= cellMask_/Ysum();
-        
-        Info<< Yi.name() << " min,max,avg = " 
-            << Foam::min(Yi).value() <<  ", " << Foam::max(Yi).value() 
-            << ", " << Yi.weightedAverage(mesh().V()).value() << endl;  
-    }*/
-    
-    //Info<< "Min source dT = " << dTsrc << endl;
      
-    return 0.0;
+    return tDgradYCp;
 }
 
 
@@ -1587,11 +1565,12 @@ void Foam::phase::setPhaseMasks
     }
     
     dimensionedScalar oneM("oneM",dimTime/dimDensity,1.0);
-    //dimensionedScalar oneA("oneA",dimLength,1.0);
+    dimensionedScalar oneA("oneA",dimLength,1.0);
     
     //tmp<volScalarField> oldMask = cellMask_;
-    //cellMask_ = pos(alpha - maskTol + area*one - SMALL);
-    cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM - SMALL);
+    //cellMask_ = pos(alpha - maskTol + area*oneA - SMALL);
+    //cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM - SMALL);
+    cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM + area*oneA - SMALL);
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     
     //apply the current-time mask to the old-time rhoAlpha
@@ -1624,14 +1603,15 @@ void Foam::phase::setPhaseMasks
 
 void Foam::phase::updateGlobalYs
 (
-    const volScalarField& rhoAlphaOther
+    const volScalarField& myRhoAlpha,
+    const volScalarField& otherRhoAlpha
 )
 {
     dimensionedScalar s("small",dimDensity,SMALL);
     
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {   
-        specieI().Y() = specieI().Yp()*rhoAlpha_/(rhoAlpha_ + rhoAlphaOther + s);
+        specieI().Y() = specieI().Yp()*myRhoAlpha/(myRhoAlpha + otherRhoAlpha + s);
         specieI().Y().max(0.0);
         //specieI().Y().min(1.0);
         specieI().Y().correctBoundaryConditions();

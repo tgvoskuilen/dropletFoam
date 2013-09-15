@@ -4,6 +4,7 @@ mixturePhaseChangeModels/mixturePhaseChangeModel/mixturePhaseChangeModel.C
 mixturePhaseChangeModels/mixturePhaseChangeModel/newMixturePhaseChangeModel.C
 mixturePhaseChangeModels/LangmuirEvaporation/LangmuirEvaporation.C
 mixturePhaseChangeModels/PhaseChangeReaction/PhaseChangeReaction.C
+mixturePhaseChangeModels/ThermalDecompReaction/ThermalDecompReaction.C
 
 hsNewReactionThermos.C
 

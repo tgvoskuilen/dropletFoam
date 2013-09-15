@@ -6,7 +6,7 @@ clc
 % Load thermodynamic database
 db = ReadDb();
 
-species = {'SiO2'};
+species = {'MMH2N'};
 
 T = 250:5:3000;
 
