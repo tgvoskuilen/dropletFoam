@@ -49,6 +49,8 @@ divSchemes
     div(phi,k) Gauss limitedLinear 1;
     div((muEff*dev2(T(grad(U))))) Gauss linear;
     div(uc,Yi)      Gauss linear corrected;
+    
+    div(DgradY,T)   Gauss linear corrected;
 }
 
 laplacianSchemes

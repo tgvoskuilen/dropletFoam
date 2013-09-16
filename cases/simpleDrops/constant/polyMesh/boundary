@@ -20,14 +20,14 @@ FoamFile
     atmosphere
     {
         type            patch;
-        nFaces          7500;
-        startFace       182500;
+        nFaces          15000;
+        startFace       367500;
     }
     wall
     {
         type            patch;
-        nFaces          2500;
-        startFace       190000;
+        nFaces          0;
+        startFace       382500;
     }
 )
 

@@ -1419,9 +1419,16 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::kByCp
 {
    // kByCp = (alpha1*k1/Cp1 + alpha2*k2/Cp2) + alphat
 
-    return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cp(T_)
-         + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cp(T_)
-         + alphat;
+    //return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cp(T_)
+    //     + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cp(T_)
+    //     + alphat;
+         
+    return rCp()*
+           (
+               alphaLiquid_*alphaLiquid_.kappa(T_)
+             + alphaVapor_*alphaVapor_.kappa(T_)
+           )
+           + alphat; 
 }
 
 
@@ -1429,7 +1436,13 @@ template<class MixtureType>
 tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCp() const
 {
     //return 1.0 / Cp();
-    return alphaLiquid_/alphaLiquid_.Cp(T_) + alphaVapor_/alphaVapor_.Cp(T_);
+    //return alphaLiquid_/alphaLiquid_.Cp(T_) + alphaVapor_/alphaVapor_.Cp(T_);
+    
+    return (alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha()) / 
+           (
+               alphaLiquid_.rhoAlpha()*alphaLiquid_.Cp(T_)
+             + alphaVapor_.rhoAlpha()*alphaVapor_.Cp(T_)
+           );
 }
 
 template<class MixtureType>
@@ -1439,16 +1452,29 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::kByCv
     const volScalarField& alphat //turbulent k/Cv contribution
 ) const
 {
-    return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cv(T_)
-         + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cv(T_)
-         + alphat;
+    //return alphaLiquid_*alphaLiquid_.kappa(T_)/alphaLiquid_.Cv(T_)
+    //     + alphaVapor_*alphaVapor_.kappa(T_)/alphaVapor_.Cv(T_)
+    //     + alphat;
+         
+    return rCv()*
+           (
+               alphaLiquid_*alphaLiquid_.kappa(T_)
+             + alphaVapor_*alphaVapor_.kappa(T_)
+           )
+           + alphat; 
 }
 
 
 template<class MixtureType>
 tmp<volScalarField> Foam::hsTwophaseMixtureThermo<MixtureType>::rCv() const
 {
-    return alphaLiquid_/alphaLiquid_.Cv(T_) + alphaVapor_/alphaVapor_.Cv(T_);
+    //return alphaLiquid_/alphaLiquid_.Cv(T_) + alphaVapor_/alphaVapor_.Cv(T_);
+    
+    return (alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha()) / 
+           (
+               alphaLiquid_.rhoAlpha()*alphaLiquid_.Cv(T_)
+             + alphaVapor_.rhoAlpha()*alphaVapor_.Cv(T_)
+           );
 }
 
 

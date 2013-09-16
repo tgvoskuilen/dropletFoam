@@ -51,7 +51,7 @@ reactions
     {
         type            irreversibleArrheniusReaction;
         reaction        "CH3NHNH2L + NO2 = CH3NNH2 + HONO";
-        A               2.2e+08;
+        A               2.2e+09;
         beta            0;
         Ta              2968.83;
     }
@@ -59,7 +59,7 @@ reactions
     {
         type            irreversibleArrheniusReaction;
         reaction        "CH3NHNH2L + NO2L = CH3NNH2 + HONO";
-        A               2.2e+08;
+        A               2.2e+09;
         beta            0;
         Ta              2968.83;
     }
@@ -75,7 +75,7 @@ reactions
     {
         type            irreversibleArrheniusReaction;
         reaction        "CH3NNH + NO2L = CH3NN + HONO";
-        A               2.2e+08;
+        A               2.2e+09;
         beta            0;
         Ta              2968.83;
     }
@@ -1647,7 +1647,7 @@ reactions
     {
         type            reversibleArrheniusReaction;
         reaction        "CH3NHNH2 + NO2 = CH3NNH2 + HONO";
-        A               2.2e+08;
+        A               2.2e+09;
         beta            0;
         Ta              2968.83;
     }
@@ -1655,7 +1655,7 @@ reactions
     {
         type            reversibleArrheniusReaction;
         reaction        "CH3NNH + NO2 = CH3NN + HONO";
-        A               2.2e+08;
+        A               2.2e+09;
         beta            0;
         Ta              2968.83;
     }

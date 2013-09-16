@@ -31,12 +31,12 @@ shapes
         
         ellipsoidCoeffs
         {
-            center   (0 0 0.005);
-            radius   (0.00115 0.00115 0.00115);
+            center   (0 0 0.0012);
+            radius   (0.001 0.001 0.001);
         }
         
         delVapor 3e-4;
-        U        (0 0 -1.3);
+        U        (0 0 -0.5);
         
         liquidSpecies
         (
@@ -55,12 +55,12 @@ shapes
                 
         ellipsoidCoeffs
         {
-            center   (0 0 0);
-            radius   (0.0035 0.0035 0.002);
+            center   (0 0 -0.0012);
+            radius   (0.001 0.001 0.001);
         }
         
         delVapor 3e-4;
-        U        (0 0 0);
+        U        (0 0 0.5);
         
         liquidSpecies
         (

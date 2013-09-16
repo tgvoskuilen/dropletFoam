@@ -8,43 +8,48 @@ import pyOpenFOAM
 
 
 # Read number of processors from command line (1 by default)
-np = pyOpenFOAM.read_inputs(sys.argv)
-print "Running with %d processors" % np
+(np,resume) = pyOpenFOAM.read_inputs(sys.argv)
 
-# Make the *.foam file for ParaView
-pyOpenFOAM.touch_foam_files('drops')
+if not resume:
+    print "Running with %d processors" % np
 
-# Make the time 0 folder
-os.system('cp -r 0.org 0')
+    # Make the *.foam file for ParaView
+    pyOpenFOAM.touch_foam_files('drops')
 
-# Generate the initial mesh
-print "Generating blockMesh"
-pyOpenFOAM.run('blockMesh')
+    # Make the time 0 folder
+    os.system('cp -r 0.org 0')
 
-if np > 1:
-    # For parallel runs, decompose the problem
-    print "Decomposing problem"
-    pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
-    pyOpenFOAM.set_balance_par(np)
-    pyOpenFOAM.run('decomposePar',args='-cellDist')
-    for p in range(0,np):
-        os.system('cp -r processor%1d/0 processor%1d/0.org' % (p,p))
-        os.system('touch processor%1d/test.foam' % p )
+    # Generate the initial mesh
+    print "Generating blockMesh"
+    pyOpenFOAM.run('blockMesh')
 
-n_adapts = 4
-    
-for i in range(0,n_adapts):
-    print "Pre-Refinement loop", i
+    if np > 1:
+        # For parallel runs, decompose the problem
+        print "Decomposing problem"
+        pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+        pyOpenFOAM.set_balance_par(np)
+        pyOpenFOAM.run('decomposePar',args='-cellDist')
+        for p in range(0,np):
+            os.system('cp -r processor%1d/0 processor%1d/0.org' % (p,p))
+            os.system('touch processor%1d/test.foam' % p )
+
+    n_adapts = 4
+        
+    for i in range(0,n_adapts):
+        print "Pre-Refinement loop", i
+        pyOpenFOAM.run('VOFSetFields',np)
+        pyOpenFOAM.run('initDynamicMesh',np)
+
+
+    print "Setting final field values"
     pyOpenFOAM.run('VOFSetFields',np)
-    pyOpenFOAM.run('initDynamicMesh',np)
-
-
-print "Setting final field values"
-pyOpenFOAM.run('VOFSetFields',np)
 
 # Run the problem
 print "Running the problem"
-pyOpenFOAM.run('interMixingDyMFoam',np,hide=False)
+if np > 1:
+    os.system('foamJob -parallel -screen interMixingDyMFoam')
+else:
+    os.system('interMixingDyMFoam')
 
 print "Finished!"
 

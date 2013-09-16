@@ -3,7 +3,7 @@
 import os
 import sys
 
-toolPath = '../../../../OpenFOAM/tvoskuil-2.1.x/repos/foamTools/python'
+toolPath = '../../../foamTools/python'
 utilPath = '../../utilities/thermochem'
 
 sys.path.append(toolPath)
