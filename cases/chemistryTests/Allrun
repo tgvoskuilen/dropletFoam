@@ -1,0 +1,20 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# Set application name
+application=`getApplication`
+
+#cp chemkin/chem25plus.inp chemkin/chem.inp
+#cp chemkin/therm25plus.dat chemkin/therm.dat
+
+cp chemkin/chem41.inp chemkin/chem.inp
+cp chemkin/therm41.dat chemkin/therm.dat
+
+#runApplication $application
+chemFoam
+
+# ----------------------------------------------------------------- end-of-file
+

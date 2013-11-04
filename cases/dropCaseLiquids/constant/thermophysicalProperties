@@ -112,6 +112,28 @@ Liquid
             sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0887;
             sigmaa          1;
         }
+        
+        MMH2N
+        {   // same properties as HNO3
+            transportModel  Newtonian; //BirdCarreau
+            nu              nu [ 0 2 -1 0 0 0 0 ] 7.94e-7;
+            
+            BirdCarreauCoeffs //fit to 3% Aerosil/RFNA data
+            {
+                nu0             nu0 [ 0 2 -1 0 0 0 0 ] 0.0645;
+                nuInf           nuInf [ 0 2 -1 0 0 0 0 ] 6.45e-5;
+                k               k [ 0 0 1 0 0 0 0 ] 0.5;
+                n               n [ 0 0 0 0 0 0 0 ] -0.1;
+            }
+            
+            D0           D0   [ 0 2 -1 0 0 0 0 ] 1e-9;
+            rho0      rho0 [ 1 -3 0 0 0 0 0 ] 1550.0;
+            Tc        Tc   [ 0 0 0 1 0 0 0] 546.5;
+            kappa        kappa [1 1 -3 -1 0 0 0] 0.28;
+              
+            sigma0          sigma0 [ 1 0 -2 0 0 0 0] 0.0887;
+            sigmaa          1;
+        }
 
         CH3ONO2L
         {

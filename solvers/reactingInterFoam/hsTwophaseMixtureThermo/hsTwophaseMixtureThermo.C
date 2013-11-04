@@ -94,15 +94,23 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::calculate()
     alphaVapor_.correct(p_,T_);
     alphaLiquid_.correct(p_,T_);
     
-    mu_ = alphaVapor_.sharp(0.0)*muV() + alphaLiquid_.sharp(0.0)*alphaLiquid_.mu(p_, T_);
+    // Could use Coutier-Delgosha method for muT from:
+    //   O. Coutier-Delgosha, R. Fortes-Patella, and J. L. Reboud, 
+    //   “Evaluation of the turbulence model influence on the numerical 
+    //   simulations of unsteady cavitation,” 
+    //   Journal of Fluids Engineering, vol. 125, no. 1, pp. 38–45, 2003
+    //
+    mu_ = alphaVapor_.sharp(0.0)*alphaVapor_.mu(p_, T_) +
+          alphaLiquid_.sharp(0.0)*alphaLiquid_.mu(p_, T_);
     mu_.correctBoundaryConditions();
     muAll_ = mu_;
     
-    psi_ = alphaVapor_.sharp(0.0)*alphaVapor_.psi(T_);
+    psi_ = alphaVapor_.sharp(0.0)*alphaVapor_.cellMask()*alphaVapor_.psi(T_);
     psi_.correctBoundaryConditions();
     
     rho_ = alphaLiquid_.sharp(0.0)*alphaLiquid_.rho(p_,T_) + 
             alphaVapor_.sharp(0.0)*alphaVapor_.rho(p_,T_);
+    //rho_ = alphaLiquid_.rhoAlpha() + alphaVapor_.rhoAlpha(); //same as above but includes cellMasks
     rho_.correctBoundaryConditions();
 }
 
@@ -179,7 +187,7 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     area_.dimensionedInternalField() *= pos
     (
         area_.dimensionedInternalField()
-      - Foam::pow(V,-1.0/3.0)/250.0
+      - Foam::pow(V,-1.0/3.0)/100.0
     );
     area_.correctBoundaryConditions();
     

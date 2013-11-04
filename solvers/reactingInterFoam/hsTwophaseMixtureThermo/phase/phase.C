@@ -268,16 +268,14 @@ void Foam::phase::setSpecies( const volScalarField& otherRhoAlpha )
     }*/
 }
 
-// Only applicable for liquid phase. Vapor phase will return 0 here.
-// TODO: Have vapor specie do its sutherland calc here too
+// Calculate viscosity
 Foam::tmp<Foam::volScalarField> Foam::phase::mu
 (
     const volScalarField& p,
     const volScalarField& T
 ) const
 {
-    //scalar muValue = (name_ == "Liquid") ? 1e-3 : 2e-5;
-    
+
     tmp<volScalarField> tmu
     (
         new volScalarField
@@ -297,7 +295,13 @@ Foam::tmp<Foam::volScalarField> Foam::phase::mu
     {   
         if( specieI().hasNuModel() )
         {
+            // Use viscosity transportModel (liquids)
             tmu() += specieI().nuModel().nu() * specieI().Yp() * rho(p,T);
+        }
+        else
+        {
+            // Use Sutherland model (vapors)
+            tmu() += specieI().mu(T) * specieI().Yp();
         }
     }
     
@@ -1496,7 +1500,52 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
           - fvm::Sp(Sp, Yi)
         );
         
-        //Info<<"Doing solve, min diag = " << Foam::min(YiEqn.A()) << endl;
+        //Info<<"Doing solve, min diag = " << Foam::min(Foam::mag(YiEqn.A())) << endl;
+        
+        if( Foam::min(Foam::mag(YiEqn.A())).value() < SMALL )
+        {
+            tmp<volScalarField> A = YiEqn.A();
+            tmp<volScalarField> ddtdiv = fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - mdot_phase;
+            tmp<volScalarField> div = fvc::div(rhoPhiAlpha_);
+            tmp<volScalarField> ddt = fvc::ddt(rhoAlpha_);
+            tmp<volScalarField> avgFaceMask = fvc::average(faceMask_);
+            tmp<volScalarField> avgD = fvc::average(Di*faceMask_);
+            tmp<volScalarField> gradAlpha = Foam::mag(fvc::grad(*this));
+            tmp<volScalarField> lap = fvc::laplacian(Di*faceMask_,Yi);
+            
+            forAll(A(), cellI)
+            {
+                if( Foam::mag(A()[cellI]) < SMALL || ddt()[cellI] > 1e9)
+                {
+                    
+                    Pout<<"A = " << A()[cellI] << " where" << endl;
+                    Pout<<"  rhoAlpha = " << rhoAlpha_[cellI] << endl;
+                    Pout<<"  rhoAlphaOld = " << rhoAlpha_.oldTime()[cellI] << endl;
+                    Pout<<"  Sp = " << Sp[cellI] << endl;
+                    Pout<<"  cellMask = " << cellMask_[cellI] << endl;
+                    Pout<<"  cellMaskOld = " << cellMask_.oldTime()[cellI] << endl;
+                    Pout<<"  alpha = " << this->operator[](cellI) << endl;
+                    Pout<<"  alphaOld = " << this->oldTime()[cellI] << endl;
+                    Pout<<"  ddtdiv = " << ddtdiv()[cellI] << endl;
+                    Pout<<"  ddt = " << ddt()[cellI] << endl;
+                    Pout<<"  div = " << div()[cellI] << endl;
+                    Pout<<"  mdot_evap = " << mdot_phase[cellI] << endl;
+                    Pout<<"  avgFM = " << avgFaceMask()[cellI] << endl;
+                    Pout<<"  avgD = " << avgD()[cellI] << endl;
+                    Pout<<"  Y = " << Yi[cellI] << endl;
+                    Pout<<"  gradA = " << gradAlpha()[cellI] << endl;
+                    Pout<<"  lap = " << lap()[cellI] << endl;
+                }
+            
+            }
+        
+        }
+        
+        
+        
+        
+        
+        
         YiEqn.relax();
         YiEqn.solve(mesh().solver("Yi"));
         
@@ -1567,10 +1616,28 @@ void Foam::phase::setPhaseMasks
     dimensionedScalar oneM("oneM",dimTime/dimDensity,1.0);
     dimensionedScalar oneA("oneA",dimLength,1.0);
     
+    // Problem Corner Cases:
+    //  1. alpha = 0, mdot = 0, but area > 0 (solution to Y equation will have 0 diagonal)
+    //  2. alpha = 1e-8, alphaOld = 0, div = 0, laplacian = 0, area > 0
+    //
+    //  area condition seems too problematic
+    
     //tmp<volScalarField> oldMask = cellMask_;
     //cellMask_ = pos(alpha - maskTol + area*oneA - SMALL);
-    //cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM - SMALL);
-    cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM + area*oneA - SMALL);
+    cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM - SMALL);
+    //cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM + area*oneA - SMALL);
+    
+    
+    /*forAll(cellMask_, cellI)
+    {
+        if( alpha[cellI] < SMALL && mag(mdot_phase[cellI]) < SMALL && cellMask_[cellI] > 0.5)
+        {
+            // Close off cells in problem case 1
+            cellMask_[cellI] = 0.0;
+        }
+    
+    }*/
+    
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     
     //apply the current-time mask to the old-time rhoAlpha

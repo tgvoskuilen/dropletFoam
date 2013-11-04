@@ -287,16 +287,22 @@ def write_openfoam_database(thermo, transport, dbfilename):
     found in thermo and transport.
     """
     dataSet = {}
-    
+    assumed = 0
+    found = 0
     for name,data in thermo.iteritems():
         dataSet[name] = data
         if name in transport:
+            found = found + 1
             dataSet[name]['As'] = transport[name]['As']
             dataSet[name]['Ts'] = transport[name]['Ts']
         else:
-            #TODO
+            print "WARNING: Using default transport for %s" % name
+            assumed = assumed + 1
             dataSet[name]['As'] = 1e-5
             dataSet[name]['Ts'] = 200
+    
+    print "\nAssumed thermo for %d of %d species" % (assumed, assumed+found)
+    print "Transport contained %d entries" % len(transport)
     
     with open(dbfilename,'w') as dbfile:
         for name,data in dataSet.iteritems():

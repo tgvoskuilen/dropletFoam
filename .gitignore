@@ -16,6 +16,7 @@
 *.dep
 lnInclude/
 linux64GccDPOpt/
+linux64GccDPDebug/
 
 # Decomposed case folders and solution files
 processor*/
@@ -29,4 +30,9 @@ Thumbs.db
 *.tif
 *.foam
 log*
+*.log
 images*/
+data*/
+
+# Run folder
+run

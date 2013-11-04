@@ -383,6 +383,51 @@ tmp<volScalarField> Foam::subSpecie::sigma
 }
 
 
+
+tmp<volScalarField> Foam::subSpecie::mu
+(
+    const volScalarField& T
+) const
+{
+    tmp<volScalarField> tmu
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tmu"+name_,
+                T.mesh().time().timeName(),
+                T.mesh()
+            ),
+            T.mesh(),
+            dimensionedScalar
+            (
+                "tmu"+name_,
+                dimMass/dimLength/dimTime,
+                0.0
+            )
+        )
+    );        
+        
+
+    scalarField& muCells = tmu().internalField();
+    const scalarField& TCells = T.internalField();
+
+    forAll(TCells, celli)
+    {
+        muCells[celli] = thermo_.mu(TCells[celli]);
+    }
+
+    forAll(T.boundaryField(), patchi)
+    {
+        tmu().boundaryField()[patchi] = 
+            mu(T.boundaryField()[patchi], patchi);
+    }
+        
+        
+    return tmu;
+}
+
 // Calculate mu on patches
 Foam::tmp<Foam::scalarField> Foam::subSpecie::mu
 (

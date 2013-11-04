@@ -134,16 +134,16 @@ solvers
 
     T
     {
-        solver          PCG;
-        preconditioner  DIC;
+        solver          PBiCG;
+        preconditioner  DILU;
         tolerance       1e-12;
         relTol          0.01;
     }
     
     TFinal
     {
-        solver          PCG;
-        preconditioner  DIC;
+        solver          PBiCG;
+        preconditioner  DILU;
         tolerance       1e-12;
         relTol          0;
     }

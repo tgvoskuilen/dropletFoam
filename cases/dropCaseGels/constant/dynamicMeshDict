@@ -19,8 +19,8 @@ dynamicFvMesh   dynamicRefineBalancedFvMesh; //dynamicRefineFvMesh; //staticFvMe
 
 dynamicRefineFvMeshCoeffs
 {
-    enableBalancing false;
-    allowableImbalance 0.75;
+    enableBalancing true;
+    allowableImbalance 1.5;
     
     // How often to refine
     refineInterval  1;
@@ -78,6 +78,7 @@ dynamicRefineFvMeshCoeffs
         (D_CH3ONO2L none)
         (D_H2OL none)
         (D_MMHN-3HNO3 none)
+        (D_MMH2N none)
         (D_CH3ONO2 none)
         (D_CH3NHNH2 none)
         (D_CH3NNH2 none)

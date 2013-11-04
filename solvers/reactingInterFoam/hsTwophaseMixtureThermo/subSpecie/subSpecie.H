@@ -309,6 +309,11 @@ public:
             const volScalarField& T
         );
         
+        tmp<volScalarField> mu
+        (
+            const volScalarField& T
+        ) const;
+
         tmp<scalarField> mu
         (
             const scalarField& T,

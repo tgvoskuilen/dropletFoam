@@ -1,0 +1,59 @@
+#!/usr/bin/python
+
+import os
+import sys
+
+from getConcentrations import *
+
+def run_all_chemistries(prefix):
+    run_chemistry(prefix,'25')
+    run_chemistry(prefix,'41')
+     
+def run_chemistry(prefix,species):
+    os.system('cp chemkin/chem'+species+'.inp chemkin/chem.inp')
+    os.system('cp chemkin/therm'+species+'.dat chemkin/therm.dat')
+    os.system('chemFoam')
+    os.system('mv chemFoam.out data/'+prefix+'_'+species+'.out')
+    
+    # save results in a csv file too
+    times = get_times()
+    fields = get_fields(times[0])
+    data = []
+    
+    for i,t in enumerate(times):
+        #print "Reading time %d of %d" % (i+1,len(times))
+        data.append(get_field_data(t,fields))
+    
+    with open('data/'+prefix+'_'+species+'.csv','w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(fields)
+        for row in data:
+            writer.writerow(row)
+            
+    os.system('Allclean')
+    
+def set_initial_conditions(T, ox, OF, p):
+    os.system("""echo "Calc_NO2_N2O4_Equilibrium("""+str(T)+""", '"""+ox+"""',"""+str(OF)+','+str(1e5*p)+""")" > tmp.m""")
+    os.system("matlab -nojvm -nodisplay -nosplash < tmp.m")
+    os.system('rm -rf tmp.m')
+    os.system('cat constant/initialConditions.part1 matlab.out > constant/initialConditions')
+    os.system('rm -rf matlab.out')
+    
+    return "%s_T%3.0f_OF%4.2f_p%3.1f_constV" % (ox, T, OF, p)
+    
+# Main program
+
+Ts = [800]  # starting T (K) 
+OFs = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5]           # ox to fuel mass ratio
+oxs = ['WFNA', 'RFNA']      # oxidizer selection (fuel is MMH)
+
+
+for T in Ts:
+    for OF in OFs:
+        for ox in oxs:
+            pf = set_initial_conditions(T=T,ox=ox,OF=OF,p=1.0)
+            run_all_chemistries(pf)
+
+
+
+

@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      VOFSetFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+defaultSpecies
+(
+    N2   0.5
+    N2O  0.5
+);
+
+vaporPhaseName   alphaVapor;
+
+Udefault (0 0 0);
+Tdefault 300;
+
+shapes
+(
+    DropMMH
+    {
+        alphaName alphaLiquid;
+        
+        shape    ellipsoid;
+        
+        ellipsoidCoeffs
+        {
+            center   (0 0.0075 0);
+            radius   (0.00105 0.00105 0);
+        }
+        
+        delVapor 1e-3;
+        U        (0 0 0);
+        T        300;
+        
+        liquidSpecies
+        (
+            CH3NHNH2L  1.0
+        );
+        
+        vaporSpecies
+        (
+            CH3NHNH2   0.35
+        );
+    }
+
+);
+
+
+// ************************************************************************* //

@@ -1,3 +1,4 @@
+viscosityModels/NewtonianPolynomial/NewtonianPolynomial.C
 reactingInterFoam.C
 
 EXE = $(FOAM_USER_APPBIN)/reactingInterFoam
