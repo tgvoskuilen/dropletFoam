@@ -40,6 +40,7 @@ Description
 #include "rhoChemistryCombustionModel.H"
 #include "pimpleControl.H"
 #include "subCycle.H"
+#include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,6 +55,8 @@ int main(int argc, char *argv[])
 
     scalar maxVolSource = 0.0;
     scalar MaxFo = 0.0;
+    scalar totalMass = 0.0;
+    scalar massError = 0.0;
     scalar volSourceLimit =
         runTime.controlDict().lookupOrDefault<scalar>("volSourceLimit", 1e-2);
 
@@ -166,6 +169,7 @@ int main(int argc, char *argv[])
         }
 
         #include "checkMassBalance.H"
+        #include "writeSummaryParameters.H"
         
         runTime.write();
         

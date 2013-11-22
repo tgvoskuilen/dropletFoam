@@ -172,5 +172,15 @@
     volScalarField K("K", 0.5*magSqr(U));
 
 
+    // Create a run summary file
+    OFstream myFile(args.path()/"summary.out");
+    
+    myFile<< "Sim Time, s" << token::TAB 
+          << "Time Step, s" << token::TAB
+          << "Wall Time, s" << token::TAB 
+          << "Num Cells" << token::TAB
+          << "Max imbalance" << token::TAB
+          << "Total mass, kg" << token::TAB 
+          << "Mass error, kg" << endl;
 
 
