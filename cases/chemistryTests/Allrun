@@ -10,7 +10,7 @@ application=`getApplication`
 #cp chemkin/chem25plus.inp chemkin/chem.inp
 #cp chemkin/therm25plus.dat chemkin/therm.dat
 
-cp chemkin/chem41.inp chemkin/chem.inp
+cp chemkin/chem41S.inp chemkin/chem.inp
 cp chemkin/therm41.dat chemkin/therm.dat
 
 #runApplication $application

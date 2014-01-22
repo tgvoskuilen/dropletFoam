@@ -93,7 +93,7 @@ if __name__ == "__main__":
         print "Reading time %d of %d" % (i+1,len(times))
         data.append(get_field_data(t,fields))
     
-    with open('tmp.csv','w') as csvfile:
+    with open('RChem2S_Data.csv','w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(fields)
         for row in data:

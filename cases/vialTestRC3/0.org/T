@@ -16,15 +16,15 @@ FoamFile
 
 dimensions      [0 0 0 1 0 0 0];
 
-internalField   uniform 300;
+internalField   uniform 320;
 
 boundaryField
 {
     atmosphere
     {
         type            inletOutlet;
-        inletValue      uniform 300;
-        value           uniform 300;
+        inletValue      uniform 320;
+        value           uniform 320;
     }
     
     frontAndBack

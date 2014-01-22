@@ -10,7 +10,6 @@ CH2NNH2 HNCO CH3NNH CH3ONO2 O2
 END
 
 REACTIONS
-!HNO3=>0.5H2O+NO2+0.25O2                        3.01E+18    0.0    31912.2
 O+H+M<=>OH+M                                   4.71E+18   -1.0        0.0
       H2O/ 12.0/
       H2/  2.5/
@@ -166,7 +165,7 @@ HONO+H<=>OH+HNO                                5.60E+10    0.9     4965.0
 HONO+OH<=>H2O+NO2                              1.26E+10    1.0      135.0
 NH+HONO<=>NH2+NO2                              1.00E+13    0.0        0.0
 NH2+HONO<=>NH3+NO2                             7.10E+01    3.0    -4940.0
-!HNO+NO2<=>HONO+NO                              4.40E+04    2.6     4040.0
+HNO+NO2<=>HONO+NO                              4.40E+04    2.6     4040.0
 HONO+HONO<=>NO+NO2+H2O                         3.50E-01    3.6    12140.0
 NO2+OH(+M)<=>HNO3(+M)                          2.41E+13    0.0        0.0
        LOW/  0.64200E+33 -0.54900E+01  0.23490E+04 /
@@ -220,7 +219,7 @@ CH3NNH+O<=>CH3NN+OH                            9.60E+12    0.0        0.0
 CH3NNH+OH<=>CH3NN+H2O                          3.92E+13    0.0        0.0
 CH3NNH+CH3<=>CH4+CH3NN                         7.40E+13    0.0     5210.0
 CH3NNH+NH2<=>NH3+CH3NN                         7.40E+13    0.0     5210.0
-CH3NNH+NO2<=>CH3NN+HONO                        2.20E+13    0.0     5900.0
+CH3NNH+NO2<=>CH3NN+HONO                        1.65E+12    1.0    12900.0  !2.20E+11    0.0     5900.0
 CH3NNH2(+M)<=>CH3NNH+H(+M)                     1.35E+08    1.7    47280.0
       LOW/  0.12200E+54 -0.10750E+02  0.53560E+05 /
 CH3NNH2(+M)<=>CH2NNH2+H(+M)                    1.15E+09    1.2    50330.0
@@ -275,12 +274,12 @@ CH3NHNH2+NH<=>CH2NHNH2+NH2                     3.93E+01    3.6    10910.0
 CH3NHNH2+NH2<=>CH3NNH2+NH3                     1.65E+02    3.0      870.1
 CH3NHNH2+NH2<=>CH3NHNH+NH3                     5.98E+01    3.1     2110.2
 CH3NHNH2+NH2<=>CH2NHNH2+NH3                    1.04E+00    3.6     1894.1
-CH3NHNH2+NO2<=>CH3NNH2+HONO                    2.20E+13    0.0     5900.0
+CH3NHNH2+NO2<=>CH3NNH2+HONO                    2.74E+12    1.0    10700.0  !2.20E+11    0.0     5900.0
 CH3NHNH2+NO2<=>CH3NHNH+HONO                    7.87E+10    0.0     8839.0
 CH3NHNH2+NO2<=>CH2NHNH2+HONO                   1.39E+09    0.0     9803.0
-!CH3NHNH2+NO<=>CH3NNH2+HNO                      1.85E+13    0.0     8524.0
-!CH3NHNH2+NO<=>CH3NHNH+HNO                      1.24E+12    0.0     9605.0
-!CH3NHNH2+NO<=>CH2NHNH2+HNO                     5.05E+12    0.0    11310.0
+CH3NHNH2+NO<=>CH3NNH2+HNO                      1.85E+13    0.0     8524.0
+CH3NHNH2+NO<=>CH3NHNH+HNO                      1.24E+12    0.0     9605.0
+CH3NHNH2+NO<=>CH2NHNH2+HNO                     5.05E+12    0.0    11310.0
 CN+OH<=>NCO+H                                  4.00E+13    0.0        0.0
 HCN+O<=>NCO+H                                  1.40E+04    2.6     4980.0
 NCO+H<=>NH+CO                                  5.20E+13    0.0        0.0

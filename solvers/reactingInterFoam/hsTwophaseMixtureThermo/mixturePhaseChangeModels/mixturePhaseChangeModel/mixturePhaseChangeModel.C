@@ -74,7 +74,7 @@ Foam::mixturePhaseChangeModel::mixturePhaseChangeModel
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh_,
         dimensionedScalar("mask_"+name, dimless, 0.0)

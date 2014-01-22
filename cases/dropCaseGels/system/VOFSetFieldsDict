@@ -22,6 +22,9 @@ defaultSpecies
 
 vaporPhaseName   alphaVapor;
 
+Udefault (0 0 0);
+Tdefault 300;
+
 shapes
 (
     DropRFNA
@@ -38,6 +41,7 @@ shapes
         
         delVapor 3e-4;
         U        (0 0 -0.281);
+        T        300;
         
         liquidSpecies
         (
@@ -67,6 +71,7 @@ shapes
         
         delVapor 3e-4;
         U        (0 0 0.5);
+        T        300;
         
         liquidSpecies
         (

@@ -34,7 +34,7 @@ shapes
         
         ellipsoidCoeffs
         {
-            center   (-9.45263e-3 -6.08953e-3 -0.35000e-3);
+            center   (-7.59151e-3 -7.16405e-3 -0.25000e-3);
             radius   (0.005 0.005 0.005);
         }
         
@@ -63,7 +63,7 @@ shapes
         
         ellipsoidCoeffs
         {
-            center   (9.45263e-3 -6.08953e-3 -0.35000e-3);
+            center   (7.59151e-3 -7.16405e-3 -0.25000e-3);
             radius   (0.005 0.005 0.005);
         }
         

@@ -1,0 +1,131 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      dynamicMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dynamicFvMesh   staticFvMesh; //dynamicRefineBalancedFvMesh; //dynamicRefineFvMesh; //staticFvMesh
+
+dynamicRefineFvMeshCoeffs
+{
+    enableBalancing true;
+    allowableImbalance 0.75;
+    
+    // How often to refine
+    refineInterval  1;
+
+    // Field to be refinement on (keep this as refinementField)
+    field           refinementField;
+
+    // Refine field inbetween lower..upper
+    //  Because we are using the laplacian, there should be no upper limit, so
+    //  set upperRefineLevel very high.
+    lowerRefineLevel 0.3;
+    upperRefineLevel 1e200;
+
+    // If refinementField < unrefineLevel unrefine
+    //  to avoid oscillatory refinement behavior, this should be more than 4(?)
+    //  times lower than 'lowerRefineLevel'
+    unrefineLevel    0.05;
+
+    // Have slower than 2:1 refinement
+    nBufferLayers   1;
+
+    // Refine cells only up to maxRefinement levels
+    maxRefinement   2;
+
+    // Stop refinement if maxCells reached
+    maxCells        5000000;
+
+    // Flux field and corresponding velocity field. Fluxes on changed
+    // faces get recalculated by interpolating the velocity. Use 'none'
+    // on surfaceScalarFields that do not need to be reinterpolated.
+    //
+    // The first argument is the flux (surface scalar)
+    // The second argument is the volume vector used to calculate the flux
+    //
+    correctFluxes
+    (
+        (phi U)
+        (phi_0 U_0)
+        (phiAlpha none)
+        (rho*phi U)
+        (phiAbs none)
+        (ghf none)
+        (rhoPhiAlphaLiquid U)
+        (rhoPhiAlphaVapor U)
+        (rho*phi*Hs U)
+        (faceMask_Liquid none)
+        (faceMask_Vapor none)
+        (DgradY none)
+        (D_Liquid none)
+        (D_Vapor none)
+        (D_CH3NHNH2L none)
+        (D_HNO3L none)
+        (D_NO2L none)
+        (D_HONOL none)
+        (D_CH3ONO2L none)
+        (D_H2OL none)
+        (D_MMH2N none)
+        (D_MMHN-3HNO3 none)
+        (D_H none)
+        (D_H2 none)
+        (D_O none)
+        (D_OH none)
+        (D_H2O none)
+        (D_HO2 none)
+        (D_CH2 none)
+        (D_CH3 none)
+        (D_CH4 none)
+        (D_CO none)
+        (D_HCO none)
+        (D_CH2O none)
+        (D_CH3O none)
+        (D_CO2 none)
+        (D_N none)
+        (D_NH none)
+        (D_NH2 none)
+        (D_NH3 none)
+        (D_N2 none)
+        (D_NNH none)
+        (D_N2H2 none)
+        (D_NO none)
+        (D_HNO none)
+        (D_N2O none)
+        (D_NO2 none)
+        (D_HONO none)
+        (D_HNO3 none)
+        (D_N2O4 none)
+        (D_CN none)
+        (D_HCN none)
+        (D_HNC none)
+        (D_NCO none)
+        (D_CH3NHNH2 none)
+        (D_CH2NHNH2 none)
+        (D_CH3NNH2 none)
+        (D_CH3NHNH none)
+        (D_CH3NN none)
+        (D_CH2NNH2 none)
+        (D_HNCO none)
+        (D_CH3NNH none)
+        (D_CH3ONO2 none)
+        (D_SIO2 none)
+    );
+
+    // Write the refinement level as a volScalarField
+    dumpLevel       true;
+}
+
+
+// ************************************************************************* //

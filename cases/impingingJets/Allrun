@@ -57,14 +57,13 @@ if not resume:
     print "Setting final field values"
     pyOpenFOAM.run('VOFSetFields',np)
 
-quit()
 
 # Run the problem
 print "Running the problem"
 if np > 1:
     os.system('foamJob -parallel -screen reactingInterFoam')
 else:
-    os.system('reactingInterFoam')
+    pyOpenFOAM.run('reactingInterFoam',hide=False,logName='log')
 
 print "Finished!"
 

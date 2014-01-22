@@ -23,7 +23,7 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         1.5e-2;
+endTime         1e-2;
 
 deltaT          1e-9;
 
@@ -31,7 +31,7 @@ adjustTimeStep  on;
 
 writeControl    adjustableRunTime;
 
-writeInterval   1e-5;
+writeInterval   1e-6;
 
 purgeWrite      0;
 
@@ -47,7 +47,7 @@ runTimeModifiable yes;
 
 suppressSolverInfo yes;
 
-maxDeltaT       1e-5;
+maxDeltaT       1e-6;
 
 
 // ************************************************************************* //

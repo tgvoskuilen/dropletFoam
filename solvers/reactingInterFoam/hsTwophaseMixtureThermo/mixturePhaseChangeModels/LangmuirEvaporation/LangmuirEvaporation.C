@@ -66,7 +66,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh_,
         dimensionedScalar("x",dimless,0.0)
@@ -79,7 +79,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh_,
         dimensionedScalar("xL",dimless,0.0)
@@ -92,7 +92,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh_,
         dimensionedScalar("coeffC",dimTime/dimArea,0.0)
@@ -105,7 +105,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh_,
         dimensionedScalar("coeffV",dimTime/dimArea,0.0)
@@ -118,7 +118,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh_,
         dimensionedScalar("pv",dimPressure,0.0)

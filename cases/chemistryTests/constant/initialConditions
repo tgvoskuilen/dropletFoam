@@ -15,18 +15,17 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-constantProperty volume;
+constantProperty pressure;
 
 fractionBasis  mass;
 
 fractions
 {
-
-    CH3NHNH2  0.286;
-    HNO3  0.581;
-    NO2   0.131;
+    CH3NHNH2  0.333;
+    HNO3  0.542;
+    NO2   0.122;
     N2O4  0.002;
 }
 
-p     100000;
+p   100000;
 T   800.0;

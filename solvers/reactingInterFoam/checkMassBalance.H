@@ -28,6 +28,8 @@
     totalMass = Foam::sum(rho.internalField()*mesh.V());
     massError = dM + netOutFlux;
     
+    Foam::reduce(totalMass, sumOp<scalar>());
+    
     Info<< "Mass continuity error = "
         << Foam::mag(massError)
         << " of total mass "

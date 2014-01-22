@@ -86,7 +86,7 @@ Foam::phase::phase
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh,
         dimensionedScalar("Ypsum_"+name, dimless, 0.0)
@@ -146,8 +146,8 @@ Foam::phase::phase
         ),
         mesh,
         dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 1.0)
-    ),
-    diffErr_
+    )
+    /*diffErr_
     (
         IOobject
         (
@@ -155,11 +155,11 @@ Foam::phase::phase
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::AUTO_WRITE
+            IOobject::NO_WRITE
         ),
         mesh,
         dimensionedScalar("diffErr_"+name, dimDensity, 0.0)
-    )
+    )*/
 {  
     this->oldTime();
     cellMask_.oldTime();
@@ -1441,13 +1441,13 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
     volScalarField Sp = (1.0 - cellMask_)*rho(p,T)/mesh().time().deltaT();
     
     // Calculate the conservation error from variable diffusion coefficients
-    diffErr_ = diffErr_*0.0;
+    /*diffErr_ = diffErr_*0.0;
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
         const volScalarField& Yi = specieI().Yp();
         const surfaceScalarField& Di = specieI().D();
         diffErr_ += fvc::laplacian(Di*faceMask_, Yi) * mesh().time().deltaT();
-    }
+    }*/
     
     tmp<surfaceScalarField> tDgradYCp
     (

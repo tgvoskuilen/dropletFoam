@@ -158,8 +158,8 @@ CH3NHNH2+OH=CH3NNH2+H2O                3.92E13      0.0       0.
 CH3NNH+OH=CH3NN+H2O                    3.92E13      0.0       0.
 CH3NHNH2+O=CH3NNH2+OH                  9.6E12       0.0       0.
 CH3NNH+O=CH3NN+OH                      9.6E12       0.0       0.
-CH3NHNH2+NO2=CH3NNH2+HONO              2.2E11       0.0    5900.
-CH3NNH+NO2=CH3NN+HONO                  2.2E11       0.0    5900.
+CH3NHNH2+NO2=CH3NNH2+HONO              2.20E+11    0.0     5900.0   ! TST rates 2.74E12      1.0   10700.
+CH3NNH+NO2=CH3NN+HONO                  2.20E+11    0.0     5900.0   ! TST rates 1.65E12      1.0   12900.
 CH3NNH2+NO2=CH3NNH+HONO                1.0E08       2.0       0.
 N2O4(+M)=NO2+NO2(+M)                   4.05E18     -1.1   12840.
                                   LOW/ 1.96E28     -3.8   12800. /

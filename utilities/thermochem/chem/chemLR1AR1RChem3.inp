@@ -426,6 +426,4 @@ CH3O+NO2(+M)<=>CH3ONO2(+M)                     1.20E+13    0.0        0.0
       LOW/  0.14000E+31 -0.45000E+01  0.00000E+00 /
       CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
       H2OL/ 0.0/ MMHN-3HNO3/ 0.0/ MMH2N/ 0.0/
-      CH3NHNH2L/ 0.0/ HNO3L/ 0.0/ NO2L/ 0.0/ HONOL/ 0.0/ CH3ONO2L/ 0.0/ 
-      H2OL/ 0.0/ MMHN-3HNO3/ 0.0/ MMH2N/ 0.0/
 END

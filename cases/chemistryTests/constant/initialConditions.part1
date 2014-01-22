@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-constantProperty volume;
+constantProperty pressure;
 
 fractionBasis  mass;
 
