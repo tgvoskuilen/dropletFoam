@@ -132,16 +132,17 @@ int main(int argc, char *argv[])
         {
             gh = g & mesh.C();
             ghf = g & mesh.Cf();
-        }
+            mixture.updateMeshArDelta();
 
-        if (mesh.changing() && correctPhi)
-        {
-            #include "correctPhi.H"
-        }
+            if (correctPhi)
+            {
+                #include "correctPhi.H"
+            }
 
-        if (mesh.changing() && checkMeshCourantNo)
-        {
-            #include "meshCourantNo.H"
+            if (checkMeshCourantNo)
+            {
+                #include "meshCourantNo.H"
+            }
         }
         // END MESH ADAPTATION
         
@@ -149,7 +150,7 @@ int main(int argc, char *argv[])
         {
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
             Info<<"Solving alpha transport equations"<<endl;
-            MaxFo = mixture.solve( rho );
+            MaxFo = mixture.solve( rho, pimple.corr() );
 
             dQ = combustion->dQ() + mixture.dQ_phaseChange();
 

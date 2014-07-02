@@ -16,28 +16,32 @@ FoamFile
 
 dimensions      [0 2 -2 0 0 0 0];
 
-internalField   uniform 1e-11;
+internalField   uniform 0.001;
 
 boundaryField
 {
     atmosphere
     {
         type            inletOutlet;
-        inletValue      uniform 0.001;
-        value           uniform 1e-11;
+        inletValue      $internalField;
+        value           $internalField;
     }
     
     inflow
     {
-        type            inletOutlet;
-        inletValue      uniform 0.001;
-        value           uniform 1e-11;
+        type            fixedValue;
+        intensity       0.01;
+        value           $internalField;
+        
+        //type            inletOutlet;
+        //inletValue      uniform 0.001;
+        //value           uniform 1e-11;
     }
     
     walls
     {
-        type            fixedValue;
-        value           uniform 0.0;
+        type            compressible::kqRWallFunction;
+        value           $internalField;
     }
 
     symmetry

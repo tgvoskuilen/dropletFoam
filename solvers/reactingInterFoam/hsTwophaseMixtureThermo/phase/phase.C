@@ -1408,12 +1408,12 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
 )
 {   
     word divScheme("div(rho*phi*alpha,Yi)");
-    word divSchemeCorr("div(rho*phiCorr,Yi)");
             
     Info<< "Solving "<<subSpecies_.size()
         <<" subspecie(s) for phase: " 
         << name_ << endl;
         
+    // Add up the total mass generation for this phase due to phase change
     volScalarField mdot_phase
     (
         IOobject
@@ -1425,7 +1425,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
         mesh(),
         dimensionedScalar("m_pc",dimDensity/dimTime,0.0)
     );
-        
+
     forAllConstIter
     (
         PtrDictionary<mixturePhaseChangeModel>, 
@@ -1440,15 +1440,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
     //Arbitrary diagonal term for cells outside normal region
     volScalarField Sp = (1.0 - cellMask_)*rho(p,T)/mesh().time().deltaT();
     
-    // Calculate the conservation error from variable diffusion coefficients
-    /*diffErr_ = diffErr_*0.0;
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        const volScalarField& Yi = specieI().Yp();
-        const surfaceScalarField& Di = specieI().D();
-        diffErr_ += fvc::laplacian(Di*faceMask_, Yi) * mesh().time().deltaT();
-    }*/
-    
+    // Create a container to add up diffusion-driven energy flux
     tmp<surfaceScalarField> tDgradYCp
     (
         new surfaceScalarField
@@ -1465,92 +1457,45 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
     );
     surfaceScalarField& DgradYCp = tDgradYCp();
     
+    // Loop over all subspecies in this phase
     forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
         Info<<"Solving specie " << specieI().Y().name() << endl;
         
         volScalarField& Yi = specieI().Yp();
         const surfaceScalarField& Di = specieI().D();
-        //const surfaceScalarField& Di = D_;
         
-        //tmp<volScalarField> SuEvap = Su_Yi_evap( specieI() );
-        
+        // Generate source term pair from phase change
         Pair<tmp<volScalarField> > YSuSp = YiSuSp( specieI(), phaseChangeModels );
         
-        //dimensionedScalar ss("ss",dimDensity/dimTime,SMALL);
-        //scalar mindT = Foam::min(0.02 * rho(p,T) / (Foam::mag(SuEvap())+ss)).value();
-        //dTsrc = (mindT < dTsrc) ? mindT : dTsrc;
-        
+        // Generate reaction-based source term
         const rhoChemistryModel& chemistry = combustionPtr_->pChemistry();
         const volScalarField& kappa = mesh().lookupObject<volScalarField>("PaSR::kappa");
-        
         tmp<volScalarField> R = kappa * chemistry.RR( specieI().idx() );
         
+        // Build specie governing equation
         fvScalarMatrix YiEqn
         (
             fvm::ddt(rhoAlpha_, Yi)
           + fvm::div(rhoPhiAlpha_, Yi, divScheme)
           - fvm::Sp(fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - mdot_phase, Yi)
           - fvm::laplacian(Di*faceMask_, Yi)
-          //- fvm::div(rhoPhiCorr_, Yi, divSchemeCorr)
          ==
             R()
           + YSuSp.first()
           - fvm::SuSp(YSuSp.second(), Yi)
           - fvm::Sp(Sp, Yi)
         );
-        
-        //Info<<"Doing solve, min diag = " << Foam::min(Foam::mag(YiEqn.A())) << endl;
-        
-        if( Foam::min(Foam::mag(YiEqn.A())).value() < SMALL )
-        {
-            tmp<volScalarField> A = YiEqn.A();
-            tmp<volScalarField> ddtdiv = fvc::ddt(rhoAlpha_) + fvc::div(rhoPhiAlpha_) - mdot_phase;
-            tmp<volScalarField> div = fvc::div(rhoPhiAlpha_);
-            tmp<volScalarField> ddt = fvc::ddt(rhoAlpha_);
-            tmp<volScalarField> avgFaceMask = fvc::average(faceMask_);
-            tmp<volScalarField> avgD = fvc::average(Di*faceMask_);
-            tmp<volScalarField> gradAlpha = Foam::mag(fvc::grad(*this));
-            tmp<volScalarField> lap = fvc::laplacian(Di*faceMask_,Yi);
-            
-            forAll(A(), cellI)
-            {
-                if( Foam::mag(A()[cellI]) < SMALL || ddt()[cellI] > 1e9)
-                {
-                    
-                    Pout<<"A = " << A()[cellI] << " where" << endl;
-                    Pout<<"  rhoAlpha = " << rhoAlpha_[cellI] << endl;
-                    Pout<<"  rhoAlphaOld = " << rhoAlpha_.oldTime()[cellI] << endl;
-                    Pout<<"  Sp = " << Sp[cellI] << endl;
-                    Pout<<"  cellMask = " << cellMask_[cellI] << endl;
-                    Pout<<"  cellMaskOld = " << cellMask_.oldTime()[cellI] << endl;
-                    Pout<<"  alpha = " << this->operator[](cellI) << endl;
-                    Pout<<"  alphaOld = " << this->oldTime()[cellI] << endl;
-                    Pout<<"  ddtdiv = " << ddtdiv()[cellI] << endl;
-                    Pout<<"  ddt = " << ddt()[cellI] << endl;
-                    Pout<<"  div = " << div()[cellI] << endl;
-                    Pout<<"  mdot_evap = " << mdot_phase[cellI] << endl;
-                    Pout<<"  avgFM = " << avgFaceMask()[cellI] << endl;
-                    Pout<<"  avgD = " << avgD()[cellI] << endl;
-                    Pout<<"  Y = " << Yi[cellI] << endl;
-                    Pout<<"  gradA = " << gradAlpha()[cellI] << endl;
-                    Pout<<"  lap = " << lap()[cellI] << endl;
-                }
-            
-            }
-        
-        }
-        
-        
-        
-        
-        
-        
+                
+        // Solve specie mass fraction equation
         YiEqn.relax();
         YiEqn.solve(mesh().solver("Yi"));
         
-        // add diffusion mass flux
+        // Add up diffusion-driven energy flux
         DgradYCp += Di * faceMask_ * fvc::snGrad(Yi) * mesh().magSf() * fvc::interpolate(specieI().Cv(T));
+        
+        // A possibly more consistent way?
+        //Efluxp += YiEqn.flux() * fvc::interpolate(specieI().Cv(T));
         
         Yi.max(0.0);
         Yi.min(1.0);
@@ -1564,20 +1509,6 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phase::solveSubSpecies
 }
 
 
-// normal vector pointing outward from this phase
-/*Foam::tmp<Foam::volVectorField> Foam::phase::n() const
-{
-    dimensionedScalar deltaN
-    (
-        "deltaN",
-        1e-8/Foam::pow(Foam::average(mesh().V()), 1.0/3.0)
-    );
-    
-    tmp<volVectorField> nOut = -fvc::grad(sharp(0.01));
-    nOut() /= (mag(nOut()) + deltaN);
-    
-    return nOut;
-}*/
 
 // Update the phase masks based on alpha and the evaporation area
 void Foam::phase::setPhaseMasks
@@ -1591,6 +1522,7 @@ void Foam::phase::setPhaseMasks
 {    
     volScalarField& alpha = *this;
     
+    // Add up the total mass source term for this phase due to phase change
     volScalarField mdot_phase
     (
         IOobject

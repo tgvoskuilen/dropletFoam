@@ -20,38 +20,38 @@ FoamFile
     wedge_pos
     {
         type            wedge;
-        nFaces          62212;
-        startFace       124010;
+        nFaces          68926;
+        startFace       137434;
     }
     wedge_neg
     {
         type            wedge;
-        nFaces          62212;
-        startFace       186222;
+        nFaces          68926;
+        startFace       206360;
     }
     walls
     {
         type            wall;
-        nFaces          345;
-        startFace       248434;
+        nFaces          367;
+        startFace       275286;
     }
     inflow
     {
         type            patch;
         nFaces          200;
-        startFace       248779;
+        startFace       275653;
     }
     atmosphere
     {
         type            patch;
         nFaces          200;
-        startFace       248979;
+        startFace       275853;
     }
     axis
     {
         type            empty;
         nFaces          0;
-        startFace       249179;
+        startFace       276053;
     }
 )
 

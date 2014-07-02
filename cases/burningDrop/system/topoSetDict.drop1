@@ -21,13 +21,12 @@ actions
         name    c0;
         type    cellSet;
         action  new;
-        source  cylinderAnnulusToCell;
+        source  cylinderToCell;
         sourceInfo
         {
             p1 (0.009134 0 -20);
             p2 (0.009134 0 20);
-            outerRadius 0.0016;
-            innerRadius 0.0006;
+            radius 0.003;
         }
     }
 );

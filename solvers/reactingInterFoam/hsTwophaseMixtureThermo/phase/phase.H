@@ -104,8 +104,6 @@ class phase
         
         surfaceScalarField D_;
         
-        volScalarField diffErr_;
-        
 
 public:
 

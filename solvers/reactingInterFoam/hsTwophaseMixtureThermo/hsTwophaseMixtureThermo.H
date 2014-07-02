@@ -120,6 +120,8 @@ private:
                 
         //- Sharpened vapor fraction (for calculating curvature kappaI)
         volScalarField alphaVaporSmooth_;
+        volVectorField interfaceNormal_;
+        surfaceScalarField nHatf_;
         
         //- Curvature
         volScalarField kappaI_;
@@ -142,6 +144,14 @@ private:
         const dimensionedScalar deltaN_;
                 
         scalar phaseMaskTol_;
+        
+        // Alpha smoother inputs
+        dimensionedScalar meshArDelta_;
+        label nSmootherIters_;
+        scalar smootherSharpening_;
+        
+        // Alpha clipping input
+        scalar phaseClipTol_;
         
         List<Pair<word> > noVaporPairs_;
         
@@ -315,7 +325,7 @@ public:
             }
 
             //- Solve reaction chemistry, evaporation, and phase transport       
-            scalar solve(volScalarField& rho);
+            scalar solve(volScalarField& rho, label PIMPLEcorr = 0);
             
             //- Calculate the surface tension force field
             tmp<surfaceScalarField> surfaceTensionForce();
@@ -354,6 +364,8 @@ public:
             tmp<volScalarField> rCv() const;
             
             void setHs();
+            
+            void updateMeshArDelta();
 };
 
 

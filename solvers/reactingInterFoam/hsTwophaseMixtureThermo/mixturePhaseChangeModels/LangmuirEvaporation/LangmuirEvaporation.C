@@ -66,7 +66,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh_,
         dimensionedScalar("x",dimless,0.0)
@@ -79,7 +79,7 @@ Foam::mixturePhaseChangeModels::LangmuirEvaporation::LangmuirEvaporation
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh_,
         dimensionedScalar("xL",dimless,0.0)
@@ -226,21 +226,22 @@ void Foam::mixturePhaseChangeModels::LangmuirEvaporation::calculate
     xL_ = alphaL_.x(liquid_specie_)*pos(alphaL_.Yp() - 1e-2)
           + xL_avg * neg(alphaL_.Yp() - 1e-2);*/
           
+    
     xL_ = alphaL_.x(liquid_specie_);
-    //xL_ = alphaL_.x(liquid_specie_)*pos(alphaL_.Yp() - 1e-6);
+
     
-    //surfaceScalarField Dol = alphaL_.faceMask()*alphaV_.faceMask();
-    surfaceScalarField Dol = fvc::interpolate(pos(alphaL_.Yp() - 1e-3))*alphaL_.faceMask()*alphaV_.faceMask();
-    //volScalarField Mol = alphaL_.cellMask()*alphaV_.cellMask();
+    // use successive averaging
+    surfaceScalarField xLf = fvc::interpolate(xL_);
     
-    dimensionedScalar dA = pow(min(mesh_.V()),2.0/3.0)/30.0;
+    volScalarField wgts = 0.01*alphaL_.cellMask()*alphaV_.cellMask();
     
-    for( label i = 0; i < 15; ++i )
+    for( label i = 0; i < 5; ++i )
     {
-        xL_ += dA * fvc::laplacian(Dol,xL_);
+        xL_ = (1-wgts)*xL_ + wgts*fvc::average(xLf);
+        xLf = fvc::interpolate(xL_);
     }
-    //alphaVaporSmooth_.min(1.0);
-    //alphaVaporSmooth_.max(0.0);
+    
+    
     xL_.correctBoundaryConditions();
     
     Info<<"Max xL_"<<liquid_specie_<<" = " << Foam::max(xL_).value() << endl;

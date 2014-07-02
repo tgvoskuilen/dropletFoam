@@ -50,7 +50,7 @@ shapes
         
         vaporSpecies
         (
-            CH3NHNH2   0.35
+            CH3NHNH2   0.35 //arbitrarily picked, should be >= than Ysat(T)
         );
     }
 

@@ -9,23 +9,12 @@
     thermo.rho() -= thermo.psi() * p_rgh;
     
     volScalarField rAU(1.0/UEqn.A());
-    surfaceScalarField rAUf(fvc::interpolate(rAU));
-
-    // Dp/Dt term
-    //   compressibleInterFoam uses DrhoDt here, fully explicit, rather than
-    //   separate out the compressibility factor and make time-implicit.
-    //   Transonic cases make this fully implicit.
-    /*fvScalarMatrix p_DpDt = 
-    (
-        fvm::ddt(p)
-      + fvc::div(phi, p)
-      - fvc::Sp(fvc::div(phi), p)
-    );*/
-    
+    surfaceScalarField rAUf(fvc::interpolate(rAU));   
    
     // Estimate U with no force terms
     U = rAU*UEqn.H();
     
+    // Chop off U in one direction for 'quasi-2D' simulations with symmetryPlane
     if(clipDir=="x")
     {
         forAll(U,cellI)
@@ -56,7 +45,6 @@
     );
 
     // Add surface tension and gravity forces to flux estimate
-    //phi = phiHbyA +
     surfaceScalarField phiForces
     (
         (
@@ -105,7 +93,6 @@
             thermo.rho() += thermo.psi()*p_rgh;
 
             phi += p_rghEqn.flux();
-            //p_rgh.relax(); //from Euler solver and Buoyant solver...
             
             U += rAU*fvc::reconstruct((phiForces + p_rghEqn.flux())/rAUf);
             U.correctBoundaryConditions(); 
@@ -116,6 +103,7 @@
         }
     }
     
+    // Chop off U in one direction for 'quasi-2D' simulations with symmetryPlane
     if(clipDir=="x")
     {
         forAll(U,cellI)
@@ -138,12 +126,12 @@
         }
     }
    
-    
+    // Update p based on p_rgh and gravity
     p = p_rgh + p0 + rho*gh;
     p.max(pMin);
     
-    K = 0.5*magSqr(U);
-    dpdt = fvc::ddt(p_rgh);
+    //K = 0.5*magSqr(U);
+    //dpdt = fvc::ddt(p_rgh);
     
     // Continuity error check checks whether thermo.rho satisfies continuity
     // with rhoPhi field

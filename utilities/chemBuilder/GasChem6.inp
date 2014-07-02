@@ -1,0 +1,101 @@
+ELEMENTS                                                                        
+H C O N 
+END  
+                                                                           
+SPECIES                                                                         
+CH3NHNH2 CH3NNH2 CH3NNH CH3NN H H2 O2 H2O CO2 CO N2
+HCN NO2 NO HONO NCO HNCO OH O HO2 CH3O CH3 CH4 CH2O CH2OH HCO
+HNC NH2 NH N NNH HNO HNO3 N2O4 CH3NO2
+END                                                                             
+
+REACTIONS
+H+NO(+M)=HNO(+M)    1.52E15   -0.41     0.                                                          
+      LOW/ 4.00E20    -1.75       0./                                                         
+    H2O/5.0/ 
+    N2/ 1.0/ 
+    CO2/1.3/                         
+!   THIRDBODY
+NO+OH(+M)=HONO(+M) 1.988E12   -0.05 -721.                                                           
+  LOW/  5.08E23     -2.51  -67.6/                                                               
+  TH/ 0.62 /                                                                                   
+  H2O/8.3/ N2/1.0/ CO2/1.5/              
+!   THIRDBODY                                             
+HONO+OH=H2O+NO2  1.27E10      1.0    135.                                                           
+HCO+OH=H2O+CO     1.00E14    0.0      0.                                                            
+HCO+M=H+CO+M      2.50E14    0.0  16802.                                                            
+  CO/1.9/ H2/1.9/ CO2/3.0/ H2O/5.0/  
+!   THIRDBODY                                                              
+CO+OH=CO2+H       1.51E07    1.3   -758.                                                            
+OH+H2=H2O+H       2.16E08    1.5   3430.                                                            
+OH+HO2=H2O+O2     7.50E12    0.0      0.                                                            
+OH+OH=H2O+O       3.57E04   2.40  2112.                                                             
+H+OH+M=H2O+M      1.60E22   -2.0      0.                                                            
+  H2O/5.0/     
+!   THIRDBODY                                                                                    
+HCN+O=NCO+H       1.38E04    2.64  4980.                                                            
+NO+HO2=NO2+OH     2.11E12    0.0   -479.                                                            
+NO2+H=NO+OH       1.30E14    0.0    361.                                                            
+NCO+M=N+CO+M      1.14E23   -1.95  59930.                                                           
+  H2O/5.0/ N2/1.0/ CO2/1.5/     
+!   THIRDBODY                                                     
+NCO+H2=HNCO+H     2.07E06    2.0   6020.                                                            
+NH+NO=N2+OH       2.16E13   -0.23     0.                                                            
+H+HNO=NH+OH       3.00E14    0.0  18000.                                                            
+NH2+OH=NH+H2O     4.00E06    2.0   1000.                                                            
+NH2+NO=NNH+OH     2.29E10    0.425  -815.                                                           
+N+NO=N2+O         3.27E12    0.3      0.                                                            
+NO+H=N+OH         1.70E14    0.0  48800.                                                            
+HNC+OH=HNCO+H     2.80E13     0.0  3696.                                                            
+HNCO+H=NH2+CO     2.25E07    1.7   3800.                                                            
+2HONO=NO+NO2+H2O 0.349          3.64   12140.                                                       
+NNH(+M)=N2+H(+M)  4.10E09    1.13  5186.                                                            
+  LOW/ 1.00E13    0.5     3060./                                                          
+  H2O/9.0/ N2/1.0/ O2/0.82/ HNO3/5.0/
+!   THIRDBODY
+HCN+M=HNC+M       4.36E26   -3.34 50194.               
+!   THIRDBODY                                             
+H+CH3(+M)<=>CH4(+M)                      13.90E+15    -.534     536.00                              
+  LOW  /  2.620E+33   -4.760   2440.00/                                                          
+  TROE/   .7830   74.00  2941.00  6964.00 /                                                      
+  H2/2.00/ H2O/6.00/ CH4/3.00/ CO/1.50/ CO2/2.00/
+!   THIRDBODY
+H+CH2O(+M)<=>CH2OH(+M)                   5.400E+11     .454    3600.00                              
+  LOW  /  1.270E+32   -4.820   6530.00/                                                          
+  TROE/   .7187  103.00  1291.00  4160.00 /                                                      
+  H2/2.00/ H2O/6.00/ CH4/2.00/ CO/1.50/ CO2/2.00/ 
+!   THIRDBODY
+H+CH2OH<=>OH+CH3                         1.650E+11     .650    -284.00                              
+OH+CH4<=>CH3+H2O                         1.000E+08    1.600    3120.00                              
+OH+CH2O<=>HCO+H2O                        3.430E+09    1.180    -447.00                              
+CH3+NO<=>HCN+H2O                         9.600E+13     .000   28800.00                              
+OH+NO2(+M)=HNO3(+M)  2.41E13     0.0     0.                                                         
+  LOW/  6.42E32     -5.49  2350./                                                               
+  TH/ 0.725  -2.5E-04 /                                                                        
+  H2O/9./ N2/1.0/ HNO3/5.0/
+!   THIRDBODY
+HNO3+NO=HONO+NO2  8.00E06    2.0  11000.                                                            
+HCO+NO2=H+CO2+NO   8.39E15   -0.75   1930.                                                          
+CH4+NO2=CH3+HONO      1.20E13  0.0  30000.                                                          
+CH3+NO2=CH3O+NO       1.40E13  0.0      0.                                                          
+CH3NHNH2+CH3=CH4+CH3NNH2  1.0E13    0.0    6990.                                                    
+CH3NNH+CH3=CH4+CH3NN      4.6E13    0.0    4850.                                                    
+CH3NN=CH3+N2              3.0E06    0.0       0.                                                    
+CH3NN+HO2=CH3NNH+O2       1.0E06    2.0       0.                                                    
+CH3NHNH2+OH=CH3NNH2+H2O   3.92E13   0.0       0.                                                    
+CH3NNH+OH=CH3NN+H2O       3.92E13   0.0       0.                                                    
+CH3NHNH2+NO2=CH3NNH2+HONO 2.2E11    0.0    5900.                                                    
+CH3NNH+NO2=CH3NN+HONO     2.2E11    0.0    5900.                                                    
+CH3NNH2+NO2=CH3NNH+HONO   1.0E08    2.0       0.                                                    
+N2O4(+M)=NO2+NO2(+M)  4.05E18   -1.1   12840.                                                       
+  LOW/ 1.96E28   -3.8  12800. /       
+!   THIRDBODY                                                    
+CH3NO2(+M)=CH3+NO2(+M)    1.80E16    0.00    58500.                                                 
+  LOW/  1.30E17    0.00    42000. /                                               
+  TH/  0.183 /    
+!   THIRDBODY                                                         
+H+CH2O(+M)<=>CH3O(+M)                    5.400E+11     .454    2600.00                              
+  LOW  /  2.200E+30   -4.800   5560.00/                                                          
+  TROE/   .7580   94.00  1555.00  4200.00 /                                                      
+  H2/2.00/ H2O/6.00/ CH4/2.00/ CO/1.50/ CO2/2.00/
+!   THIRDBODY
+END

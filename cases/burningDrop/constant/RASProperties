@@ -10,26 +10,16 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      topoSetDict.drop1;
+    location    "constant";
+    object      RASProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-actions
-(
-    {
-        name    c0;
-        type    cellSet;
-        action  new;
-        source  cylinderAnnulusToCell;
-        sourceInfo
-        {
-            p1 (0.009134 0 -20);
-            p2 (0.009134 0 20);
-            outerRadius 0.0012;
-            innerRadius 0.0008;
-        }
-    }
-);
+RASModel        kOmegaSST; //kEpsilon;
+
+turbulence      on;
+
+printCoeffs     on;
+
 
 // ************************************************************************* //

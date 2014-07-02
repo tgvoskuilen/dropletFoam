@@ -3,20 +3,7 @@
     
     Pair<tmp<volScalarField> > TSuSp = mixture.TSuSp("Cv"); //<- includes rCv, linearized evaporation enthalpy sink
 
-    //tmp<volScalarField> rCv = mixture.rCv();
-    
-    /*tmp<surfaceScalarField> rhoD = fvc::interpolate(mixture.alphaVapor()) * mixture.vapor().D() + fvc::interpolate(mixture.alphaLiquid()) * mixture.liquid().D();
-    
-    hs = thermo.hs();
-    tmp<volScalarField> test1 = fvc::laplacian(rhoD, hs)/mixture.Cp();
-    tmp<volScalarField> test2 = fvc::laplacian(mixture.kByCp(turbulence->alphat()), T);
-    
-    Info<<"max test1 = " << Foam::max(test1()) << endl;
-    Info<<"max test2 = " << Foam::max(test2()) << endl;*/
-    
-    tmp<volScalarField> cdT = fvc::div(mixture.DgradY(), T) / rho * runTime.deltaT();
-    Info<<"Max T rise from diffusion = " << Foam::max(Foam::mag(cdT)).value() << endl;
-
+    // Build governing equation for temperature    
     fvScalarMatrix TEqn
     (
         fvm::ddt(rho, T)
@@ -27,10 +14,6 @@
      ==
         mixture.rCv()*
         (
-          /*  dpdt //should be DDt(p)?
-          - fvc::ddt(rho, K)
-          - fvc::div(mixture.rhoPhi(), K)
-          + (fvc::ddt(rho) + fvc::div(mixture.rhoPhi()))*K*/
           - p*fvc::div(phi)
           + combustion->Sh()
         )

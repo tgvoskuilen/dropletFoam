@@ -9,27 +9,45 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      topoSetDict.drop;
+    class       volScalarField;
+    object      omega;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-actions
-(
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   uniform 0.003;
+
+boundaryField
+{
+    inflow
     {
-        name    c0;
-        type    cellSet;
-        action  new;
-        source  cylinderAnnulusToCell;
-        sourceInfo
-        {
-            p1 (0.009134 0 -20);
-            p2 (0.009134 0 20);
-            outerRadius 0.0014;
-            innerRadius 0.0006;
-        }
+        type            fixedValue;
+        value           $internalField;
     }
-);
+    
+    atmosphere
+    {
+        type            inletOutlet;
+        inletValue      $internalField;
+        value           $internalField;
+    }
+
+    walls
+    {
+        type            compressible::omegaWallFunction;
+        value           $internalField;
+    }
+
+    symmetry
+    {
+        type            symmetryPlane;
+    }
+    
+    wedge_pos  {  type wedge;  }
+    wedge_neg  {  type wedge;  }
+    axis       {  type empty;  }
+    
+}
 
 // ************************************************************************* //

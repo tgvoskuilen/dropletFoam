@@ -13,5 +13,6 @@ rm -f constant/reactions
 rm -f constant/thermo
 rm -f constant/cellDecomposition.gz
 rm -f system/decomposeParDict
+rm -f system/topoSetDict
 
 # ----------------------------------------------------------------- end-of-file

@@ -120,27 +120,36 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
     //Update kappa, sigma_, alphaSmooth, area_
     
     
-    //Smooth alphavapor
-    alphaVaporSmooth_ = alphaVapor_.sharp(0.1);
-    dimensionedScalar dA = pow(min(mesh_.V()),2.0/3.0)/30.0;
+    //--Generate smooth volume fraction field-----------------------------------
     
-    for( label i = 0; i < 15; ++i )
+    // Step 1 - Sharpen alphaVapor to remove spurious areas and identify the 
+    //          interface (consequence, areas with 
+    //          alphaVapor < smootherSharpening/2 will not have surface tension)
+    alphaVaporSmooth_ = alphaVapor_.sharp(smootherSharpening_);
+
+    // Step 2 - Diffusively smooth the sharpened field
+    
+    // Target Fo number for diffusive smoothing. This, in conjunction with the
+    // number of iterations (nSmootherIters) will diffusive the interface by an 
+    // approximate factor of the smallest cell size. It is assumed that the
+    // phase interface is approximately 2-3 times the smallest cell size. If you
+    // have significantly smaller cells somewhere else in your mesh, you will
+    // have to adjust the number of iterations taken.
+    scalar Fo = 0.4; //must be less than or equal to 0.5
+    
+    // The mesh scale stays constant unless the mesh changes       
+    dimensionedScalar Deff = Fo / meshArDelta_;
+    
+    for( label i = 0; i < nSmootherIters_; ++i )
     {
-        alphaVaporSmooth_ += dA * fvc::laplacian(alphaVaporSmooth_);
+        alphaVaporSmooth_ += Deff * fvc::laplacian(alphaVaporSmooth_);
     }
     alphaVaporSmooth_.min(1.0);
     alphaVaporSmooth_.max(0.0);
     alphaVaporSmooth_.correctBoundaryConditions();
     
-
-    //Sharpen the remaining field
-    //scalar Cpc = 0.02;
-    //alphaVaporSmooth_ = (Foam::min(Foam::max(alphaVaporSmooth_, 0.5*Cpc),1.0-0.5*Cpc)
-    //                     - 0.5*Cpc)/(1.0-Cpc);
-    //alphaVaporSmooth_.correctBoundaryConditions();
-
+    //--Calculate interface curvature field and normal vector-------------------
     
-    //Calculate interface curvature field
     // Cell gradient of alphaVaporSmooth
     const volVectorField gradAlpha(fvc::grad(alphaVaporSmooth_));
 
@@ -149,29 +158,27 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
 
     // Face unit interface normal
     surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
+    
+    // this is temporary, purely for postprocessing
+    interfaceNormal_ = gradAlpha/(mag(gradAlpha) + deltaN_);
+    
+    // Store interface normal on faces
+    nHatf_ = nHatfv & mesh_.Sf();
 
     // Simple expression for curvature
-    kappaI_ = -fvc::div(nHatfv & mesh_.Sf());
+    kappaI_ = -fvc::div(nHatf_);
 
 
-    //Calculate the surface tension field
+    //--Calculate the surface tension field-------------------------------------
     dimensionedScalar one("one",dimLength,1.0);
     tmp<volScalarField> mask = pos(Foam::mag(kappaI_)*one - 1e-4)
                              + neg(alphaVapor_ - 0.1);
     sigma_ = alphaLiquid_.sigma(T_, mask());
+        
     
-    
-
-    
-    
-    //Calculate area
-    //hardt method
+    //--Calculate the phase area------------------------------------------------
+    // Hardt method (J. Comp. Phys.)
     tmp<volScalarField> C = alphaLiquid_.sharp(0.0,0.01);
-    /*scalar tolL = 0.0;
-    scalar tolH = 0.01;
-    scalar Cpc = tolL+tolH;
-    tmp<volScalarField> C = (Foam::min(Foam::max(1.0 - alphaVaporSmooth_, tolL),1.0-tolH) - tolL)/(1.0-Cpc); */
-    
     word gradScheme("grad(alphaVaporSmooth)");
     
     dimensionedScalar eps("eps",dimArea,SMALL);
@@ -181,8 +188,8 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::correctInterface()
         / (fvc::domainIntegrate((1-C())*(1-C())*Cp()) + eps);
 
     area_ = N*(1-C())*(1-C())*Cp; 
-    //area_ = Cp;
-    
+
+    // Clip very small areas
     const volScalarField::DimensionedInternalField& V = mesh_.V();
     area_.dimensionedInternalField() *= pos
     (
@@ -389,11 +396,37 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("alphaVaporSmooth", dimless, 0.0),
         zeroGradientFvPatchScalarField::typeName
+    ),
+    interfaceNormal_
+    (
+        IOobject
+        (
+            "interfaceNormal",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedVector("interfaceNormal", dimless, vector::zero)
+    ),
+    nHatf_
+    (
+        IOobject
+        (
+            "nHatf",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("nHatf", dimArea, 0)
     ),
     kappaI_
     (
@@ -403,7 +436,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("kappaI", dimless/dimLength, 0.0),
@@ -417,7 +450,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("sigma", dimensionSet(1, 0, -2, 0, 0), 0.0),
@@ -496,7 +529,11 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         "deltaN",
         1e-8/pow(average(mesh.V()), 1.0/3.0)
     ),
-    phaseMaskTol_(readScalar(lookup("phaseMaskTol"))),
+    phaseMaskTol_(lookupOrDefault<scalar>("phaseMaskTol",0.01)),
+    meshArDelta_("meshArDelta",dimless/dimArea,1e10),
+    nSmootherIters_(lookupOrDefault<label>("nSmootherIters",15)),
+    smootherSharpening_(lookupOrDefault<scalar>("smootherSharpening",0.1)),
+    phaseClipTol_(lookupOrDefault<scalar>("phaseClipTol",1e-6)),
     noVaporPairs_(lookup("noVaporPairs"))
 {
     // Check that the noVaporPairs are all valid
@@ -517,6 +554,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
         }
     }
     
+    updateMeshArDelta();
+    
     T_.correctBoundaryConditions();
     p_.correctBoundaryConditions();
     
@@ -526,6 +565,7 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::hsTwophaseMixtureThermo
     alphaVapor_.setOtherPhase( &alphaLiquid_ );
 
     setHs();
+    correctInterface();
     calculate();
     
     rhoPhi_ = phi_ * fvc::interpolate(rho_);
@@ -808,7 +848,8 @@ Foam::hsTwophaseMixtureThermo<MixtureType>::getRefinementField() const
 template<class MixtureType>
 scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
 (
-    volScalarField& rho
+    volScalarField& rho,
+    label PIMPLEcorr
 )
 {
     // Solve for reaction rates
@@ -878,6 +919,12 @@ scalar Foam::hsTwophaseMixtureThermo<MixtureType>::solve
     {
         solveAlphas(cAlpha, nAlphaCorr);
     }
+    
+    /*if( PIMPLEcorr == 0)
+    {
+        // update interface
+        correctInterface();
+    }*/
     
     // correct() updates rho_, psi_, mu_ and calls correct() on phases
     // Update properties and set rhoAlpha to satisfy continuity with the
@@ -1027,21 +1074,14 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
     surfaceScalarField phic(mag(phi_/mesh_.magSf()));
     phic = min(cAlpha*phic, max(phic));
     
-    //Calculate interface curvature field
-    // Cell gradient of alpha
-    word gradScheme("grad(alphaVaporSmooth)");
-    const volVectorField gradAlpha(fvc::grad(alphaLiquid_, gradScheme));
-    
-    // Interpolated face-gradient of alpha
-    surfaceVectorField gradAlphaf(fvc::interpolate(gradAlpha));
-
-    // Face unit interface normal
-    surfaceVectorField nHatfv(gradAlphaf/(mag(gradAlphaf) + deltaN_));
-
-    surfaceScalarField phir(phic*(nHatfv & mesh_.Sf()));
-        
+    //Calculate interface curvature field - For computation of the interface
+    // normal, we use the smoothed (quasi-mollified) alpha field.
+    // interFoam family of solvers does not update nHat here any more, but they
+    // used to. Now it's updated after all the alpha sub-cycles
+    //correctInterface();
+           
+    surfaceScalarField phir(-phic*nHatf_);
     surfaceScalarField phiAlphaL("phiAlphaL",phi_);
-    //surfaceScalarField phiAlphaV("phiAlphaV",phi_);
     
     divPhaseChange_ *= 0.0;
     volScalarField Sv
@@ -1145,8 +1185,6 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
         << ", " << max(alphaLiquid_).value()
         << endl;
         
-    alphaLiquid_.max(0.0);
-    //alphaLiquid_.min(1.0);
     
     surfaceScalarField rhoVf(fvc::interpolate(alphaVapor_.rho(p_,T_)));
     surfaceScalarField rhoLf(fvc::interpolate(alphaLiquid_.rho(p_,T_)));
@@ -1156,14 +1194,13 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::solveAlphas
 
     rhoPhi_ += f * (phiAlphaL*(rhoLf - rhoVf) + phi_*rhoVf);
 
-    alphaVapor_ == scalar(1) - alphaLiquid_;
-    alphaVapor_.max(0.0);
         
     // Re-sharpen alpha field
-    //  This is not mass conserving, but prevents excessive floatsom
-    //volScalarField& alphaL = alphaLiquid_;
-    //alphaL = alphaLiquid_.sharp(1e-3);
-    //alphaVapor_ == scalar(1) - alphaLiquid_;
+    //  This is not mass conserving, but prevents excessive floatsom. If
+    //  phaseClipTol is set to 0, this merely keeps alphaL between 0 and 1
+    volScalarField& alphaL = alphaLiquid_;
+    alphaL = alphaLiquid_.sharp(phaseClipTol_);
+    alphaVapor_ == scalar(1) - alphaLiquid_;
         
     Info<< "Liquid phase volume fraction = "
         << alphaLiquid_.weightedAverage(mesh_.V()).value()
@@ -1407,6 +1444,11 @@ bool Foam::hsTwophaseMixtureThermo<MixtureType>::read()
 {
     if (hsReactionThermo::read())
     {
+        Info<<"Reading smoother iterations and clipping tolerance" << endl;
+        nSmootherIters_     = lookupOrDefault<label>("nSmootherIters",15);
+        smootherSharpening_ = lookupOrDefault<scalar>("smootherSharpening",0.1);
+        phaseClipTol_       = lookupOrDefault<scalar>("phaseClipTol",1e-6);
+        
         MixtureType::read(*this);
         return true;
     }
@@ -1506,6 +1548,21 @@ void Foam::hsTwophaseMixtureThermo<MixtureType>::setHs()
     }
 
     hBoundaryCorrection(hs_);
+}
+
+template<class MixtureType>
+void Foam::hsTwophaseMixtureThermo<MixtureType>::updateMeshArDelta()
+{
+    // Update the laplacian stability factor for explicit diffusive smoothing
+    tmp<fvScalarMatrix> lap = fvm::laplacian(alphaVaporSmooth_);
+    
+    tmp<volScalarField> sumAnb = lap().H1();
+    
+    scalar localMax = Foam::max(Foam::mag(sumAnb())).value();
+    
+    Foam::reduce(localMax, maxOp<scalar>());
+    
+    meshArDelta_.value() = localMax;
 }
 
 

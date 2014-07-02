@@ -23,7 +23,7 @@ if not resume:
     print "Running with %d processors" % np
     
     # Create the chemistry input file from a gas and liquid set
-    reaction_set = chemBuilder.build_set('GasChem2','LiquidChem1')
+    reaction_set = chemBuilder.build_set(gas='GasChem2',extra_species=['CH3NHNH2L'])
     reaction_set.write_file('chem.inp')
     
     # Convert the chemistry file from CHEMKIN format to OpenFOAM format
@@ -65,7 +65,6 @@ if not resume:
         # For parallel runs, decompose the problem
         print "Decomposing problem"
         pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
-        pyOpenFOAM.set_balance_par(np)
         pyOpenFOAM.run('decomposePar',args='-cellDist')
 
     print "Setting final field values"

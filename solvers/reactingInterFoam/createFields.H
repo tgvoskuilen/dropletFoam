@@ -95,8 +95,7 @@
     volScalarField gh("gh", g & mesh.C());
     surfaceScalarField ghf("ghf", g & mesh.Cf());
 
-    //volScalarField& hs = thermo.hs();
-    //const volScalarField& T = mixture.T();
+    // Grab references to T and p fields from the mixture thermo
     volScalarField& T = mixture.T();
     T.oldTime(); //needed?
     volScalarField& p = mixture.p();
@@ -122,35 +121,9 @@
     //Force p to be consistent with p_rgh (gives better initial conditions
     // than forcing p_rgh to be consistent with p)
     p = p_rgh + p0 + rho*gh;
-    
-    /*volScalarField hs
-    (
-        IOobject
-        (
-            "hs",
-            runTime.timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        thermo.hs()
-    );*/
-    
-    /*volScalarField Te
-    (
-        IOobject
-        (
-            "Te",
-            runTime.timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        thermo.T()
-    );
-    Te.oldTime();*/
 
-    
+
+    // Reaction and phase change heat generation term
     volScalarField dQ
     (
         IOobject
@@ -165,11 +138,11 @@
         dimensionedScalar("dQ", dimPower, 0.0)
     );
     
-    Info<< "Creating field dpdt\n" << endl;
-    volScalarField dpdt("dpdt", fvc::ddt(p));
+    //Info<< "Creating field dpdt\n" << endl;
+    //volScalarField dpdt("dpdt", fvc::ddt(p));
 
-    Info<< "Creating field kinetic energy K\n" << endl;
-    volScalarField K("K", 0.5*magSqr(U));
+    //Info<< "Creating field kinetic energy K\n" << endl;
+    //volScalarField K("K", 0.5*magSqr(U));
 
 
     // Create a run summary file

@@ -26,6 +26,13 @@ foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 // Phase volume fraction tolerance for diffusion mask
 phaseMaskTol 0.01;
 
+// Diffusion of phase marker for smoothing prior to surface tension calcs
+// a good rule of thumb is cell width squared divided by 30
+phaseSmoother 1.3e-10;
+
+// Amount to clip alpha below to supress floatsom and jetsom.
+phaseClipTol 1e-4;
+
 Vapor
 {
    Sc  Sc [ 0 0 0 0 0 0 0] 0.9;

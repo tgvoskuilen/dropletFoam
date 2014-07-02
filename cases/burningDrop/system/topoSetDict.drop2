@@ -26,8 +26,8 @@ actions
         {
             p1 (0.009134 0 -20);
             p2 (0.009134 0 20);
-            outerRadius 0.0012;
-            innerRadius 0.0008;
+            outerRadius 0.0018;
+            innerRadius 0.0006;
         }
     }
 );
