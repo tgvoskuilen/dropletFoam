@@ -29,4 +29,5 @@ the raw data listed above) re-run the script with `./updateThermoDb`. This
 processed data file contains a Python-readable database with molar mass, JANAF
 polynomials, and Sutherland coefficients (fit to the NASA polynomials).
 
-
+To run the processing script and see plots of all the transport property 
+fitting, use `./updateThermoDb -v`.

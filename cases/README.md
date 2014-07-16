@@ -13,7 +13,8 @@ For example, to make a run folder for `vialTest`, use:
   
 which will create a `../run/vialTest` folder (relative to the case
 directory). If there is already a `vialTest` case in the `run` folder, it will
-give an error. To force it to overwrite the existing case, use
+give an error. To force it to overwrite the existing case (which will delete
+any results in the existing case), use
 
     ./makeRunCase -f vialTest
   
@@ -44,32 +45,32 @@ short description.
 
 1. `burningDrop`
 
-This is a 2D axisymmetric case with a liquid MMH drop hanging by surface
-tension force on a small cylinder. There is a hot mixture of N2/N2O flowing
-over it and it burns. The case does not use dynamic mesh adaptation, and
-does not require liquid reactions since the oxidizer is in the gas phase.
+  This is a 2D axisymmetric case with a liquid MMH drop hanging by surface
+  tension force on a small cylinder. There is a hot mixture of N2/N2O flowing
+  over it and it burns. The case does not use dynamic mesh adaptation, and
+  does not require liquid reactions since the oxidizer is in the gas phase.
 
 2. `dropCaseGels`
 
-This is a 3D case with two droplets of 2 mm diameter, one of MMH and one of
-RFNA, with liquid and gas reactions. The droplets are shear-thinning gels 
-of Aerosil (intert species SI added).
+  This is a 3D case with two droplets of 2 mm diameter, one of MMH and one of
+  RFNA, with liquid and gas reactions. The droplets are shear-thinning gels 
+  of Aerosil (intert species SI added).
 
 3. `dropCaseLiquids`
 
-This is a 3D case with the same conditions as `dropCaseGels` except that the
-droplets are Newtonian liquids rather than gels.
+  This is a 3D case with the same conditions as `dropCaseGels` except that the
+  droplets are Newtonian liquids rather than gels.
 
 4. `impingingJets`
 
-This is a 3D case focused on the impingement region of the impinging jets
-setup, with one MMH jet and one RFNA jet.
+  This is a 3D case focused on the impingement region of the impinging jets
+  setup, with one MMH jet and one RFNA jet.
 
 5. `vialTest`
 
-This is a 2D planar case to mimic the drop test experiments, with a 2mm diameter
-drop of RFNA falling into a 1 mm deep pool of MMH. The domain is 1 cm wide
-and 2 cm tall, with the top open to atmosphere and the sides as adiabatic
-walls.
+  This is a 2D planar case to mimic the drop test experiments, with a 2mm diameter
+  drop of RFNA falling into a 1 mm deep pool of MMH. The domain is 1 cm wide
+  and 2 cm tall, with the top open to atmosphere and the sides as adiabatic
+  walls.
 
 
