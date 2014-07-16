@@ -17,24 +17,25 @@ oxidizers
 
 ## GasChem0
 
-| Species | Reactions | Reference                              |
-| ------- | --------- | -------------------------------------- |
-| 2       | 1         | N/A                                    |
+| Species | Reactions | Reference    |
+| ------- | --------- | ------------ |
+| 2       | 1         | N/A          |
 
     
 Empty gas mechanism with just N and N2 species and HCON elements as basis 
 for non-reacting cases. The N2<=>N decomposition reaction is included since
-the chemkinToFoam converter chokes with 0 reactions.
+the chemkinToFoam converter crashes with 0 reactions.
     
 ## GasChem1
-    Species:   80
-    Reactions: 512
-    Reference: W. Anderson, M. McQuaid, M. Nusca, A. Koltar, "A detailed,
+
+| Species | Reactions | Reference    |
+| ------- | --------- | ------------ |
+| 80      | 512       | W. Anderson, M. McQuaid, M. Nusca, A. Koltar, "A detailed,
                finite-rate, chemical kinetics mechanism for monomethylhydrazine
                red fuming nitric acid systems," Army Research Laboratory,
-               ARL-TR-5088, February 2010
-    
-    This is the original ARL mechanism, but without the 'NAMMH' reaction.
+               ARL-TR-5088, February 2010|
+
+This is the original ARL mechanism, but without the 'NAMMH' reaction.
 
 ## GasChem2
     Species:   25
