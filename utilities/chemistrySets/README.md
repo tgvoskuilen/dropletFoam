@@ -10,6 +10,14 @@ multiphase chemistry set in a python script, use:
     reaction_set = chemBuilder.build_set('GasChem2','LiquidChem2')
     reaction_set.write_file('chem.inp')
 
+The inclusion of liquid chemistry is optional, and can be omitted. Additional
+species can also be added. A few example uses are given below:
+
+    reaction_set = chemBuilder.build_set('GasChem1')
+    reaction_set = chemBuilder.build_set(gas='GasChem2',extra_species=['CH3NHNH2L'])
+    reaction_set = chemBuilder.build_set(gas='GasChem3',liquid='LiquidChem1',extra_species=['SI'])
+    
+
 Gas Reaction Sets
 =========================
 The following reaction sets are for gaseous reaction with MMH and various 

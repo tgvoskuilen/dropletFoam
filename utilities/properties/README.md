@@ -6,19 +6,22 @@ used in the simulations.
 # Raw Data Sources
 The raw data is contained in the three files described below.
 
-### `transport.dat`
+#### `transport.dat`
 
-Viscosity and conductivity NASA polynomials
-
-
-### `lennardjones.csv`
-
-Lennard jones coefficients, can be used for Dij and viscosity (not used)
+Viscosity and conductivity NASA polynomials. For more details, consult NASA
+document [TM-4647](http://www.grc.nasa.gov/WWW/CEAWeb/TM-4647.pdf)
 
 
-### `thermo.dat`
+#### `lennardjones.csv`
 
-JANAF polynomials for H, Cp, and S, as well as atomic composition and molar mass
+Lennard jones coefficients, can be used for binary diffusion coefficient, Dij,
+and viscosity (not used).
+
+
+#### `thermo.dat`
+
+JANAF polynomials for H, Cp, and S, as well as atomic composition and molar 
+mass.
 
 
 # Processed Data

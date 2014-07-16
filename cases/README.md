@@ -38,39 +38,37 @@ folder without altering the base template.
 
 ## List of Template Cases
 
-There are several case templates currently in the case folder. As the solver
-has evolved, some interfaces have changes so they may not all work. Cases which
-have been tested to work with the current interface are listed below with a
-short description.
+There are several case templates currently in the case folder. Brief d
+descriptions of the current cases are included below.
 
-1. `burningDrop`
+#### `burningDrop`
 
-  This is a 2D axisymmetric case with a liquid MMH drop hanging by surface
-  tension force on a small cylinder. There is a hot mixture of N2/N2O flowing
-  over it and it burns. The case does not use dynamic mesh adaptation, and
-  does not require liquid reactions since the oxidizer is in the gas phase.
+This is a 2D axisymmetric case with a liquid MMH drop hanging by surface
+tension force on a small cylinder. There is a hot mixture of N2/N2O flowing
+over it and it burns. The case does not use dynamic mesh adaptation, and
+does not require liquid reactions since the oxidizer is in the gas phase.
 
-2. `dropCaseGels`
+#### `dropCaseGels`
 
-  This is a 3D case with two droplets of 2 mm diameter, one of MMH and one of
-  RFNA, with liquid and gas reactions. The droplets are shear-thinning gels 
-  of Aerosil (intert species SI added).
+This is a 3D case with two droplets of 2 mm diameter, one of MMH and one of
+RFNA, with liquid and gas reactions. The droplets are shear-thinning gels 
+of Aerosil (intert species SI added).
 
-3. `dropCaseLiquids`
+#### `dropCaseLiquids`
 
-  This is a 3D case with the same conditions as `dropCaseGels` except that the
-  droplets are Newtonian liquids rather than gels.
+This is a 3D case with the same conditions as `dropCaseGels` except that the
+droplets are Newtonian liquids rather than gels.
 
-4. `impingingJets`
+#### `impingingJets`
 
-  This is a 3D case focused on the impingement region of the impinging jets
-  setup, with one MMH jet and one RFNA jet.
+This is a 3D case focused on the impingement region of the impinging jets
+setup, with one MMH jet and one RFNA jet.
 
-5. `vialTest`
+#### `vialTest`
 
-  This is a 2D planar case to mimic the drop test experiments, with a 2mm diameter
-  drop of RFNA falling into a 1 mm deep pool of MMH. The domain is 1 cm wide
-  and 2 cm tall, with the top open to atmosphere and the sides as adiabatic
-  walls.
+This is a 2D planar case to mimic the drop test experiments, with a 2mm diameter
+drop of RFNA falling into a 1 mm deep pool of MMH. The domain is 1 cm wide
+and 2 cm tall, with the top open to atmosphere and the sides as adiabatic
+walls.
 
 
