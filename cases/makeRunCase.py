@@ -3,10 +3,11 @@ import argparse
 import shutil
 import os
 
-parser = argparse.ArgumentParser(description='Move case to run folder')
+parser = argparse.ArgumentParser(description=\
+    'Copies a template case from the cases folder to the run folder')
 
 # Required input
-parser.add_argument('caseName', help='Name of the case to copy')
+parser.add_argument('caseName', help='Name of the case folder to copy')
 
 # Optional inputs
 parser.add_argument('-f', dest='force', action='store_true', 
@@ -14,7 +15,7 @@ parser.add_argument('-f', dest='force', action='store_true',
         +'This will overwrite existing case and results!!!')
         
 parser.add_argument('runName', nargs='?', action='store',
-                    default=None, help='Name of run folder')
+                    default=None, help='Name of run folder (optional)')
 
 # Get inputs
 args = parser.parse_args()
@@ -45,7 +46,5 @@ if os.path.isdir(newPath):
         
 # Copy case to run folder
 shutil.copytree(basePath, newPath)
-
-
 
 

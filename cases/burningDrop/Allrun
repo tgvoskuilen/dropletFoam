@@ -5,15 +5,15 @@ import sys
 import math
 
 toolPath = '../../../foamTools/python'
-utilPath = '../../utilities/thermochem'
-chemPath = '../../utilities/chemBuilder'
+utilPath = '../../utilities/properties'
+chemPath = '../../utilities/chemistrySets'
 
 sys.path.append(toolPath)
 sys.path.append(chemPath)
 
-import pyOpenFOAM
-import meshBuilder
-import chemBuilder
+import pyOpenFOAM   # from foamTools/python
+import meshBuilder  # from foamTools/python
+import chemBuilder  # from dropletFoam/utilities/chemistrySets
 
 
 # Read number of processors from command line (1 by default)

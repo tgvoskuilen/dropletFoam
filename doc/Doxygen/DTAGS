@@ -3,32 +3,32 @@
   <compound kind="file">
     <name>alphaCourantNo.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00011</filename>
+    <filename>a00013</filename>
     <member kind="function">
       <type>scalar</type>
       <name>maxAlphaCo</name>
-      <anchorfile>a00011.html</anchorfile>
+      <anchorfile>a00013.html</anchorfile>
       <anchor>a0b33b10c99b5396fccf3faceee62ba2f</anchor>
       <arglist>(readScalar(runTime.controlDict().lookup(&quot;maxAlphaCo&quot;)))</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>if</name>
-      <anchorfile>a00011.html</anchorfile>
+      <anchorfile>a00013.html</anchorfile>
       <anchor>a7249a5be96007daaf6a7fea1b25c3adc</anchor>
       <arglist>(mesh.nInternalFaces())</arglist>
     </member>
     <member kind="variable">
       <type>scalar</type>
       <name>alphaCoNum</name>
-      <anchorfile>a00011.html</anchorfile>
+      <anchorfile>a00013.html</anchorfile>
       <anchor>ac4bd68bec76f168db85d9cedeb62f091</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>scalar</type>
       <name>meanAlphaCoNum</name>
-      <anchorfile>a00011.html</anchorfile>
+      <anchorfile>a00013.html</anchorfile>
       <anchor>a7565d092992c8c1e1f0fa2e0dac693dd</anchor>
       <arglist></arglist>
     </member>
@@ -36,32 +36,32 @@
   <compound kind="file">
     <name>alphaCourantNo.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00012</filename>
+    <filename>a00014</filename>
     <member kind="function">
       <type>scalar</type>
       <name>maxAlphaCo</name>
-      <anchorfile>a00012.html</anchorfile>
+      <anchorfile>a00014.html</anchorfile>
       <anchor>a0b33b10c99b5396fccf3faceee62ba2f</anchor>
       <arglist>(readScalar(runTime.controlDict().lookup(&quot;maxAlphaCo&quot;)))</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>if</name>
-      <anchorfile>a00012.html</anchorfile>
+      <anchorfile>a00014.html</anchorfile>
       <anchor>a7249a5be96007daaf6a7fea1b25c3adc</anchor>
       <arglist>(mesh.nInternalFaces())</arglist>
     </member>
     <member kind="variable">
       <type>scalar</type>
       <name>alphaCoNum</name>
-      <anchorfile>a00012.html</anchorfile>
+      <anchorfile>a00014.html</anchorfile>
       <anchor>ac4bd68bec76f168db85d9cedeb62f091</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>scalar</type>
       <name>meanAlphaCoNum</name>
-      <anchorfile>a00012.html</anchorfile>
+      <anchorfile>a00014.html</anchorfile>
       <anchor>a7565d092992c8c1e1f0fa2e0dac693dd</anchor>
       <arglist></arglist>
     </member>
@@ -69,37 +69,37 @@
   <compound kind="file">
     <name>alphaEqns.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00013</filename>
+    <filename>a00015</filename>
   </compound>
   <compound kind="file">
     <name>alphaEqnsSubCycle.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00014</filename>
+    <filename>a00016</filename>
     <member kind="function">
       <type>label</type>
       <name>nAlphaCorr</name>
-      <anchorfile>a00014.html</anchorfile>
+      <anchorfile>a00016.html</anchorfile>
       <anchor>a2147343c3da208782248ccf131b85c43</anchor>
       <arglist>(readLabel(pimpleDict.lookup(&quot;nAlphaCorr&quot;)))</arglist>
     </member>
     <member kind="function">
       <type>label</type>
       <name>nAlphaSubCycles</name>
-      <anchorfile>a00014.html</anchorfile>
+      <anchorfile>a00016.html</anchorfile>
       <anchor>aeb0f27de62e0d13fcb4b92896d6289b1</anchor>
       <arglist>(readLabel(pimpleDict.lookup(&quot;nAlphaSubCycles&quot;)))</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>if</name>
-      <anchorfile>a00014.html</anchorfile>
+      <anchorfile>a00016.html</anchorfile>
       <anchor>a3b910b91b40b254cf86a96f13fe15b4d</anchor>
       <arglist>(nAlphaSubCycles &gt; 1)</arglist>
     </member>
     <member kind="variable">
       <type>const dictionary &amp;</type>
       <name>pimpleDict</name>
-      <anchorfile>a00014.html</anchorfile>
+      <anchorfile>a00016.html</anchorfile>
       <anchor>aa656ebf7e2eda7d1f7c5d3975ac55a9c</anchor>
       <arglist></arglist>
     </member>
@@ -107,21 +107,21 @@
   <compound kind="file">
     <name>correctPhi.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00015</filename>
+    <filename>a00017</filename>
   </compound>
   <compound kind="file">
     <name>correctPhi.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00016</filename>
+    <filename>a00018</filename>
   </compound>
   <compound kind="file">
     <name>createFields.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00017</filename>
+    <filename>a00019</filename>
     <member kind="variable">
       <type>Info&lt;&lt; &quot;Reading field p_rgh\n&quot;&lt;&lt; endl;volScalarField p_rgh(IOobject(&quot;p_rgh&quot;, runTime.timeName(), mesh, IOobject::MUST_READ, IOobject::AUTO_WRITE), mesh);Info&lt;&lt; &quot;Reading field alpha1\n&quot;&lt;&lt; endl;volScalarField alpha1(IOobject(&quot;alpha1&quot;, runTime.timeName(), mesh, IOobject::MUST_READ, IOobject::AUTO_WRITE), mesh);Info&lt;&lt; &quot;Reading field alpha2\n&quot;&lt;&lt; endl;volScalarField alpha2(IOobject(&quot;alpha2&quot;, runTime.timeName(), mesh, IOobject::MUST_READ, IOobject::AUTO_WRITE), mesh);Info&lt;&lt; &quot;Reading field alpha3\n&quot;&lt;&lt; endl;volScalarField alpha3(IOobject(&quot;alpha3&quot;, runTime.timeName(), mesh, IOobject::MUST_READ, IOobject::AUTO_WRITE), mesh);alpha3==1.0-alpha1-alpha2;Info&lt;&lt; &quot;Reading field U\n&quot;&lt;&lt; endl;volVectorField U(IOobject(&quot;U&quot;, runTime.timeName(), mesh, IOobject::MUST_READ, IOobject::AUTO_WRITE), mesh);threePhaseMixture threePhaseProperties(U, phi);const dimensionedScalar &amp;rho1=threePhaseProperties.rho1();const dimensionedScalar &amp;rho2=threePhaseProperties.rho2();const dimensionedScalar &amp;rho3=threePhaseProperties.rho3();dimensionedScalar D23(threePhaseProperties.lookup(&quot;D23&quot;));volScalarField rho(IOobject(&quot;rho&quot;, runTime.timeName(), mesh, IOobject::READ_IF_PRESENT), alpha1 *rho1+alpha2 *rho2+alpha3 *rho3, alpha1.boundaryField().types());rho.oldTime();surfaceScalarField rhoPhi(IOobject(&quot;rho*phi&quot;, runTime.timeName(), mesh, IOobject::NO_READ, IOobject::NO_WRITE), rho1 *phi);threePhaseInterfaceProperties interface(threePhaseProperties);autoPtr&lt; incompressible::turbulenceModel</type>
       <name>turbulence</name>
-      <anchorfile>a00017.html</anchorfile>
+      <anchorfile>a00019.html</anchorfile>
       <anchor>a8b34ebe0bed9e7700ba26723aba638ed</anchor>
       <arglist>)(incompressible::turbulenceModel::New(U, phi, threePhaseProperties))</arglist>
     </member>
@@ -129,74 +129,74 @@
   <compound kind="file">
     <name>createFields.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00018</filename>
+    <filename>a00020</filename>
     <member kind="function">
       <type>Info&lt;&lt; &quot;Reading field U\n&quot;&lt;&lt; endl;volVectorField U(IOobject(&quot;U&quot;, runTime.timeName(), mesh, IOobject::MUST_READ, IOobject::AUTO_WRITE), mesh);U.oldTime();Info&lt;&lt; &quot;Creating combustion model\n&quot;&lt;&lt; endl;autoPtr&lt; combustionModels::rhoChemistryCombustionModel &gt;</type>
       <name>combustion</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>a96d418c512ea5caa2bc57b253d538c7b</anchor>
       <arglist>(combustionModels::rhoChemistryCombustionModel::New(mesh))</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>Info&lt;&lt; &quot;Extracting two phase mixture thermo:&quot;&lt;&lt; endl;if(!isA&lt; hsTwophaseMixtureThermo&lt; reactingMixture&lt; gasThermoPhysics &gt; &gt; &gt;</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>a6d6618636fa92790b3f58198caafa69c</anchor>
       <arglist>(thermo.composition()))</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>Info&lt;&lt; &quot;Setting mixture pointers&quot;&lt;&lt; endl;mixture.setPtrs(combustion.operator-&gt;</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>aa679cadf38946a6f28036b0da068166c</anchor>
       <arglist>())</arglist>
     </member>
     <member kind="function">
       <type>volScalarField</type>
       <name>refinementField</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>ac15c01370358ece023f59d03cc7fb4b1</anchor>
       <arglist>(IOobject(&quot;refinementField&quot;, runTime.timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mesh, dimensionedScalar(&quot;refinementField&quot;, dimless, 0))</arglist>
     </member>
     <member kind="function">
       <type>volScalarField</type>
       <name>rho</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>aff100819c275c238856897f39a59014c</anchor>
       <arglist>(IOobject(&quot;rho&quot;, runTime.timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE), mixture.rho())</arglist>
     </member>
     <member kind="function">
       <type>autoPtr&lt; compressible::turbulenceModel &gt;</type>
       <name>turbulence</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>a2f930937899dca748238230004f02018</anchor>
       <arglist>(compressible::turbulenceModel::New(rho, U, mixture.rhoPhi(), mixture))</arglist>
     </member>
     <member kind="function">
       <type>combustion</type>
       <name>setTurbulence</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>a92a39ee2b696ba042ef5986bfac7a5fe</anchor>
       <arglist>(turbulence())</arglist>
     </member>
     <member kind="variable">
       <type>rhoChemistryModel &amp;</type>
       <name>chemistry</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>ac819ee8c4a55f01509fd5d4131a19fa6</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>hsReactionThermo &amp;</type>
       <name>thermo</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>a259885d9cb4deaf61a92d3831f5b0955</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>hsTwophaseMixtureThermo&lt; reactingMixture&lt; gasThermoPhysics &gt; &gt; &amp;</type>
       <name>mixture</name>
-      <anchorfile>a00018.html</anchorfile>
+      <anchorfile>a00020.html</anchorfile>
       <anchor>ad6a1cc3cbfda167204e9b41c3f5d29bb</anchor>
       <arglist></arglist>
     </member>
@@ -204,30 +204,30 @@
   <compound kind="file">
     <name>threePhaseMixture.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/incompressibleThreePhaseMixture/</path>
-    <filename>a00019</filename>
+    <filename>a00021</filename>
   </compound>
   <compound kind="file">
     <name>threePhaseMixture.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/incompressibleThreePhaseMixture/</path>
-    <filename>a00020</filename>
+    <filename>a00022</filename>
     <class kind="class">Foam::threePhaseMixture</class>
     <namespace>Foam</namespace>
   </compound>
   <compound kind="file">
     <name>interMixingDyMFoam.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00021</filename>
+    <filename>a00023</filename>
     <member kind="define">
       <type>#define</type>
       <name>twoPhaseProperties</name>
-      <anchorfile>a00021.html</anchorfile>
+      <anchorfile>a00023.html</anchorfile>
       <anchor>a05d9d41b14ac5ef1ceeb6e04f62b896b</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>main</name>
-      <anchorfile>a00021.html</anchorfile>
+      <anchorfile>a00023.html</anchorfile>
       <anchor>a0ddf1224851353fc92bfbff6f499fa97</anchor>
       <arglist>(int argc, char *argv[])</arglist>
     </member>
@@ -235,28 +235,28 @@
   <compound kind="file">
     <name>pEqn.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00022</filename>
+    <filename>a00024</filename>
   </compound>
   <compound kind="file">
     <name>pEqn.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00023</filename>
+    <filename>a00025</filename>
   </compound>
   <compound kind="file">
     <name>readControls.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00024</filename>
+    <filename>a00026</filename>
     <member kind="variable">
       <type>bool</type>
       <name>correctPhi</name>
-      <anchorfile>a00024.html</anchorfile>
+      <anchorfile>a00026.html</anchorfile>
       <anchor>a2755e7ab357d17052f66fe18811a101c</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>bool</type>
       <name>checkMeshCourantNo</name>
-      <anchorfile>a00024.html</anchorfile>
+      <anchorfile>a00026.html</anchorfile>
       <anchor>abe9355324ecab28aef3d04a400f00dba</anchor>
       <arglist></arglist>
     </member>
@@ -264,25 +264,25 @@
   <compound kind="file">
     <name>readControls.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00025</filename>
+    <filename>a00027</filename>
     <member kind="variable">
       <type></type>
       <name>volSourceLimit</name>
-      <anchorfile>a00025.html</anchorfile>
+      <anchorfile>a00027.html</anchorfile>
       <anchor>a1d91719b576283bc615c2471e147f5aa</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>bool</type>
       <name>correctPhi</name>
-      <anchorfile>a00025.html</anchorfile>
+      <anchorfile>a00027.html</anchorfile>
       <anchor>a2755e7ab357d17052f66fe18811a101c</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>bool</type>
       <name>checkMeshCourantNo</name>
-      <anchorfile>a00025.html</anchorfile>
+      <anchorfile>a00027.html</anchorfile>
       <anchor>abe9355324ecab28aef3d04a400f00dba</anchor>
       <arglist></arglist>
     </member>
@@ -290,44 +290,44 @@
   <compound kind="file">
     <name>threePhaseInterfaceProperties.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/threePhaseInterfaceProperties/</path>
-    <filename>a00026</filename>
+    <filename>a00028</filename>
   </compound>
   <compound kind="file">
     <name>threePhaseInterfaceProperties.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/threePhaseInterfaceProperties/</path>
-    <filename>a00027</filename>
+    <filename>a00029</filename>
     <class kind="class">Foam::threePhaseInterfaceProperties</class>
     <namespace>Foam</namespace>
   </compound>
   <compound kind="file">
     <name>UEqn.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/</path>
-    <filename>a00028</filename>
+    <filename>a00030</filename>
     <member kind="function">
       <type>fvVectorMatrix</type>
       <name>UEqn</name>
-      <anchorfile>a00028.html</anchorfile>
+      <anchorfile>a00030.html</anchorfile>
       <anchor>ab3eb7d50975aaffd6e949d28a4c44205</anchor>
       <arglist>(fvm::ddt(rho, U)+fvm::div(rhoPhi, U)+turbulence-&gt;divDevRhoReff(rho, U)==sources(rho, U))</arglist>
     </member>
     <member kind="function">
       <type>UEqn</type>
       <name>relax</name>
-      <anchorfile>a00028.html</anchorfile>
+      <anchorfile>a00030.html</anchorfile>
       <anchor>a9a717d2a556132c73a6bb389a9de48bf</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>sources</type>
       <name>constrain</name>
-      <anchorfile>a00028.html</anchorfile>
+      <anchorfile>a00030.html</anchorfile>
       <anchor>a8a1bbe0b8d53a6385288fdac23a87a67</anchor>
       <arglist>(UEqn)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>if</name>
-      <anchorfile>a00028.html</anchorfile>
+      <anchorfile>a00030.html</anchorfile>
       <anchor>a5340a84918449f06669e13812b90f046</anchor>
       <arglist>(pimple.momentumPredictor())</arglist>
     </member>
@@ -335,25 +335,25 @@
   <compound kind="file">
     <name>UEqn.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00029</filename>
+    <filename>a00031</filename>
     <member kind="function">
       <type>Info&lt;&lt; &quot;Building UEqn&quot;&lt;&lt; endl;fvVectorMatrix UEqn(fvm::ddt(rho, U)+fvm::div(mixture.rhoPhi(), U)-fvm::Sp(fvc::ddt(rho)+fvc::div(mixture.rhoPhi()), U)+turbulence-&gt;</type>
       <name>divDevRhoReff</name>
-      <anchorfile>a00029.html</anchorfile>
+      <anchorfile>a00031.html</anchorfile>
       <anchor>ab6fee03673a9afceaf0794e68d1fab31</anchor>
       <arglist>(U))</arglist>
     </member>
     <member kind="function">
       <type>UEqn</type>
       <name>relax</name>
-      <anchorfile>a00029.html</anchorfile>
+      <anchorfile>a00031.html</anchorfile>
       <anchor>a9a717d2a556132c73a6bb389a9de48bf</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>if</name>
-      <anchorfile>a00029.html</anchorfile>
+      <anchorfile>a00031.html</anchorfile>
       <anchor>a5340a84918449f06669e13812b90f046</anchor>
       <arglist>(pimple.momentumPredictor())</arglist>
     </member>
@@ -361,136 +361,17 @@
   <compound kind="file">
     <name>checkMassBalance.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00030</filename>
-  </compound>
-  <compound kind="file">
-    <name>evaporationModel.C</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/evaporationModel/</path>
-    <filename>a00031</filename>
-    <namespace>Foam</namespace>
-    <member kind="function">
-      <type></type>
-      <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00049.html</anchorfile>
-      <anchor>a056508c2f29e3213f05c450655e20010</anchor>
-      <arglist>(evaporationModel, 0)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>defineRunTimeSelectionTable</name>
-      <anchorfile>a00049.html</anchorfile>
-      <anchor>acb1bd0c97c86452ce7f93fcb79d8f4de</anchor>
-      <arglist>(evaporationModel, components)</arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>evaporationModel.H</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/evaporationModel/</path>
     <filename>a00032</filename>
-    <class kind="class">Foam::evaporationModel</class>
-    <namespace>Foam</namespace>
-  </compound>
-  <compound kind="file">
-    <name>newEvaporationModel.C</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/evaporationModel/</path>
-    <filename>a00033</filename>
-  </compound>
-  <compound kind="file">
-    <name>HertzKnudsenPressure.C</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenPressure/</path>
-    <filename>a00034</filename>
-    <namespace>Foam</namespace>
-    <namespace>Foam::evaporationModels</namespace>
-    <member kind="function">
-      <type></type>
-      <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>af971581aec3e6551902df9957f261b8c</anchor>
-      <arglist>(HertzKnudsenPressure, 0)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>addToRunTimeSelectionTable</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a223b906cf322b5bc513a41ba76f8951a</anchor>
-      <arglist>(evaporationModel, HertzKnudsenPressure, components)</arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>HertzKnudsenPressure.H</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenPressure/</path>
-    <filename>a00035</filename>
-    <class kind="class">Foam::evaporationModels::HertzKnudsenPressure</class>
-    <namespace>Foam</namespace>
-    <namespace>Foam::evaporationModels</namespace>
-  </compound>
-  <compound kind="file">
-    <name>HertzKnudsenTemperature.C</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenTemperature/</path>
-    <filename>a00036</filename>
-    <namespace>Foam</namespace>
-    <namespace>Foam::evaporationModels</namespace>
-    <member kind="function">
-      <type></type>
-      <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a9b1bb99f17ad5ad440bf8ebe478abfbb</anchor>
-      <arglist>(HertzKnudsenTemperature, 0)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>addToRunTimeSelectionTable</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a2fafab71fa86c7e7a87cceb55a4cdb84</anchor>
-      <arglist>(evaporationModel, HertzKnudsenTemperature, components)</arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>HertzKnudsenTemperature.H</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenTemperature/</path>
-    <filename>a00037</filename>
-    <class kind="class">Foam::evaporationModels::HertzKnudsenTemperature</class>
-    <namespace>Foam</namespace>
-    <namespace>Foam::evaporationModels</namespace>
-  </compound>
-  <compound kind="file">
-    <name>PhaseChangeReaction.C</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/PhaseChangeReaction/</path>
-    <filename>a00038</filename>
-    <namespace>Foam</namespace>
-    <namespace>Foam::evaporationModels</namespace>
-    <member kind="function">
-      <type></type>
-      <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a1230c07822ac8085abce466ff4a10d55</anchor>
-      <arglist>(PhaseChangeReaction, 0)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>addToRunTimeSelectionTable</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a98d7362c7a7aa61969a9049896cb9005</anchor>
-      <arglist>(evaporationModel, PhaseChangeReaction, components)</arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>PhaseChangeReaction.H</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/PhaseChangeReaction/</path>
-    <filename>a00039</filename>
-    <class kind="class">Foam::evaporationModels::PhaseChangeReaction</class>
-    <namespace>Foam</namespace>
-    <namespace>Foam::evaporationModels</namespace>
   </compound>
   <compound kind="file">
     <name>hsNewReactionThermos.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/</path>
-    <filename>a00040</filename>
+    <filename>a00033</filename>
     <namespace>Foam</namespace>
     <member kind="function">
       <type></type>
       <name>makeHsReactionMixtureThermo</name>
-      <anchorfile>a00049.html</anchorfile>
+      <anchorfile>a00054.html</anchorfile>
       <anchor>a5a4a77f4c34cfce9a1252118604cf476</anchor>
       <arglist>(hsReactionThermo, hsTwophaseMixtureThermo, reactingMixture, gasThermoPhysics)</arglist>
     </member>
@@ -498,36 +379,156 @@
   <compound kind="file">
     <name>hsTwophaseMixtureThermo.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/</path>
-    <filename>a00041</filename>
+    <filename>a00034</filename>
   </compound>
   <compound kind="file">
     <name>hsTwophaseMixtureThermo.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/</path>
-    <filename>a00042</filename>
+    <filename>a00035</filename>
     <class kind="class">Foam::hsTwophaseMixtureThermo</class>
     <namespace>Foam</namespace>
   </compound>
   <compound kind="file">
+    <name>LangmuirEvaporation.C</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/LangmuirEvaporation/</path>
+    <filename>a00036</filename>
+    <namespace>Foam</namespace>
+    <namespace>Foam::mixturePhaseChangeModels</namespace>
+    <member kind="function">
+      <type></type>
+      <name>defineTypeNameAndDebug</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>ae9155390deed7fefb1f1ef90147468c0</anchor>
+      <arglist>(LangmuirEvaporation, 0)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>addToRunTimeSelectionTable</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>aa5bd433fc41c9baea94ff20835fe6e4d</anchor>
+      <arglist>(mixturePhaseChangeModel, LangmuirEvaporation, components)</arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>LangmuirEvaporation.H</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/LangmuirEvaporation/</path>
+    <filename>a00037</filename>
+    <class kind="class">Foam::mixturePhaseChangeModels::LangmuirEvaporation</class>
+    <namespace>Foam</namespace>
+    <namespace>Foam::mixturePhaseChangeModels</namespace>
+  </compound>
+  <compound kind="file">
+    <name>mixturePhaseChangeModel.C</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/mixturePhaseChangeModel/</path>
+    <filename>a00038</filename>
+    <namespace>Foam</namespace>
+    <member kind="function">
+      <type></type>
+      <name>defineTypeNameAndDebug</name>
+      <anchorfile>a00054.html</anchorfile>
+      <anchor>acb43d5ae62ab432b001ff134549afe11</anchor>
+      <arglist>(mixturePhaseChangeModel, 0)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>defineRunTimeSelectionTable</name>
+      <anchorfile>a00054.html</anchorfile>
+      <anchor>a0711d86688bb746a143d95151e3436be</anchor>
+      <arglist>(mixturePhaseChangeModel, components)</arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>mixturePhaseChangeModel.H</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/mixturePhaseChangeModel/</path>
+    <filename>a00039</filename>
+    <class kind="class">Foam::mixturePhaseChangeModel</class>
+    <class kind="class">Foam::mixturePhaseChangeModel::iNew</class>
+    <namespace>Foam</namespace>
+  </compound>
+  <compound kind="file">
+    <name>newMixturePhaseChangeModel.C</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/mixturePhaseChangeModel/</path>
+    <filename>a00040</filename>
+  </compound>
+  <compound kind="file">
+    <name>PhaseChangeReaction.C</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/PhaseChangeReaction/</path>
+    <filename>a00041</filename>
+    <namespace>Foam</namespace>
+    <namespace>Foam::mixturePhaseChangeModels</namespace>
+    <member kind="function">
+      <type></type>
+      <name>defineTypeNameAndDebug</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>a74491921b08923291e4031803d72df65</anchor>
+      <arglist>(PhaseChangeReaction, 0)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>addToRunTimeSelectionTable</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>a733f576b415d5ce27ee4b6a05c6e5ec9</anchor>
+      <arglist>(mixturePhaseChangeModel, PhaseChangeReaction, components)</arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>PhaseChangeReaction.H</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/PhaseChangeReaction/</path>
+    <filename>a00042</filename>
+    <class kind="class">Foam::mixturePhaseChangeModels::PhaseChangeReaction</class>
+    <namespace>Foam</namespace>
+    <namespace>Foam::mixturePhaseChangeModels</namespace>
+  </compound>
+  <compound kind="file">
+    <name>ThermalDecompReaction.C</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/ThermalDecompReaction/</path>
+    <filename>a00043</filename>
+    <namespace>Foam</namespace>
+    <namespace>Foam::mixturePhaseChangeModels</namespace>
+    <member kind="function">
+      <type></type>
+      <name>defineTypeNameAndDebug</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>ae47dd7ba3825068724bee3f7bf49c90a</anchor>
+      <arglist>(ThermalDecompReaction, 0)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>addToRunTimeSelectionTable</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>ae699f1a957076ba68fb3681287ca0e76</anchor>
+      <arglist>(mixturePhaseChangeModel, ThermalDecompReaction, components)</arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>ThermalDecompReaction.H</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/ThermalDecompReaction/</path>
+    <filename>a00044</filename>
+    <class kind="class">Foam::mixturePhaseChangeModels::ThermalDecompReaction</class>
+    <namespace>Foam</namespace>
+    <namespace>Foam::mixturePhaseChangeModels</namespace>
+  </compound>
+  <compound kind="file">
     <name>phase.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/phase/</path>
-    <filename>a00043</filename>
+    <filename>a00045</filename>
   </compound>
   <compound kind="file">
     <name>phase.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/phase/</path>
-    <filename>a00044</filename>
+    <filename>a00046</filename>
     <class kind="class">Foam::phase</class>
     <namespace>Foam</namespace>
   </compound>
   <compound kind="file">
     <name>subSpecie.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/subSpecie/</path>
-    <filename>a00045</filename>
+    <filename>a00047</filename>
   </compound>
   <compound kind="file">
     <name>subSpecie.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/subSpecie/</path>
-    <filename>a00046</filename>
+    <filename>a00048</filename>
     <class kind="class">Foam::subSpecie</class>
     <class kind="class">Foam::subSpecie::iNew</class>
     <namespace>Foam</namespace>
@@ -535,11 +536,11 @@
   <compound kind="file">
     <name>reactingInterFoam.C</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00047</filename>
+    <filename>a00049</filename>
     <member kind="function">
       <type>int</type>
       <name>main</name>
-      <anchorfile>a00047.html</anchorfile>
+      <anchorfile>a00049.html</anchorfile>
       <anchor>a0ddf1224851353fc92bfbff6f499fa97</anchor>
       <arglist>(int argc, char *argv[])</arglist>
     </member>
@@ -547,1556 +548,1644 @@
   <compound kind="file">
     <name>TEqn.H</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
-    <filename>a00048</filename>
+    <filename>a00050</filename>
+  </compound>
+  <compound kind="file">
+    <name>NewtonianPolynomial.C</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/viscosityModels/NewtonianPolynomial/</path>
+    <filename>a00051</filename>
+    <namespace>Foam</namespace>
+    <namespace>Foam::viscosityModels</namespace>
+    <member kind="function">
+      <type></type>
+      <name>defineTypeNameAndDebug</name>
+      <anchorfile>a00056.html</anchorfile>
+      <anchor>a8bffc511d492c7855f8a11165344ba98</anchor>
+      <arglist>(NewtonianPolynomial, 0)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>addToRunTimeSelectionTable</name>
+      <anchorfile>a00056.html</anchorfile>
+      <anchor>afb229d5f48330ffe2c9c082b99273931</anchor>
+      <arglist>(viscosityModel, NewtonianPolynomial, dictionary)</arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>NewtonianPolynomial.H</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/viscosityModels/NewtonianPolynomial/</path>
+    <filename>a00052</filename>
+    <class kind="class">Foam::viscosityModels::NewtonianPolynomial</class>
+    <namespace>Foam</namespace>
+    <namespace>Foam::viscosityModels</namespace>
+  </compound>
+  <compound kind="file">
+    <name>writeSummaryParameters.H</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
+    <filename>a00053</filename>
   </compound>
   <compound kind="namespace">
     <name>Foam</name>
-    <filename>a00049.html</filename>
-    <namespace>Foam::evaporationModels</namespace>
+    <filename>a00054.html</filename>
+    <namespace>Foam::mixturePhaseChangeModels</namespace>
+    <namespace>Foam::viscosityModels</namespace>
     <class kind="class">Foam::threePhaseMixture</class>
     <class kind="class">Foam::threePhaseInterfaceProperties</class>
-    <class kind="class">Foam::evaporationModel</class>
     <class kind="class">Foam::hsTwophaseMixtureThermo</class>
+    <class kind="class">Foam::mixturePhaseChangeModel</class>
     <class kind="class">Foam::phase</class>
     <class kind="class">Foam::subSpecie</class>
     <member kind="function">
       <type></type>
+      <name>makeHsReactionMixtureThermo</name>
+      <anchorfile>a00054.html</anchorfile>
+      <anchor>a5a4a77f4c34cfce9a1252118604cf476</anchor>
+      <arglist>(hsReactionThermo, hsTwophaseMixtureThermo, reactingMixture, gasThermoPhysics)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
       <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00049.html</anchorfile>
-      <anchor>a056508c2f29e3213f05c450655e20010</anchor>
-      <arglist>(evaporationModel, 0)</arglist>
+      <anchorfile>a00054.html</anchorfile>
+      <anchor>acb43d5ae62ab432b001ff134549afe11</anchor>
+      <arglist>(mixturePhaseChangeModel, 0)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>defineRunTimeSelectionTable</name>
-      <anchorfile>a00049.html</anchorfile>
-      <anchor>acb1bd0c97c86452ce7f93fcb79d8f4de</anchor>
-      <arglist>(evaporationModel, components)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>makeHsReactionMixtureThermo</name>
-      <anchorfile>a00049.html</anchorfile>
-      <anchor>a5a4a77f4c34cfce9a1252118604cf476</anchor>
-      <arglist>(hsReactionThermo, hsTwophaseMixtureThermo, reactingMixture, gasThermoPhysics)</arglist>
+      <anchorfile>a00054.html</anchorfile>
+      <anchor>a0711d86688bb746a143d95151e3436be</anchor>
+      <arglist>(mixturePhaseChangeModel, components)</arglist>
     </member>
   </compound>
   <compound kind="class">
     <name>Foam::threePhaseMixture</name>
-    <filename>a00010.html</filename>
+    <filename>a00012.html</filename>
     <member kind="function">
       <type></type>
       <name>threePhaseMixture</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a45c5da33ac3437156a3cb9409d9a9d7a</anchor>
       <arglist>(const volVectorField &amp;U, const surfaceScalarField &amp;phi)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>~threePhaseMixture</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>aa965aa7ebeea7d58a7c778c5c25adbb4</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>const viscosityModel &amp;</type>
       <name>nuModel1</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a3bcf1f5277c39dfa8bf1a343564e3dd8</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const viscosityModel &amp;</type>
       <name>nuModel2</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a1b3d094854df2758353372a1f7d52e6d</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const viscosityModel &amp;</type>
       <name>nuModel3</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a7fff229f4ca072451165ff803e80b358</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dimensionedScalar &amp;</type>
       <name>rho1</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a98651dbb5441f60c4c75d77b9805a973</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dimensionedScalar &amp;</type>
       <name>rho2</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a7e7a91aa033dfefeff9b20e0bc311f31</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dimensionedScalar &amp;</type>
       <name>rho3</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>aee4bf76c4bc837297474e1209aaf47ec</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>alpha1</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a2e8d127fb6484bd9bfcc2ece15ce76f6</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>alpha2</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>aa263da94eea554132f7402072e956141</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>alpha3</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>ac11528cf13f895b9fd6dc130ad3280a9</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volVectorField &amp;</type>
       <name>U</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a0b0f7927917d51eb0331cdda095aa21f</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>mu</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>ade8fb1431336c11c1314fc324691128f</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; surfaceScalarField &gt;</type>
       <name>muf</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a7e67568163a24c83bd7e9dbd8c16ae3e</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>nu</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a9594b4c7eef2955bc2449e4d1a4fff27</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; surfaceScalarField &gt;</type>
       <name>nuf</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>ac7fc38c5e70d7da8fa868fc8a6bca5d7</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>correct</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>a3ae44b28050c3aa494c1d8e18cf618c1</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
       <name>read</name>
-      <anchorfile>a00010.html</anchorfile>
+      <anchorfile>a00012.html</anchorfile>
       <anchor>af816873151ddb0126e98bb2f914d8ed5</anchor>
       <arglist>()</arglist>
     </member>
   </compound>
   <compound kind="class">
     <name>Foam::threePhaseInterfaceProperties</name>
-    <filename>a00009.html</filename>
+    <filename>a00011.html</filename>
     <member kind="function">
       <type></type>
       <name>threePhaseInterfaceProperties</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>a579c53f4dc5a2479f22c0b5202e57225</anchor>
       <arglist>(const threePhaseMixture &amp;mixture)</arglist>
     </member>
     <member kind="function">
       <type>scalar</type>
       <name>cAlpha</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>ad8ae53c97aba7fe64080f6a48b440ce8</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dimensionedScalar &amp;</type>
       <name>deltaN</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>a991a2e974ac5b15dc51575667eebea47</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const surfaceScalarField &amp;</type>
       <name>nHatf</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>a330228926e44a8dd26cfc2cdde869d88</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>K</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>aaa4cf4f1f3e4c9e73fc2a8165b822902</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>sigma</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>aad6958b40ce37eeb45e1c325c9d489c3</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>sigmaK</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>a73135dbd188868ae63f2073e1ef8648e</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>correct</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>a3ae44b28050c3aa494c1d8e18cf618c1</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="variable" static="yes">
       <type>static const scalar</type>
       <name>convertToRad</name>
-      <anchorfile>a00009.html</anchorfile>
+      <anchorfile>a00011.html</anchorfile>
       <anchor>ae371078bd7ed61925599aef95b7c51e9</anchor>
       <arglist></arglist>
     </member>
   </compound>
   <compound kind="class">
-    <name>Foam::evaporationModel</name>
-    <filename>a00001.html</filename>
-    <member kind="function">
-      <type></type>
-      <name>TypeName</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>adcc6942699d49bff3615eca1e47182de</anchor>
-      <arglist>(&quot;evaporationModel&quot;)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>declareRunTimeSelectionTable</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>ad6d72f7266ac73c6c2b4e928a706d5b8</anchor>
-      <arglist>(autoPtr, evaporationModel, components,(dictionary specieDict, const volScalarField &amp;p, const volScalarField &amp;T, const phase &amp;alphaL, const phase &amp;alphaV),(specieDict, p, T, alphaL, alphaV))</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>evaporationModel</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a8fd6c281701da1f3ba4c9d0696331b00</anchor>
-      <arglist>(const word &amp;type, dictionary specieDict, const volScalarField &amp;p, const volScalarField &amp;T, const phase &amp;alphaL, const phase &amp;alphaV)</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual</type>
-      <name>~evaporationModel</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a06ea07fc94b03125492bf770286e27d3</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>word</type>
-      <name>name</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a99d3e79d596c81558573892ae925e658</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>const word &amp;</type>
-      <name>vaporName</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a40e24f77190e9b9196f726b8cae45765</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>const volScalarField &amp;</type>
-      <name>m_evap</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a64fccf65dc47aab860e13e49047b5cee</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>const volScalarField &amp;</type>
-      <name>area</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a71db6213baab7c580f773813cfd7bda6</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>calculate</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a138de7702795441a00836defdfe3c24f</anchor>
-      <arglist>(const volScalarField &amp;evapMask)</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; volScalarField &gt;</type>
-      <name>Sh</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>aa1c0f7e5daba0f96a5b5215fcd3e3aee</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; volScalarField &gt;</type>
-      <name>rho_evap</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a36e15ec23d97093ffff4e9c564128a0d</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; volScalarField &gt;</type>
-      <name>L</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a000ec438ee71e2310eb593fa1b60edb1</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; volScalarField &gt;</type>
-      <name>dLdT</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a70dc540be4d84a92c365ab1b6c2f1c60</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; volScalarField &gt;</type>
-      <name>pRecoil</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>ac316d18a1066c8691d920ca0ac62b265</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; volVectorField &gt;</type>
-      <name>U_evap</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a0e667acf46ae7559fddf9d9a5a3e42de</anchor>
-      <arglist>(const volVectorField &amp;n) const </arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>YSuSp</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>aae7b9d2837bb609ffca3307ebdcc762f</anchor>
-      <arglist>() const =0</arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>pSuSp</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>aff6eebbab3080274c3ae9a2238704a07</anchor>
-      <arglist>() const =0</arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>TSuSp</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a8d3bf39a7c674b24ed1b61fe5dd522e6</anchor>
-      <arglist>() const =0</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static autoPtr&lt; evaporationModel &gt;</type>
-      <name>New</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a4e90cdee0f744537e1de61635066f5b4</anchor>
-      <arglist>(dictionary specieDict, const volScalarField &amp;p, const volScalarField &amp;T, const phase &amp;alphaL, const phase &amp;alphaV)</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type></type>
-      <name>evaporationModel</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a9e029c89229e261d15675daa9cf5ac1c</anchor>
-      <arglist>(const evaporationModel &amp;)</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type>void</type>
-      <name>operator=</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a8aa065dcde129701f07063fea72d4237</anchor>
-      <arglist>(const evaporationModel &amp;)</arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>const phase &amp;</type>
-      <name>alphaL_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a7e985d08bb8439d01d0462afb021087d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>const phase &amp;</type>
-      <name>alphaV_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>aeb2a3a9bfeef857954257f46d95fd9f6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>const volScalarField &amp;</type>
-      <name>p_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a4c9ce31e482786bbeeed352570fd8d09</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>const volScalarField &amp;</type>
-      <name>T_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>ad77990330c1ea76d80703ca99150f7cc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>dictionary</type>
-      <name>evapDict_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>acbbc793dd4a6d84337befab3faea6f6e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>word</type>
-      <name>vapor_specie_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a7caab2ed2ebba4e6bc5e5aa886b4d714</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>volScalarField</type>
-      <name>m_evap_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a6fd81b037c64a0586c26d340515c767b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>volScalarField</type>
-      <name>mask_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>acf49ef3fcf6bfc94f02d63a6156bb845</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>volScalarField</type>
-      <name>area_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a0aa79b917c528d9b06856ab3fef50f8e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>dimensionedScalar</type>
-      <name>Lb_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a384ea31002eb41265519bd4a07f1fefc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>dimensionedScalar</type>
-      <name>Tb_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>ade2d0e8859f0b947a830f8b990f1833b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>scalar</type>
-      <name>La_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>ae7b2a502b98191d1d8124e4f89282795</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>dimensionedScalar</type>
-      <name>Tc_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a8933e1ccec2d015e0ac810219522bdea</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>dimensionedScalar</type>
-      <name>R_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>a7107e736864dbaee44fce4c174f7b73f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>dimensionedScalar</type>
-      <name>W_</name>
-      <anchorfile>a00001.html</anchorfile>
-      <anchor>ad127c310e0e605ab26fa42b8096038a4</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="class">
     <name>Foam::hsTwophaseMixtureThermo</name>
-    <filename>a00004.html</filename>
+    <filename>a00001.html</filename>
     <templarg></templarg>
     <member kind="function">
       <type></type>
       <name>TypeName</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>ad818c2f697da33173f2a6cc2c243fe86</anchor>
       <arglist>(&quot;hsTwophaseMixtureThermo&quot;)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>hsTwophaseMixtureThermo</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>af6e58cef79fc94ed197b64f8eac4e95c</anchor>
       <arglist>(const fvMesh &amp;)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual</type>
       <name>~hsTwophaseMixtureThermo</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a7dbd2a5cb1d5747de330fe8473d22246</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual basicMultiComponentMixture &amp;</type>
       <name>composition</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a670f0dc1d52b0ba4beaba3cbed773c7d</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual const basicMultiComponentMixture &amp;</type>
       <name>composition</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a9d5a9235f257d9b386d69d4c6836e90e</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>correct</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a3ae44b28050c3aa494c1d8e18cf618c1</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; volScalarField &gt;</type>
       <name>hc</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a63333fbe4ac16ae0b461890235b20b8c</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; scalarField &gt;</type>
       <name>hs</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>ac9b030caa1ab09e8e42a44770fdd0f9f</anchor>
       <arglist>(const scalarField &amp;T, const labelList &amp;cells) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; scalarField &gt;</type>
       <name>hs</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a463d75bd5db3a62410ad48f360d22b42</anchor>
       <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; scalarField &gt;</type>
       <name>Cp</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>ae2e3a0903a352e6dc4ebb9c3a1f1d877</anchor>
       <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; volScalarField &gt;</type>
       <name>Cp</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a3797cbc73f4d48b84e6480f0eea129dd</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; scalarField &gt;</type>
       <name>Cv</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a53013e2108da66ca9bda15f94272f9b2</anchor>
       <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; volScalarField &gt;</type>
       <name>Cv</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a626591544d354cf45535b5c6e64514a4</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; scalarField &gt;</type>
       <name>mu</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a7d07600bfc906876b43c556c81d7b954</anchor>
       <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual tmp&lt; volScalarField &gt;</type>
       <name>muV</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a9206d3a78270786565223a71228d00b1</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; scalarField &gt;</type>
-      <name>kappa</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>ad207809e8c99534b7b2b5cd156495ab1</anchor>
-      <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual tmp&lt; volScalarField &gt;</type>
-      <name>kappaV</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>a73586f01fd4401bef2613287e012c880</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual bool</type>
       <name>read</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>af816873151ddb0126e98bb2f914d8ed5</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>alphaLiquid</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a88fa1db4677d420c4b8499acb3cc9b4c</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>alphaVapor</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>ae052dc19949ec766d983da94dfc74795</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const phase &amp;</type>
+      <name>liquid</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>a3c8c013451c92bd8000ec2219effd8f2</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const phase &amp;</type>
+      <name>vapor</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>a3dc983903ad03a63fdc5309e4b0cc142</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>volScalarField &amp;</type>
       <name>T</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>aae0cfe1315f717e86f7dc657c35a476d</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>const surfaceScalarField &amp;</type>
       <name>rhoPhi</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a7ff4bf2953d6c7263d68b99d441eeb6c</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const surfaceScalarField &amp;</type>
+      <name>DgradY</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>adef0344b0e34cf010e9ab2b0f6aeb734</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>volScalarField &amp;</type>
       <name>divComp</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a51d6317e5b427bee371694b1f43fd38d</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>const volScalarField &amp;</type>
+      <name>divPhaseChange</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>ae30ebb0036ce226e0c3ea2c9645ed4de</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>scalar</type>
       <name>solve</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>a4ca6b3ad7683134a69de42834c1ebbff</anchor>
-      <arglist>(volScalarField &amp;rho)</arglist>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>a83bfd7e86117e2be8f09f97b6d7688e3</anchor>
+      <arglist>(volScalarField &amp;rho, label PIMPLEcorr=0)</arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; surfaceScalarField &gt;</type>
       <name>surfaceTensionForce</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a34b5bb28015877091875d56079af2fe3</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>W</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a6f54520e90bc6ef21a1b666933e5cadf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>setPtrs</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>aa05736a62f0296a385deeab9b202e6c6</anchor>
       <arglist>(combustionModels::rhoChemistryCombustionModel *combustion)</arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>nearInterface</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a6badd63644e3699e9fc8133566e1cbad</anchor>
       <arglist>(double lower=0.01, double upper=0.99) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>getRefinementField</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a27c46216e4ab4159ee9cbd67fbbc3fa9</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
-      <name>S_evap</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>ab9f2eba6b0bc8804d5f79820fdd2e5d6</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>SuSp_evap</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>a4aca394b603fd9e88fbd2cbafde20fb1</anchor>
+      <name>Sv_phaseChange</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>ae2569f02efd7d872f29b091de3e873a3</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
       <name>TSuSp</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>a0db7fbdc6b66472968bbbd01d5f5cfd0</anchor>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>a2d8fc18a9e365bd98d6ba658267d48f1</anchor>
+      <arglist>(word mode) const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>dQ_phaseChange</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>a586003421b01eab2d5cdbe5862a625e8</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
-      <name>dQ_evap</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>ab771d530c562f65ccda1398f8a1371c8</anchor>
+      <name>kByCp</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>aa90ea305b83dceb1140beafafc07268d</anchor>
+      <arglist>(const volScalarField &amp;muEff) const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>rCp</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>ad7592e73ef95775890618e13c2349f5b</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>kByCv</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a8466ea0c58b4cdb4c0ca17d3deaf394e</anchor>
       <arglist>(const volScalarField &amp;muEff) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>rCv</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>a3ed397187908874323e643ba6a434d46</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>setHs</name>
-      <anchorfile>a00004.html</anchorfile>
+      <anchorfile>a00001.html</anchorfile>
       <anchor>aa3aa49792a2fa09dfdf5df3b08f585ec</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>void</type>
-      <name>calculateAlphaVapor</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>a6ce5e8e7c7e00d1aa0d8f66ef96772b3</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>calculateSurfaceTension</name>
-      <anchorfile>a00004.html</anchorfile>
-      <anchor>ac4567d3cb219645ed04bd647dd2a0da6</anchor>
+      <name>updateMeshArDelta</name>
+      <anchorfile>a00001.html</anchorfile>
+      <anchor>a9a6f5444c43db4e6d31588cf00afa9b0</anchor>
       <arglist>()</arglist>
     </member>
   </compound>
   <compound kind="class">
+    <name>Foam::mixturePhaseChangeModel</name>
+    <filename>a00005.html</filename>
+    <class kind="class">Foam::mixturePhaseChangeModel::iNew</class>
+    <member kind="function">
+      <type></type>
+      <name>TypeName</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a9f9b3e847da369886252afe5a6e8046a</anchor>
+      <arglist>(&quot;mixturePhaseChangeModel&quot;)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>declareRunTimeSelectionTable</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a0c8b3f07d90d639705bad1c0ec75d61b</anchor>
+      <arglist>(autoPtr, mixturePhaseChangeModel, components,(const word name, const fvMesh &amp;mesh, const phase &amp;alphaL, const phase &amp;alphaV, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData, dictionary phaseChangeDict),(name, mesh, alphaL, alphaV, speciesData, phaseChangeDict))</arglist>
+    </member>
+    <member kind="function">
+      <type>autoPtr&lt; mixturePhaseChangeModel &gt;</type>
+      <name>clone</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a27e158ffa4c6b19d3b8722b1aba90c89</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>mixturePhaseChangeModel</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a4e2ac01e39bacc63e08f2dea8743a53e</anchor>
+      <arglist>(const word &amp;type, const word name, const fvMesh &amp;mesh, const phase &amp;alphaL, const phase &amp;alphaV, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData, dictionary phaseChangeDict)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual</type>
+      <name>~mixturePhaseChangeModel</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a7682f2e4006e11aa8bf6e2d5f2bc5961</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>const word &amp;</type>
+      <name>name</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a75b72488d2e82151b025744974919d5d</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const word &amp;</type>
+      <name>keyword</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a1513ca12c4660d7e5848c7ace51f32e4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>hasSpecie</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a997b7c5b14ec9fdf3e4cc40ba5022dfa</anchor>
+      <arglist>(const word &amp;name) const </arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>setPtr</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a5cd01e09a2dc533615ee70d074f731f9</anchor>
+      <arglist>(combustionModels::rhoChemistryCombustionModel *combustion)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>Sh</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a92470c0a5c7eb48f323e53074fc35d13</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function" virtualness="pure">
+      <type>virtual void</type>
+      <name>calculate</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a292ba7e95ede879f7e12f1c1a21d85b5</anchor>
+      <arglist>(const volScalarField &amp;phaseChangeZones, const volScalarField &amp;area)=0</arglist>
+    </member>
+    <member kind="function" virtualness="pure">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>mdot</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>aae8f6302d44301773ed4c99e29da1213</anchor>
+      <arglist>(const word &amp;phaseName) const =0</arglist>
+    </member>
+    <member kind="function" virtualness="pure">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>Vdot</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>aa83831e290c438e1f37de286bb9852a9</anchor>
+      <arglist>(const word &amp;phaseName) const =0</arglist>
+    </member>
+    <member kind="function" virtualness="pure">
+      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
+      <name>YSuSp</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a209fca4c6e2a48b7e2ba1087c51c556c</anchor>
+      <arglist>(const word &amp;name) const =0</arglist>
+    </member>
+    <member kind="function" virtualness="pure">
+      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
+      <name>TSuSp</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a8d3bf39a7c674b24ed1b61fe5dd522e6</anchor>
+      <arglist>() const =0</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static autoPtr&lt; mixturePhaseChangeModel &gt;</type>
+      <name>New</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a81c1c1fb42ce60db344b01b78a00588b</anchor>
+      <arglist>(const word name, const fvMesh &amp;mesh, const phase &amp;alphaL, const phase &amp;alphaV, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData, dictionary phaseChangeDict)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type></type>
+      <name>mixturePhaseChangeModel</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>adff8f18394cd29b2fba46b9f699435cd</anchor>
+      <arglist>(const mixturePhaseChangeModel &amp;)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>operator=</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a261c6f50baeb673fc54212e61953bfcc</anchor>
+      <arglist>(const mixturePhaseChangeModel &amp;)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>const fvMesh &amp;</type>
+      <name>mesh_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a23edeeeecebcef11921a33dd5d990570</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>const volScalarField &amp;</type>
+      <name>p_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a4c9ce31e482786bbeeed352570fd8d09</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>const volScalarField &amp;</type>
+      <name>T_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>ad77990330c1ea76d80703ca99150f7cc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>const phase &amp;</type>
+      <name>alphaL_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a7e985d08bb8439d01d0462afb021087d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>const phase &amp;</type>
+      <name>alphaV_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>aeb2a3a9bfeef857954257f46d95fd9f6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>word</type>
+      <name>name_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a50fd7d13a0f7a6007ca5027b3bb8765a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>dictionary</type>
+      <name>phaseChangeDict_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a580feeb8a917f79d36b90c7a8ec6cca7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>volScalarField</type>
+      <name>omega_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>aa1fedc59e2c07e01eabd6ad8bf35c95f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>volScalarField</type>
+      <name>mask_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>acf49ef3fcf6bfc94f02d63a6156bb845</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>HashTable&lt; scalar &gt;</type>
+      <name>reactants_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a57f9dca383c102b35beed135173eafaa</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>HashTable&lt; scalar &gt;</type>
+      <name>products_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>ab07e64d40f63eb9e916262148fa516e6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>HashTable&lt; const gasThermoPhysics * &gt;</type>
+      <name>reacThermo_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>aa3b79167c159c116d629399bea59e677</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>HashTable&lt; const gasThermoPhysics * &gt;</type>
+      <name>prodThermo_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>af4ed668315bc31e8f1486657828f7fd5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>combustionModels::rhoChemistryCombustionModel *</type>
+      <name>combustionPtr_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a55726bfe3abacab4e63f5e7670f16bf7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>dimensionedScalar</type>
+      <name>R_</name>
+      <anchorfile>a00005.html</anchorfile>
+      <anchor>a7107e736864dbaee44fce4c174f7b73f</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>Foam::mixturePhaseChangeModel::iNew</name>
+    <filename>a00003.html</filename>
+    <member kind="function">
+      <type></type>
+      <name>iNew</name>
+      <anchorfile>a00003.html</anchorfile>
+      <anchor>aeeb3c7d8f78e9af20801046b0471bcec</anchor>
+      <arglist>(const fvMesh &amp;mesh, const phase &amp;alphaL, const phase &amp;alphaV, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData)</arglist>
+    </member>
+    <member kind="function">
+      <type>autoPtr&lt; mixturePhaseChangeModel &gt;</type>
+      <name>operator()</name>
+      <anchorfile>a00003.html</anchorfile>
+      <anchor>afe10c39051f36ff530eeadcafc54b373</anchor>
+      <arglist>(Istream &amp;is) const </arglist>
+    </member>
+  </compound>
+  <compound kind="class">
     <name>Foam::phase</name>
-    <filename>a00006.html</filename>
+    <filename>a00007.html</filename>
     <member kind="function">
       <type></type>
       <name>phase</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a054b49d6884b3e932e62faa910758783</anchor>
       <arglist>(const word &amp;name, const dictionary &amp;phaseDict, const fvMesh &amp;mesh, PtrList&lt; volScalarField &gt; &amp;species, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData)</arglist>
     </member>
     <member kind="function">
       <type>autoPtr&lt; phase &gt;</type>
       <name>clone</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>aadb478791ebf29d64401f11b9bdda208</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dictionary &amp;</type>
       <name>dict</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a673ccade304bbbc88a006b8fdcb01523</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const word &amp;</type>
       <name>name</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a75b72488d2e82151b025744974919d5d</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const word &amp;</type>
       <name>keyword</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a1513ca12c4660d7e5848c7ace51f32e4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const volScalarField &amp;</type>
+      <name>cellMask</name>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>ad2f2cb9309b407142ff0fb08a06719c7</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const PtrDictionary&lt; subSpecie &gt; &amp;</type>
       <name>subSpecies</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>ad9c1d0dce9c7ab521d9842f10703e5f2</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>PtrDictionary&lt; subSpecie &gt; &amp;</type>
       <name>subSpecies</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a5ee5db43ede558490f623a198dfdde13</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>surfaceScalarField &amp;</type>
       <name>rhoPhiAlpha</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>ad52a19528d4514435df155e40d9f4bb0</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>const surfaceScalarField &amp;</type>
       <name>rhoPhiAlpha</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a287b27ab9491f019df3da6885a3338f1</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const surfaceScalarField &amp;</type>
+      <name>faceMask</name>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>ac5f39baa0324571748e2e5c23831ca96</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>rhoAlpha</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>ae934464f94284b32277df65133aee4ed</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>setOtherPhase</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a8092070340025340ca0e23786345e79b</anchor>
       <arglist>(const phase *other)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>setPhaseMasks</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a85afa3d8a0f576744c2805254dce4283</anchor>
-      <arglist>(scalar maskTol, const volScalarField &amp;p, const volScalarField &amp;T)</arglist>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>a9f9286f0612c0b648138793d29147437</anchor>
+      <arglist>(scalar maskTol, const volScalarField &amp;p, const volScalarField &amp;T, const PtrDictionary&lt; mixturePhaseChangeModel &gt; &amp;phaseChangeModels, const volScalarField &amp;area)</arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>rho</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a6f4c959c860a33110011c7ddb49efd72</anchor>
       <arglist>(const volScalarField &amp;p, const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>mu</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a0946fef8963e430a5cf44a627070ca3b</anchor>
       <arglist>(const volScalarField &amp;p, const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
-      <name>Sv_evap</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a3eabd6cb622361fb5710171bb2d1a181</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>tmp&lt; volScalarField &gt;</type>
       <name>psi</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a1acee4d4587c13553d585bd1804ae234</anchor>
       <arglist>(const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>Yp</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a88ff4d9c250d40573e4e6df2e9a037f9</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>Ypp</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a196762ee3b69a5cacc60ab33f7d12f78</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>Np</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>afea884e94eb63dcedfae30698874a53a</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>Npp</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a3e8d7ab71d5d7dc3c2664fcc27f66c26</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>W</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a1e1171e443f875a5bf941ebb5a3c81fc</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
-      <name>Sh_evap</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>afbb658d8abb1363b8bd9a2006353a0d3</anchor>
-      <arglist>() const </arglist>
+      <name>kappa</name>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>a6deadf66159ca134dea5f91b3d2ab241</anchor>
+      <arglist>(const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
-      <name>k</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a792144a991ea718f6f92c27b51af4171</anchor>
-      <arglist>() const </arglist>
+      <name>Cp</name>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>a116b8966643acf5c662919219cceeea2</anchor>
+      <arglist>(const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>Cv</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>ae40746edda4cdd068e7b287fe11da804</anchor>
       <arglist>(const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>correct</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a2e639533765b4cde1bd3d0f0c528aa6c</anchor>
       <arglist>(const volScalarField &amp;p, const volScalarField &amp;T)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
       <name>read</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>af2ae470711212b9b1768b48afdff2431</anchor>
       <arglist>(const dictionary &amp;phaseDict)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>setCombustionPtr</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a88d3861e1ccfced8a45eea5352b9d89e</anchor>
       <arglist>(combustionModels::rhoChemistryCombustionModel *combustion)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>setSpecies</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a9628f6d9cb1d73ac679d73993866179f</anchor>
       <arglist>(const volScalarField &amp;rho)</arglist>
     </member>
     <member kind="function">
       <type>volScalarField &amp;</type>
       <name>Y</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>adf7f2137f90a3401044c64439ab5247f</anchor>
       <arglist>(const word &amp;specie)</arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>Y</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a5547a68e869ebe6eb32acbdc4dca4e88</anchor>
       <arglist>(const word &amp;specie) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>sharp</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a3abb36a1efd2cc0d561f45d0a0ad13dc</anchor>
-      <arglist>(scalar tol) const </arglist>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>ad871c8c493fd5103084873af7bb676fc</anchor>
+      <arglist>(scalar tol1, scalar tol2=-1.0) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>sigma</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>ac211472e77e4bc012ff0c0582cc7da7c</anchor>
       <arglist>(const volScalarField &amp;T, const volScalarField &amp;kappaMask) const </arglist>
     </member>
     <member kind="function">
-      <type>tmp&lt; volScalarField &gt;</type>
-      <name>Su_Yi_evap</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>ab846ac73d6477010ebe31ac213280d4c</anchor>
-      <arglist>(const subSpecie &amp;specieI) const </arglist>
-    </member>
-    <member kind="function">
-      <type>tmp&lt; volScalarField &gt;</type>
-      <name>S_evap</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a2e3e82d980c0ac910c4efd48725e5d98</anchor>
-      <arglist>(const volScalarField &amp;p, const volScalarField &amp;T) const </arglist>
-    </member>
-    <member kind="function">
-      <type>tmp&lt; volScalarField &gt;</type>
-      <name>m_evap_sum</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>aabb7afdfdad40c0240560d6c7439ba97</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>tmp&lt; volScalarField &gt;</type>
-      <name>pRecoil</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a80f497d667129b6e7b673cddbc3f8c88</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>YiSuSp</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>af77b45a6b4e6b373ce1e23c5c6a44488</anchor>
-      <arglist>(const subSpecie &amp;specieI) const </arglist>
-    </member>
-    <member kind="function">
-      <type>Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>pSuSp</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a7d7d1ec93d4021053d83541ab55db162</anchor>
-      <arglist>(const volScalarField &amp;p, const volScalarField &amp;T) const </arglist>
-    </member>
-    <member kind="function">
-      <type>Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>TSuSp</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a0db7fbdc6b66472968bbbd01d5f5cfd0</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
       <type>void</type>
       <name>calculateDs</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>ac6519911695d11a866ead8d954168aea</anchor>
-      <arglist>(const volScalarField &amp;muEff)</arglist>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>a87b1127899236643c4d19d7ca6c1a189</anchor>
+      <arglist>(const volScalarField &amp;mut, const volScalarField &amp;p, const volScalarField &amp;T)</arglist>
     </member>
     <member kind="function">
-      <type>scalar</type>
+      <type>tmp&lt; surfaceScalarField &gt;</type>
       <name>solveSubSpecies</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a72c95f7a9e399f07ea90254d7753a48b</anchor>
-      <arglist>(const volScalarField &amp;p, const volScalarField &amp;T)</arglist>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>a85401865343a0a5a9b9ca12cba615995</anchor>
+      <arglist>(const volScalarField &amp;p, const volScalarField &amp;T, const PtrDictionary&lt; mixturePhaseChangeModel &gt; &amp;phaseChangeModels)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>updateGlobalYs</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a041d89a36b839ccf79a3f49e3d2c9f7a</anchor>
-      <arglist>(const volScalarField &amp;rhoAlphaOther)</arglist>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>a56f498e71e49c526bcc95c9b32af0558</anchor>
+      <arglist>(const volScalarField &amp;myRhoAlpha, const volScalarField &amp;otherRhoAlpha)</arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>x</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a5c11ae89dfe0f6f7552eb52b9dd88f25</anchor>
       <arglist>(const word &amp;name) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>xByY</name>
-      <anchorfile>a00006.html</anchorfile>
+      <anchorfile>a00007.html</anchorfile>
       <anchor>a23bb16788a407080bf01fb716a7aa17a</anchor>
       <arglist>(const word &amp;name) const </arglist>
     </member>
     <member kind="function">
-      <type>tmp&lt; volVectorField &gt;</type>
-      <name>URecoil</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a59686f671b819879d484d7bf09a95cb6</anchor>
-      <arglist>(const volVectorField &amp;n) const </arglist>
-    </member>
-    <member kind="function">
-      <type>tmp&lt; volVectorField &gt;</type>
-      <name>n</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>a3dcb151e608f17f21f4752b8ae190b88</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>tmp&lt; volScalarField &gt;</type>
-      <name>H</name>
-      <anchorfile>a00006.html</anchorfile>
-      <anchor>aad7afb325186ec33faa6e21025842a91</anchor>
-      <arglist>() const </arglist>
+      <type>Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
+      <name>YiSuSp</name>
+      <anchorfile>a00007.html</anchorfile>
+      <anchor>af6be17e70f3eeb3a475c2591e2747f22</anchor>
+      <arglist>(const subSpecie &amp;specieI, const PtrDictionary&lt; mixturePhaseChangeModel &gt; &amp;phaseChangeModels) const </arglist>
     </member>
   </compound>
   <compound kind="class">
     <name>Foam::subSpecie</name>
-    <filename>a00008.html</filename>
+    <filename>a00009.html</filename>
     <class kind="class">Foam::subSpecie::iNew</class>
     <member kind="function">
       <type></type>
       <name>subSpecie</name>
-      <anchorfile>a00008.html</anchorfile>
-      <anchor>ab9c0013939db913f50a6f13d605d14d4</anchor>
-      <arglist>(const word &amp;name, const dictionary &amp;subSpecieDict, const fvMesh &amp;mesh, volScalarField &amp;species, const gasThermoPhysics &amp;speciesData, label idx)</arglist>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>a121b9e4c2ef3f301426abbe7d1dc5c05</anchor>
+      <arglist>(const word &amp;name, const dictionary &amp;subSpecieDict, const fvMesh &amp;mesh, volScalarField &amp;species, const gasThermoPhysics &amp;speciesData, label idx, dimensionedScalar phaseSc)</arglist>
     </member>
     <member kind="function">
       <type>autoPtr&lt; subSpecie &gt;</type>
       <name>clone</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>adfafa9997f981f9396185cb459b05827</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dictionary &amp;</type>
       <name>dict</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a673ccade304bbbc88a006b8fdcb01523</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const word &amp;</type>
       <name>name</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a75b72488d2e82151b025744974919d5d</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const word &amp;</type>
       <name>keyword</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a1513ca12c4660d7e5848c7ace51f32e4</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>autoPtr&lt; evaporationModel &gt; &amp;</type>
-      <name>evapPtr</name>
-      <anchorfile>a00008.html</anchorfile>
-      <anchor>ab6dfec9ccccbe3772b4572233966179e</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>const evaporationModel &amp;</type>
-      <name>evapModel</name>
-      <anchorfile>a00008.html</anchorfile>
-      <anchor>aad2932ba4a4d44c49dd9bd234b2cdd9f</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>evaporationModel &amp;</type>
-      <name>evapModel</name>
-      <anchorfile>a00008.html</anchorfile>
-      <anchor>a2f93fa33147a57346f3aa75893244206</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>hasEvaporation</name>
-      <anchorfile>a00008.html</anchorfile>
-      <anchor>a29c5e57910738b3d7e33d1f658ff8e0a</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dimensionedScalar</type>
       <name>rho0</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a06294f3cf7b2414814ef7a49cb209603</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dimensionedScalar</type>
       <name>sigma0</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a4e60fee2a92c7f3b5e31edeb4dbbb1f9</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>Y</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>aa002501ddc84168bf889ce66a0202d3d</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>volScalarField &amp;</type>
       <name>Y</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>ae34f4b7228458a8067440b172ca09cd3</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>const volScalarField &amp;</type>
       <name>Yp</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>ac4ba4d35a8cafbd5cc846b2077e06299</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const surfaceScalarField &amp;</type>
+      <name>D</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>a266aaed6876b56718811d89c9493be9a</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>volScalarField &amp;</type>
       <name>Yp</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>ae057d77c7bc70482df868e11b36ed0f0</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
       <name>hasNuModel</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a81f5bbc1ecadb9d75eda8d6557375bf4</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const viscosityModel &amp;</type>
       <name>nuModel</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>afa09300631c35ef5f7799f3987c1c82d</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>sigma</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a93cd7064986924e6fdec05b4f6e8fc29</anchor>
       <arglist>(const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>const gasThermoPhysics &amp;</type>
       <name>thermo</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a47579d969f3ed1ba5809cedd246c3a6c</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>dimensionedScalar</type>
       <name>W</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>affb2a6bc2db36e2a5237a5f237cda4ab</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>const dimensionedScalar &amp;</type>
-      <name>kappa</name>
-      <anchorfile>a00008.html</anchorfile>
-      <anchor>a7fb7fa758b9bfd85d921bfc2121372ad</anchor>
+      <name>kappaL</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>a63d36ea7a97ebf70375cc17d6a7d77c5</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>label</type>
       <name>idx</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a9f8d6a6b072791ff82a4a70fff5a48ed</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>dimensionedScalar</type>
       <name>RR</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>ad2a1e5bbf0494a6692a11bb1fcfcb1df</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; scalarField &gt;</type>
+      <name>Cp</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>ae2e3a0903a352e6dc4ebb9c3a1f1d877</anchor>
+      <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>Cp</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>af32dca7ba9aee6b9e2564f950439463b</anchor>
+      <arglist>(const volScalarField &amp;T) const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; scalarField &gt;</type>
       <name>Cv</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a53013e2108da66ca9bda15f94272f9b2</anchor>
       <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>Cv</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a86822806be1af03d8f4cc8253611fa9a</anchor>
+      <arglist>(const volScalarField &amp;T) const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; scalarField &gt;</type>
+      <name>kappa</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>ad207809e8c99534b7b2b5cd156495ab1</anchor>
+      <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>kappa</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>a15e21619f780e78976ebef626f502468</anchor>
       <arglist>(const volScalarField &amp;T) const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>correct</name>
-      <anchorfile>a00008.html</anchorfile>
+      <anchorfile>a00009.html</anchorfile>
       <anchor>a3ae44b28050c3aa494c1d8e18cf618c1</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>calculateDs</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>a4d539b7c882d9cc56e21e99de05c609b</anchor>
+      <arglist>(const volScalarField &amp;mut, const volScalarField &amp;rho, const volScalarField &amp;T)</arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>mu</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>a25e0863c2b5416702c89a618c136f8ca</anchor>
+      <arglist>(const volScalarField &amp;T) const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; scalarField &gt;</type>
+      <name>mu</name>
+      <anchorfile>a00009.html</anchorfile>
+      <anchor>a7d07600bfc906876b43c556c81d7b954</anchor>
+      <arglist>(const scalarField &amp;T, const label patchi) const </arglist>
     </member>
   </compound>
   <compound kind="class">
     <name>Foam::subSpecie::iNew</name>
-    <filename>a00005.html</filename>
+    <filename>a00002.html</filename>
     <member kind="function">
       <type></type>
       <name>iNew</name>
-      <anchorfile>a00005.html</anchorfile>
-      <anchor>a1fb6b7869a9147b534f05d47c4fc2975</anchor>
-      <arglist>(const fvMesh &amp;mesh, PtrList&lt; volScalarField &gt; &amp;species, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData)</arglist>
+      <anchorfile>a00002.html</anchorfile>
+      <anchor>a67e98ab406177fc7547974d72d8a113d</anchor>
+      <arglist>(const fvMesh &amp;mesh, PtrList&lt; volScalarField &gt; &amp;species, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData, dimensionedScalar phaseSc)</arglist>
     </member>
     <member kind="function">
       <type>autoPtr&lt; subSpecie &gt;</type>
       <name>operator()</name>
-      <anchorfile>a00005.html</anchorfile>
+      <anchorfile>a00002.html</anchorfile>
       <anchor>a18cf1849aa07d866fe1d9e448c2d6410</anchor>
       <arglist>(Istream &amp;is) const </arglist>
     </member>
   </compound>
   <compound kind="namespace">
-    <name>Foam::evaporationModels</name>
-    <filename>a00050.html</filename>
-    <class kind="class">Foam::evaporationModels::HertzKnudsenPressure</class>
-    <class kind="class">Foam::evaporationModels::HertzKnudsenTemperature</class>
-    <class kind="class">Foam::evaporationModels::PhaseChangeReaction</class>
+    <name>Foam::mixturePhaseChangeModels</name>
+    <filename>a00055.html</filename>
+    <class kind="class">Foam::mixturePhaseChangeModels::LangmuirEvaporation</class>
+    <class kind="class">Foam::mixturePhaseChangeModels::PhaseChangeReaction</class>
+    <class kind="class">Foam::mixturePhaseChangeModels::ThermalDecompReaction</class>
     <member kind="function">
       <type></type>
       <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>af971581aec3e6551902df9957f261b8c</anchor>
-      <arglist>(HertzKnudsenPressure, 0)</arglist>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>ae9155390deed7fefb1f1ef90147468c0</anchor>
+      <arglist>(LangmuirEvaporation, 0)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>addToRunTimeSelectionTable</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a223b906cf322b5bc513a41ba76f8951a</anchor>
-      <arglist>(evaporationModel, HertzKnudsenPressure, components)</arglist>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>aa5bd433fc41c9baea94ff20835fe6e4d</anchor>
+      <arglist>(mixturePhaseChangeModel, LangmuirEvaporation, components)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a9b1bb99f17ad5ad440bf8ebe478abfbb</anchor>
-      <arglist>(HertzKnudsenTemperature, 0)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>addToRunTimeSelectionTable</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a2fafab71fa86c7e7a87cceb55a4cdb84</anchor>
-      <arglist>(evaporationModel, HertzKnudsenTemperature, components)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>defineTypeNameAndDebug</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a1230c07822ac8085abce466ff4a10d55</anchor>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>a74491921b08923291e4031803d72df65</anchor>
       <arglist>(PhaseChangeReaction, 0)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>addToRunTimeSelectionTable</name>
-      <anchorfile>a00050.html</anchorfile>
-      <anchor>a98d7362c7a7aa61969a9049896cb9005</anchor>
-      <arglist>(evaporationModel, PhaseChangeReaction, components)</arglist>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>a733f576b415d5ce27ee4b6a05c6e5ec9</anchor>
+      <arglist>(mixturePhaseChangeModel, PhaseChangeReaction, components)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>defineTypeNameAndDebug</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>ae47dd7ba3825068724bee3f7bf49c90a</anchor>
+      <arglist>(ThermalDecompReaction, 0)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>addToRunTimeSelectionTable</name>
+      <anchorfile>a00055.html</anchorfile>
+      <anchor>ae699f1a957076ba68fb3681287ca0e76</anchor>
+      <arglist>(mixturePhaseChangeModel, ThermalDecompReaction, components)</arglist>
     </member>
   </compound>
   <compound kind="class">
-    <name>Foam::evaporationModels::HertzKnudsenPressure</name>
-    <filename>a00002.html</filename>
-    <base>Foam::evaporationModel</base>
+    <name>Foam::mixturePhaseChangeModels::LangmuirEvaporation</name>
+    <filename>a00004.html</filename>
+    <base>Foam::mixturePhaseChangeModel</base>
     <member kind="function">
       <type></type>
       <name>TypeName</name>
-      <anchorfile>a00002.html</anchorfile>
-      <anchor>abf6c43a0da3a6b322e7e16cfdd63c42a</anchor>
-      <arglist>(&quot;HertzKnudsenPressure&quot;)</arglist>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a63f813006e0b146338b6052fb9375d74</anchor>
+      <arglist>(&quot;LangmuirEvaporation&quot;)</arglist>
     </member>
     <member kind="function">
       <type></type>
-      <name>HertzKnudsenPressure</name>
-      <anchorfile>a00002.html</anchorfile>
-      <anchor>a4a85a14a438f135a2af13237d51e7b72</anchor>
-      <arglist>(dictionary specieDict, const volScalarField &amp;p, const volScalarField &amp;T, const phase &amp;alphaL, const phase &amp;alphaV)</arglist>
+      <name>LangmuirEvaporation</name>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a96babbad27514b59b6372028743c871e</anchor>
+      <arglist>(const word name, const fvMesh &amp;mesh, const phase &amp;alphaL, const phase &amp;alphaV, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData, dictionary phaseChangeDict)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual</type>
-      <name>~HertzKnudsenPressure</name>
-      <anchorfile>a00002.html</anchorfile>
-      <anchor>aab5437db96da058511f6f1d17a5ceda7</anchor>
+      <name>~LangmuirEvaporation</name>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a544ab117584c5998d80dfa845f56243c</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>calculate</name>
-      <anchorfile>a00002.html</anchorfile>
-      <anchor>a138de7702795441a00836defdfe3c24f</anchor>
-      <arglist>(const volScalarField &amp;evapMask)</arglist>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a806574a5b990bd0de9bf5c5f5d2535d4</anchor>
+      <arglist>(const volScalarField &amp;evapMask, const volScalarField &amp;area)</arglist>
     </member>
     <member kind="function">
       <type>tmp&lt; volScalarField &gt;</type>
       <name>dPvdT</name>
-      <anchorfile>a00002.html</anchorfile>
+      <anchorfile>a00004.html</anchorfile>
       <anchor>a3b25560e19747af6196bdfbec9f39d96</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>YSuSp</name>
-      <anchorfile>a00002.html</anchorfile>
-      <anchor>a3be7c5fbf14b7870a40ec08576b7cdd7</anchor>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>L</name>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a000ec438ee71e2310eb593fa1b60edb1</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>dLdT</name>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a70dc540be4d84a92c365ab1b6c2f1c60</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>mdot</name>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a1ba6ebf4802eb60cfb2be3f9fe3d0737</anchor>
+      <arglist>(const word &amp;phaseName) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>Vdot</name>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>a343797f02179b5d349aefb20414c8e61</anchor>
+      <arglist>(const word &amp;phaseName) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
       <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>pSuSp</name>
-      <anchorfile>a00002.html</anchorfile>
-      <anchor>af2696ae023afe34f24ad7d26e28dd4c1</anchor>
-      <arglist>() const </arglist>
+      <name>YSuSp</name>
+      <anchorfile>a00004.html</anchorfile>
+      <anchor>af3140ce6da6c89e70cfa69c57994122b</anchor>
+      <arglist>(const word &amp;specie) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
       <name>TSuSp</name>
-      <anchorfile>a00002.html</anchorfile>
+      <anchorfile>a00004.html</anchorfile>
       <anchor>ac3150d3de711352993d5ea5e0206d142</anchor>
       <arglist>() const </arglist>
     </member>
   </compound>
   <compound kind="class">
-    <name>Foam::evaporationModels::HertzKnudsenTemperature</name>
-    <filename>a00003.html</filename>
-    <base>Foam::evaporationModel</base>
+    <name>Foam::mixturePhaseChangeModels::PhaseChangeReaction</name>
+    <filename>a00008.html</filename>
+    <base>Foam::mixturePhaseChangeModel</base>
     <member kind="function">
       <type></type>
       <name>TypeName</name>
-      <anchorfile>a00003.html</anchorfile>
-      <anchor>aa151e7ea7fad34d72d040f84c92f6df5</anchor>
-      <arglist>(&quot;HertzKnudsenTemperature&quot;)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>HertzKnudsenTemperature</name>
-      <anchorfile>a00003.html</anchorfile>
-      <anchor>a792210e44d515b793520d818809927f5</anchor>
-      <arglist>(dictionary specieDict, const volScalarField &amp;p, const volScalarField &amp;T, const phase &amp;alphaL, const phase &amp;alphaV)</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual</type>
-      <name>~HertzKnudsenTemperature</name>
-      <anchorfile>a00003.html</anchorfile>
-      <anchor>ae22d3bc44f6090b61fa9f850c069d999</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>calculate</name>
-      <anchorfile>a00003.html</anchorfile>
-      <anchor>a138de7702795441a00836defdfe3c24f</anchor>
-      <arglist>(const volScalarField &amp;evapMask)</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>YSuSp</name>
-      <anchorfile>a00003.html</anchorfile>
-      <anchor>a3be7c5fbf14b7870a40ec08576b7cdd7</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>pSuSp</name>
-      <anchorfile>a00003.html</anchorfile>
-      <anchor>af2696ae023afe34f24ad7d26e28dd4c1</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>TSuSp</name>
-      <anchorfile>a00003.html</anchorfile>
-      <anchor>ac3150d3de711352993d5ea5e0206d142</anchor>
-      <arglist>() const </arglist>
-    </member>
-  </compound>
-  <compound kind="class">
-    <name>Foam::evaporationModels::PhaseChangeReaction</name>
-    <filename>a00007.html</filename>
-    <base>Foam::evaporationModel</base>
-    <member kind="function">
-      <type></type>
-      <name>TypeName</name>
-      <anchorfile>a00007.html</anchorfile>
+      <anchorfile>a00008.html</anchorfile>
       <anchor>a2bf7cfddc6e6c695dd152c36e4ff44e3</anchor>
       <arglist>(&quot;PhaseChangeReaction&quot;)</arglist>
     </member>
     <member kind="function">
       <type></type>
       <name>PhaseChangeReaction</name>
-      <anchorfile>a00007.html</anchorfile>
-      <anchor>ac8eff678f69392c86dce6a65f6222340</anchor>
-      <arglist>(dictionary specieDict, const volScalarField &amp;p, const volScalarField &amp;T, const phase &amp;alphaL, const phase &amp;alphaV)</arglist>
+      <anchorfile>a00008.html</anchorfile>
+      <anchor>aca30268ff6fb4b5f2474030db2a31c8f</anchor>
+      <arglist>(const word name, const fvMesh &amp;mesh, const phase &amp;alphaL, const phase &amp;alphaV, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData, dictionary phaseChangeDict)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual</type>
       <name>~PhaseChangeReaction</name>
-      <anchorfile>a00007.html</anchorfile>
+      <anchorfile>a00008.html</anchorfile>
       <anchor>a2f16aff191057c1744d629f51f21932d</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>calculate</name>
-      <anchorfile>a00007.html</anchorfile>
-      <anchor>a138de7702795441a00836defdfe3c24f</anchor>
-      <arglist>(const volScalarField &amp;evapMask)</arglist>
+      <anchorfile>a00008.html</anchorfile>
+      <anchor>a806574a5b990bd0de9bf5c5f5d2535d4</anchor>
+      <arglist>(const volScalarField &amp;evapMask, const volScalarField &amp;area)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>mdot</name>
+      <anchorfile>a00008.html</anchorfile>
+      <anchor>a1ba6ebf4802eb60cfb2be3f9fe3d0737</anchor>
+      <arglist>(const word &amp;phaseName) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>Vdot</name>
+      <anchorfile>a00008.html</anchorfile>
+      <anchor>a343797f02179b5d349aefb20414c8e61</anchor>
+      <arglist>(const word &amp;phaseName) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
       <name>YSuSp</name>
-      <anchorfile>a00007.html</anchorfile>
+      <anchorfile>a00008.html</anchorfile>
       <anchor>af3140ce6da6c89e70cfa69c57994122b</anchor>
       <arglist>(const word &amp;specie) const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
-      <name>pSuSp</name>
-      <anchorfile>a00007.html</anchorfile>
-      <anchor>af2696ae023afe34f24ad7d26e28dd4c1</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
       <name>TSuSp</name>
-      <anchorfile>a00007.html</anchorfile>
+      <anchorfile>a00008.html</anchorfile>
       <anchor>ac3150d3de711352993d5ea5e0206d142</anchor>
       <arglist>() const </arglist>
     </member>
   </compound>
-  <compound kind="dir">
-    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/evaporationModel/</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/evaporationModel/</path>
-    <filename>dir_d958082ab83d64799e51f0f3e1183d7b.html</filename>
-    <file>evaporationModel.C</file>
-    <file>evaporationModel.H</file>
-    <file>newEvaporationModel.C</file>
+  <compound kind="class">
+    <name>Foam::mixturePhaseChangeModels::ThermalDecompReaction</name>
+    <filename>a00010.html</filename>
+    <base>Foam::mixturePhaseChangeModel</base>
+    <member kind="function">
+      <type></type>
+      <name>TypeName</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>ab9f24016dd294b702bf881ca1e6be234</anchor>
+      <arglist>(&quot;ThermalDecompReaction&quot;)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>ThermalDecompReaction</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>a0757f3e0220a7f31554233df2e583216</anchor>
+      <arglist>(const word name, const fvMesh &amp;mesh, const phase &amp;alphaL, const phase &amp;alphaV, const PtrList&lt; gasThermoPhysics &gt; &amp;speciesData, dictionary phaseChangeDict)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual</type>
+      <name>~ThermalDecompReaction</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>a5565e66e9c4656d475c7e8c77c0dc2e4</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>calculate</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>a806574a5b990bd0de9bf5c5f5d2535d4</anchor>
+      <arglist>(const volScalarField &amp;evapMask, const volScalarField &amp;area)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>mdot</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>a1ba6ebf4802eb60cfb2be3f9fe3d0737</anchor>
+      <arglist>(const word &amp;phaseName) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual tmp&lt; volScalarField &gt;</type>
+      <name>Vdot</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>a343797f02179b5d349aefb20414c8e61</anchor>
+      <arglist>(const word &amp;phaseName) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
+      <name>YSuSp</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>af3140ce6da6c89e70cfa69c57994122b</anchor>
+      <arglist>(const word &amp;specie) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual Pair&lt; tmp&lt; volScalarField &gt; &gt;</type>
+      <name>TSuSp</name>
+      <anchorfile>a00010.html</anchorfile>
+      <anchor>ac3150d3de711352993d5ea5e0206d142</anchor>
+      <arglist>() const </arglist>
+    </member>
   </compound>
-  <compound kind="dir">
-    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/</path>
-    <filename>dir_a7397ec07f089f982652784c2f40e9f4.html</filename>
-    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/evaporationModel/</dir>
-    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenPressure/</dir>
-    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenTemperature/</dir>
-    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/PhaseChangeReaction/</dir>
+  <compound kind="namespace">
+    <name>Foam::viscosityModels</name>
+    <filename>a00056.html</filename>
+    <class kind="class">Foam::viscosityModels::NewtonianPolynomial</class>
+    <member kind="function">
+      <type></type>
+      <name>defineTypeNameAndDebug</name>
+      <anchorfile>a00056.html</anchorfile>
+      <anchor>a8bffc511d492c7855f8a11165344ba98</anchor>
+      <arglist>(NewtonianPolynomial, 0)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>addToRunTimeSelectionTable</name>
+      <anchorfile>a00056.html</anchorfile>
+      <anchor>afb229d5f48330ffe2c9c082b99273931</anchor>
+      <arglist>(viscosityModel, NewtonianPolynomial, dictionary)</arglist>
+    </member>
   </compound>
-  <compound kind="dir">
-    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenPressure/</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenPressure/</path>
-    <filename>dir_f85fff6d0d4cea2edc91305295f09e97.html</filename>
-    <file>HertzKnudsenPressure.C</file>
-    <file>HertzKnudsenPressure.H</file>
-  </compound>
-  <compound kind="dir">
-    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenTemperature/</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/HertzKnudsenTemperature/</path>
-    <filename>dir_f9fae5da06e537fe5b6826b26d0cf181.html</filename>
-    <file>HertzKnudsenTemperature.C</file>
-    <file>HertzKnudsenTemperature.H</file>
+  <compound kind="class">
+    <name>Foam::viscosityModels::NewtonianPolynomial</name>
+    <filename>a00006.html</filename>
+    <member kind="function">
+      <type></type>
+      <name>TypeName</name>
+      <anchorfile>a00006.html</anchorfile>
+      <anchor>ac07745a269636d6e8c620030cf4d1d2a</anchor>
+      <arglist>(&quot;NewtonianPolynomial&quot;)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>NewtonianPolynomial</name>
+      <anchorfile>a00006.html</anchorfile>
+      <anchor>af100c6a4d9791b0e7c635b7c63699fe2</anchor>
+      <arglist>(const word &amp;name, const dictionary &amp;viscosityProperties, const volVectorField &amp;U, const surfaceScalarField &amp;phi)</arglist>
+    </member>
+    <member kind="function">
+      <type></type>
+      <name>~NewtonianPolynomial</name>
+      <anchorfile>a00006.html</anchorfile>
+      <anchor>a297de469467b9c31a557eb9c1eb942a1</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>tmp&lt; volScalarField &gt;</type>
+      <name>nu</name>
+      <anchorfile>a00006.html</anchorfile>
+      <anchor>a9594b4c7eef2955bc2449e4d1a4fff27</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>correct</name>
+      <anchorfile>a00006.html</anchorfile>
+      <anchor>a3ae44b28050c3aa494c1d8e18cf618c1</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>read</name>
+      <anchorfile>a00006.html</anchorfile>
+      <anchor>a0efbb4e476c5a62dfa214c481566481c</anchor>
+      <arglist>(const dictionary &amp;viscosityProperties)</arglist>
+    </member>
   </compound>
   <compound kind="dir">
     <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/</path>
     <filename>dir_e6fada9eb0ba5c00d6c9d986f0d7be54.html</filename>
-    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/</dir>
+    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/</dir>
     <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/phase/</dir>
     <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/subSpecie/</dir>
     <file>hsNewReactionThermos.C</file>
@@ -2127,6 +2216,37 @@
     <file>UEqn.H</file>
   </compound>
   <compound kind="dir">
+    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/LangmuirEvaporation/</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/LangmuirEvaporation/</path>
+    <filename>dir_74c3360643288c01fb8beac8728b5add.html</filename>
+    <file>LangmuirEvaporation.C</file>
+    <file>LangmuirEvaporation.H</file>
+  </compound>
+  <compound kind="dir">
+    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/mixturePhaseChangeModel/</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/mixturePhaseChangeModel/</path>
+    <filename>dir_4f2e91bc84ef36378ac1e30ef1a9eb49.html</filename>
+    <file>mixturePhaseChangeModel.C</file>
+    <file>mixturePhaseChangeModel.H</file>
+    <file>newMixturePhaseChangeModel.C</file>
+  </compound>
+  <compound kind="dir">
+    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/</path>
+    <filename>dir_6773d21000e7d47ae4d30bd9934d8ca9.html</filename>
+    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/LangmuirEvaporation/</dir>
+    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/mixturePhaseChangeModel/</dir>
+    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/PhaseChangeReaction/</dir>
+    <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/ThermalDecompReaction/</dir>
+  </compound>
+  <compound kind="dir">
+    <name>solvers/reactingInterFoam/viscosityModels/NewtonianPolynomial/</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/viscosityModels/NewtonianPolynomial/</path>
+    <filename>dir_b867b0015c032f20db1e34d55f602654.html</filename>
+    <file>NewtonianPolynomial.C</file>
+    <file>NewtonianPolynomial.H</file>
+  </compound>
+  <compound kind="dir">
     <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/phase/</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/phase/</path>
     <filename>dir_55086c0be177078c3c5192629b329836.html</filename>
@@ -2134,9 +2254,9 @@
     <file>phase.H</file>
   </compound>
   <compound kind="dir">
-    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/PhaseChangeReaction/</name>
-    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/evaporationModels/PhaseChangeReaction/</path>
-    <filename>dir_94d573be374fa9b5a3ecc033bc068e79.html</filename>
+    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/PhaseChangeReaction/</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/PhaseChangeReaction/</path>
+    <filename>dir_d085b8d2ef7c1d39a0c2169e7f2a4a70.html</filename>
     <file>PhaseChangeReaction.C</file>
     <file>PhaseChangeReaction.H</file>
   </compound>
@@ -2145,6 +2265,7 @@
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/</path>
     <filename>dir_54a66bef5a5025d86e8f2f919df912f1.html</filename>
     <dir>solvers/reactingInterFoam/hsTwophaseMixtureThermo/</dir>
+    <dir>solvers/reactingInterFoam/viscosityModels/</dir>
     <file>alphaCourantNo.H</file>
     <file>checkMassBalance.H</file>
     <file>correctPhi.H</file>
@@ -2154,6 +2275,7 @@
     <file>readControls.H</file>
     <file>TEqn.H</file>
     <file>UEqn.H</file>
+    <file>writeSummaryParameters.H</file>
   </compound>
   <compound kind="dir">
     <name>solvers/</name>
@@ -2170,10 +2292,23 @@
     <file>subSpecie.H</file>
   </compound>
   <compound kind="dir">
+    <name>solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/ThermalDecompReaction/</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/hsTwophaseMixtureThermo/mixturePhaseChangeModels/ThermalDecompReaction/</path>
+    <filename>dir_89bb397a24c885ee2d4ca3160c28e42d.html</filename>
+    <file>ThermalDecompReaction.C</file>
+    <file>ThermalDecompReaction.H</file>
+  </compound>
+  <compound kind="dir">
     <name>solvers/interMixingDyMFoam/threePhaseInterfaceProperties/</name>
     <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/interMixingDyMFoam/threePhaseInterfaceProperties/</path>
     <filename>dir_013970ec31ea4e4d771a77dbf3eb66e1.html</filename>
     <file>threePhaseInterfaceProperties.C</file>
     <file>threePhaseInterfaceProperties.H</file>
+  </compound>
+  <compound kind="dir">
+    <name>solvers/reactingInterFoam/viscosityModels/</name>
+    <path>/scratch/chaf124lnx01/a/tvoskuil/OpenFOAM/tvoskuil-2.1.x/repos/dropletFoam/solvers/reactingInterFoam/viscosityModels/</path>
+    <filename>dir_7a5f49ce18f6945b8877a98ff134a4d9.html</filename>
+    <dir>solvers/reactingInterFoam/viscosityModels/NewtonianPolynomial/</dir>
   </compound>
 </tagfile>

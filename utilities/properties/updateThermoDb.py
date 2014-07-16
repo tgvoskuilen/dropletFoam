@@ -1,3 +1,4 @@
+#!/usr/bin/python
 
 import os
 import csv
@@ -11,8 +12,10 @@ with warnings.catch_warnings():
     from scipy.optimize import curve_fit
     import matplotlib.pyplot as plt
 
-#import ast
-# d = ast.literal_eval(str)
+
+#------------------------------------------------------------------------------
+# Function Declarations
+#------------------------------------------------------------------------------
 
 def read_Sutherland_coeffs():
     LJcoeffFile = 'SutherlandCoeffs.csv'
@@ -234,6 +237,7 @@ def read_transport_entry(lines):
         
         err = 0.5*cov[0][0]**0.5/opt[0] + 0.5*cov[1][1]**0.5/opt[1]
         
+        # Print a message if the fit is off by more than 5%
         if err > 0.05:
             print "Fit error for %s is %5.4f (%5.2f, %4.3e)" % (name, err, opt[0], opt[1])
             muFit = Sutherland(T,opt[0],opt[1])
@@ -309,5 +313,13 @@ def write_openfoam_database(thermo, transport, dbfilename):
             dbfile.write(str(data)+"\n")
     
 
+#------------------------------------------------------------------------------
+# Main Script
+#------------------------------------------------------------------------------
+if __name__ == "__main__":
 
+    thermoData = read_thermo('thermo.dat')
+    transportData = read_transport('transport.dat')
+
+    write_openfoam_database(thermoData, transportData, 'thermo.pydb')
     

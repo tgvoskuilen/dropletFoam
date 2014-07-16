@@ -16,18 +16,18 @@ Gas reaction sets
 The following reaction sets are for gaseous reaction with MMH and various 
 oxidizers
 
---------------------------------------------------------------------------------
-GasChem0
-    Species:   2
-    Reactions: 1
-    Reference: N/A
+## GasChem0
+
+ | Species | Reactions | Reference                              |
+ | ------- | --------- | -------------------------------------- |
+ | 2       | 1         | N/A                                    |
+
     
-    Empty gas mechanism with just N and N2 species and HCON elements as basis 
-    for non-reacting cases. The N2<=>N decomposition reaction is included since
-    the chemkinToFoam converter chokes with 0 reactions.
+Empty gas mechanism with just N and N2 species and HCON elements as basis 
+for non-reacting cases. The N2<=>N decomposition reaction is included since
+the chemkinToFoam converter chokes with 0 reactions.
     
---------------------------------------------------------------------------------
-GasChem1
+## GasChem1
     Species:   80
     Reactions: 512
     Reference: W. Anderson, M. McQuaid, M. Nusca, A. Koltar, "A detailed,
@@ -37,8 +37,7 @@ GasChem1
     
     This is the original ARL mechanism, but without the 'NAMMH' reaction.
 
---------------------------------------------------------------------------------
-GasChem2
+## GasChem2
     Species:   25
     Reactions: 98
     Reference: N. Labbe, Y. Kim, P. Westmoreland, "Computational mechanism
@@ -48,8 +47,7 @@ GasChem2
     This is Labbe's reduced version of the ARL mechanism, internally referred to
     as RChem1
 
---------------------------------------------------------------------------------
-GasChem3
+## GasChem3
     Species:   29
     Reactions: 120
     Reference: Labbe/Westmoreland internal communications, MURI Task 3.2
@@ -57,8 +55,7 @@ GasChem3
     This is Labbe's reduced version of the ARL mechanism, internally referred to
     as RChem2
 
---------------------------------------------------------------------------------
-GasChem4
+## GasChem4
     Species:   41
     Reactions: X
     Reference: N. Labbe, "Determining detailed reaction kinetics for nitrogen
@@ -67,8 +64,7 @@ GasChem4
     
     This is Labbe's new mechanism, internally referred to as RChem3
 
---------------------------------------------------------------------------------
-GasChem5
+## GasChem5
     Species:   41
     Reactions: X-4
     Reference: Labbe/Westmoreland
@@ -76,8 +72,7 @@ GasChem5
     This is Labbe's new mechanism, internally referred to as RChem3S, which is
     the same as GasChem4 but with 4 stiff reactions removed
 
---------------------------------------------------------------------------------
-GasChem6
+## GasChem6
     Species:   35
     Reactions: 49
     Reference: ARL/McQuaid
@@ -93,8 +88,7 @@ The following liquid reaction sets are predominantly to enable reaction pathways
 between MMH and nitric acid in liquid phase.
 
     
---------------------------------------------------------------------------------
-LiquidChem1
+## LiquidChem1
     Species:    9
     Reactions:  1
     Reference:  TBD
@@ -104,8 +98,7 @@ LiquidChem1
     includes liquid NO2 so it can evaporate and work with RFNA, but there is no
     reaction between liquid MMH and liquid NO2
     
--------------------------------------------------------------------------------
-LiquidChem2
+## LiquidChem2
     Species:    11
     Reactions:  2
     Reference:  TBD
@@ -113,5 +106,5 @@ LiquidChem2
     This includes the global 1-step reaction from LiquidChem2 and the forward
     aerosol reaction.
 
---------------------------------------------------------------------------------
+
 
