@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 
 import os
 import csv
@@ -182,7 +182,7 @@ def calc_NASA_mu(Tmax,muCoeffs):
 
     Tmin = min([x['T1'] for x in muCoeffs])
     
-    T = np.linspace(Tmin,Tmax,500)
+    T = np.linspace(Tmin,Tmax,50)
     mu = np.zeros_like(T)
     
     for c in muCoeffs:
@@ -195,7 +195,11 @@ def calc_NASA_mu(Tmax,muCoeffs):
 
 
     
-def read_transport_entry(lines):
+def read_transport_entry(lines,verbose):
+    """
+    Read a single transport polynomial entry and fit the Sutherland model to it.
+    Plot the fit if the fit is bad, or verbose is True
+    """
     name1 = lines[0][0:15].strip()
     name2 = lines[0][15:30].strip()
     
@@ -238,7 +242,7 @@ def read_transport_entry(lines):
         err = 0.5*cov[0][0]**0.5/opt[0] + 0.5*cov[1][1]**0.5/opt[1]
         
         # Print a message if the fit is off by more than 5%
-        if err > 0.05:
+        if err > 0.05 or verbose:
             print "Fit error for %s is %5.4f (%5.2f, %4.3e)" % (name, err, opt[0], opt[1])
             muFit = Sutherland(T,opt[0],opt[1])
             f = plt.figure()
@@ -247,7 +251,12 @@ def read_transport_entry(lines):
             ax.plot(T,muFit,'-k')
             f.suptitle(name)
             f.show()
-            raw_input("This fit is off by more than 5%...")
+            if verbose:
+                status = raw_input("Press Enter to go to the next entry, 'q' to quit: ")
+                if status.upper() == 'Q':
+                    quit()
+            else:
+                raw_input("This fit is off by more than 5%, press Enter to continue... ")
             plt.close(f)
 
         data['Ts'] = opt[0]
@@ -256,8 +265,10 @@ def read_transport_entry(lines):
     return data
 
 
-def read_transport(transportFile):
-    
+def read_transport(transportFile, verbose=False):
+    """
+    Read the transport polynomials and convert them to Sutherland coefficients
+    """
     with open(transportFile,'r') as f:
         lines = f.readlines()
 
@@ -271,14 +282,14 @@ def read_transport(transportFile):
         if line:
             if line[0] != '!':
                 if line[0] != ' ' and currentEntry:
-                    entry = read_transport_entry(currentEntry)
+                    entry = read_transport_entry(currentEntry,verbose)
                     data[entry['Name']] = entry
                     currentEntry = []
                     
                 currentEntry.append(line)
                 
     if currentEntry:
-        entry = read_transport_entry(currentEntry)
+        entry = read_transport_entry(currentEntry,verbose)
         data[entry['Name']] = entry
 
     return data
@@ -305,21 +316,54 @@ def write_openfoam_database(thermo, transport, dbfilename):
             dataSet[name]['As'] = 1e-5
             dataSet[name]['Ts'] = 200
     
-    print "\nAssumed thermo for %d of %d species" % (assumed, assumed+found)
-    print "Transport contained %d entries" % len(transport)
+    print "\nAssumed transport properties for %d of %d species" \
+          % (assumed, assumed+found)
+    print "Transport data file contained %d entries" % len(transport)
     
     with open(dbfilename,'w') as dbfile:
         for name,data in dataSet.iteritems():
             dbfile.write(str(data)+"\n")
     
 
+        
 #------------------------------------------------------------------------------
 # Main Script
 #------------------------------------------------------------------------------
 if __name__ == "__main__":
 
-    thermoData = read_thermo('thermo.dat')
-    transportData = read_transport('transport.dat')
+    try:
+        from argparse import ArgumentParser
+        
+        parser = ArgumentParser(description=\
+            'Reads the raw input files and generates a pydb database')
 
+        # Optional inputs
+        parser.add_argument('-v', dest='verbose', action='store_true', 
+               help='Enable verbose analysis, lots of plots')
+                
+        # Get inputs
+        args = parser.parse_args()
+        verbose = args.verbose
+    
+    except ImportError:
+        from optparse import OptionParser
+        
+        parser = OptionParser(description=\
+            'Reads the raw input files and generates a pydb database')
+
+        # Optional inputs
+        parser.add_option('-v', dest='verbose', action='store_true', 
+               help='Enable verbose analysis, lots of plots', default=False)
+                
+        # Get inputs
+        (options,args) = parser.parse_args()
+        verbose = options.verbose
+
+            
+    # Load data
+    thermoData = read_thermo('thermo.dat')
+    transportData = read_transport('transport.dat',verbose)
+
+    # Write pydb database file
     write_openfoam_database(thermoData, transportData, 'thermo.pydb')
     

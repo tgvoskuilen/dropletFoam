@@ -1,8 +1,17 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
+
+# Custom Python Allrun script. Run with number of processors as an input, as
+#  ./Allrun 16
+#
+# Or with no processors input for a serial run, as
+#  ./Allrun
+#
+# To resume a parallel run that was stopped while preserving .out files, use
+#  ./Allrun resume
+#
 
 import os
 import sys
-import math
 
 toolPath = '../../../foamTools/python'
 utilPath = '../../utilities/properties'
@@ -12,7 +21,6 @@ sys.path.append(toolPath)
 sys.path.append(chemPath)
 
 import pyOpenFOAM   # from foamTools/python
-import meshBuilder  # from foamTools/python
 import chemBuilder  # from dropletFoam/utilities/chemistrySets
 
 
@@ -76,7 +84,7 @@ print "Running the problem"
 if np > 1:
     os.system('foamJob -parallel -screen reactingInterFoam')
 else:
-    os.system('reactingInterFoam')
+    pyOpenFOAM.run('reactingInterFoam',hide=False,logName='log')
 
 print "Finished!"
 

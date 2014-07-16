@@ -1,14 +1,27 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
+
+# Custom Python Allrun script. Run with number of processors as an input, as
+#  ./Allrun 16
+#
+# Or with no processors input for a serial run, as
+#  ./Allrun
+#
+# To resume a parallel run that was stopped while preserving .out files, use
+#  ./Allrun resume
+#
 
 import os
 import sys
 
 toolPath = '../../../foamTools/python'
-utilPath = '../../utilities/thermochem'
+utilPath = '../../utilities/properties'
+chemPath = '../../utilities/chemistrySets'
 
 sys.path.append(toolPath)
+sys.path.append(chemPath)
 
-import pyOpenFOAM
+import pyOpenFOAM   # from foamTools/python
+import chemBuilder  # from dropletFoam/utilities/chemistrySets
 
 
 # Read number of processors from command line (1 by default)
@@ -17,8 +30,12 @@ import pyOpenFOAM
 if not resume:
     print "Running with %d processors" % np
 
-    # Load a chemistry set to use from the utilities/chem folder
-    pyOpenFOAM.load_chemistry('chemLR1AR1RChem3.inp',utilPath)
+    # Create the chemistry input file from a gas and liquid set
+    reaction_set = chemBuilder.build_set(gas='GasChem2', liquid='LiquidChem2')
+    reaction_set.write_file('chem.inp')
+    
+    # Convert the chemistry file from CHEMKIN format to OpenFOAM format
+    pyOpenFOAM.convert_chemistry(utilPath)
 
     # Read species list from 'constant/reactions'
     species = pyOpenFOAM.read_species()
