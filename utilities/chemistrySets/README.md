@@ -1,7 +1,6 @@
 
-chemBuilder
-================================================================================
- by Tyler Voskuilen
+Chemistry Database
+===========================
  
 This program builds liquid/gas chemistry input files from a selection of 
 reaction sets. Details about the individual sets are included below. To build a
@@ -11,16 +10,16 @@ multiphase chemistry set in a python script, use:
     reaction_set = chemBuilder.build_set('GasChem2','LiquidChem2')
     reaction_set.write_file('chem.inp')
 
-Gas reaction sets
-================================================================================
+Gas Reaction Sets
+=========================
 The following reaction sets are for gaseous reaction with MMH and various 
 oxidizers
 
 ## GasChem0
 
- | Species | Reactions | Reference                              |
- | ------- | --------- | -------------------------------------- |
- | 2       | 1         | N/A                                    |
+| Species | Reactions | Reference                              |
+| ------- | --------- | -------------------------------------- |
+| 2       | 1         | N/A                                    |
 
     
 Empty gas mechanism with just N and N2 species and HCON elements as basis 

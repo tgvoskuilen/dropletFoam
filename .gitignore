@@ -33,6 +33,7 @@ log*
 *.log
 images*/
 data*/
+*.pydb
 
 # Run folder
 run
