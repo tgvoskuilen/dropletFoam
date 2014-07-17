@@ -139,30 +139,35 @@ modifications you will just be searching for `Troe` and replacing it with
 `TsangHerron`. 
 
 ## Part 1: Adding a TsangHerron fallOffFunction to OpenFOAM
+<ul>
 
-1\. Locate the `fallOffFunctions` folder. In my version, it is at
-    `thermophysicalModels/specie/reaction/reactionRate/fallOffFunctions`
+<li>Locate the `fallOffFunctions` folder. In my version, it is at
+    `thermophysicalModels/specie/reaction/reactionRate/fallOffFunctions`</li>
     
-2\. Copy the `TroeFallOffFunction` folder and rename the new folder 
-    `TsangHerronFallOffFunction`
+<li>Copy the `TroeFallOffFunction` folder and rename the new folder 
+    `TsangHerronFallOffFunction`</li>
     
-3\. Rename `TroeFallOffFunction.H` and `TroeFallOffFunctionI.H` in the new 
-    folder to `TsangHerronFallOffFunction.H` and `TsangHerronFallOffFunctionI.H`
+<li>Rename `TroeFallOffFunction.H` and `TroeFallOffFunctionI.H` in the new 
+    folder to `TsangHerronFallOffFunction.H` and `TsangHerronFallOffFunctionI.H`</li>
   
-4\. Open `TsangHerronFallOffFunction.H` and make the following edits:
+<li>Open `TsangHerronFallOffFunction.H` and make the following edits:
 
-> i\.  Replace all `Troe` with `TsangHerron`
->
-> ii\. In the `// Private data` section, remove the 
->     `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
->     `scalar a0_, a1_`;
->    
-> iii\. In the `inline TsangHerronFallOffFunction` input list, change the inputs to
+<ul>
+<li>Replace all `Troe` with `TsangHerron`</li>
+<li>In the `// Private data` section, remove the 
+ `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
+`scalar a0_, a1_`;</li>
+
+<li>In the `inline TsangHerronFallOffFunction` input list, change the inputs to
 ```
     const scalar a0,
     const scalar a1
 ```
->
+</li>
+</ul>
+</li>
+</ul>
+
 > iv\. Open `TsangHerronFallOffFunctionI.H` and make the following edits:
 
     1. Replace all `Troe` with `TsangHerron`
