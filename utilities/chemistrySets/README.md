@@ -163,22 +163,21 @@ modifications you will just be searching for `Troe` and replacing it with
      const scalar a1
      ```
 
-
 5. Open `TsangHerronFallOffFunctionI.H` and make the following edits:
 
   1. Replace all `Troe` with `TsangHerron`
    
   2. Change the three constructor functions to be:
      ```
-        inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction
-        (
-            const scalar a0,
-            const scalar a1
-        )
-        :
-        a0_(a0),
-        a1_(a1)
-        {}
+     inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction
+     (
+         const scalar a0,
+         const scalar a1
+     )
+     :
+     a0_(a0),
+     a1_(a1)
+     {}
      ```
      ```
      inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(Istream& is)
@@ -196,73 +195,78 @@ modifications you will just be searching for `Troe` and replacing it with
      a1_(readScalar(dict.lookup("a1")))
      {}
      ```
+     
   3. Change the `operator()` function to use the Tsang and Herron approach
-```   
-    inline Foam::scalar Foam::TsangHerronFallOffFunction::operator()
-    (
-        const scalar T,
-        const scalar Pr
-    ) const
-    {
-        scalar logFcent = log10(max(a0_ + a1_*T, SMALL));
+     ```   
+     inline Foam::scalar Foam::TsangHerronFallOffFunction::operator()
+     (
+         const scalar T,
+         const scalar Pr
+     ) const
+     {
+         scalar logFcent = log10(max(a0_ + a1_*T, SMALL));
 
-        scalar logPr = log10(max(Pr, SMALL));
-        return pow(10.0, logFcent/(1.0 + sqr(logPr)));
-    }
-```
-    4. Change the next two writer functions to be
-``` 
-    inline void Foam::TsangHerronFallOffFunction::write(Ostream& os) const
-    {
-        os.writeKeyword("a0") << a0_ << token::END_STATEMENT << nl;
-        os.writeKeyword("a1") << a1_ << token::END_STATEMENT << nl;
-    }
+         scalar logPr = log10(max(Pr, SMALL));
+         return pow(10.0, logFcent/(1.0 + sqr(logPr)));
+     }
+     ```
+     
+  4. Change the next two writer functions to be
+     ``` 
+     inline void Foam::TsangHerronFallOffFunction::write(Ostream& os) const
+     {
+         os.writeKeyword("a0") << a0_ << token::END_STATEMENT << nl;
+         os.writeKeyword("a1") << a1_ << token::END_STATEMENT << nl;
+     }
+     ```
+     ```
+     inline Foam::Ostream& Foam::operator<<
+     (
+         Foam::Ostream& os,
+         const Foam::TsangHerronFallOffFunction& tfof
+     )
+     {
+         os  << token::BEGIN_LIST
+             << tfof.a0_
+             << token::SPACE << tfof.a1_
+             << token::END_LIST;
 
-    inline Foam::Ostream& Foam::operator<<
-    (
-        Foam::Ostream& os,
-        const Foam::TsangHerronFallOffFunction& tfof
-    )
-    {
-        os  << token::BEGIN_LIST
-            << tfof.a0_
-            << token::SPACE << tfof.a1_
-            << token::END_LIST;
+         return os;
+     }
+     ```
 
-        return os;
-    }
-```
-
-5. Edit the reaction macros
-    1. Go to `thermophysicalModels/specie/reaction/reactions`
-    2. Open `makeChemkinReactions.C` and make the following edits:
-        1. Add `#include "TsangHerronFallOffFunction.H"` after the line with the 
-           Troe function
-        2. Add the following around line 80 (copy the Troe version and replace 
-           Troe with TsangHerron)
-```
-    makePressureDependentReactions
-    (
-        gasThermoPhysics,
-        ArrheniusReactionRate,
-        TsangHerronFallOffFunction
-    )
-```
-  * Open `makeReactionThermoReactions.C` and do the following edits
-    * Add `#include "TsangHerronFallOffFunction.H"` after the line with the 
-      Troe function
-    * Add the following lines to the macro after the Troe part, remembering 
-      the `\` at the end of each line
-```
-    makePressureDependentReactions                                             \
-    (                                                                          \
-       Thermo,                                                                 \
-       ArrheniusReactionRate,                                                  \
-       TsangHerronFallOffFunction                                              \
-    )                                                                          \
-```
-* Recompile the specie library by going to `thermophysicalModels/specie` and
-  running `wclean`, `rmdepall`, and `wmake libso`
+6. Go to `thermophysicalModels/specie/reaction/reactions` to edit the reaction
+   macros
+  1. Open `makeChemkinReactions.C` and make the following edits:
+    1. Add `#include "TsangHerronFallOffFunction.H"` after the line with the 
+       Troe function
+    2. Add the following around line 80 (copy the Troe version and replace 
+       Troe with TsangHerron)
+       ```
+       makePressureDependentReactions
+       (
+           gasThermoPhysics,
+           ArrheniusReactionRate,
+           TsangHerronFallOffFunction
+       )
+       ```
+       
+  2. Open `makeReactionThermoReactions.C` and do the following edits
+    1. Add `#include "TsangHerronFallOffFunction.H"` after the line with the 
+       Troe function
+    2. Add the following lines to the macro after the Troe part, remembering 
+       the `\` at the end of each line
+       ```
+       makePressureDependentReactions                                             \
+       (                                                                          \
+          Thermo,                                                                 \
+          ArrheniusReactionRate,                                                  \
+          TsangHerronFallOffFunction                                              \
+       )                                                                          \
+       ```
+       
+7. Recompile the specie library by going to `thermophysicalModels/specie` and
+   running `wclean`, `rmdepall`, and `wmake libso`
     
 Congratulations, you have added a new reaction type to openfoam. Next up is to 
 modify the Chemkin reader so it can read the T&H inputs from a chemkin 
