@@ -152,10 +152,10 @@ modifications you will just be searching for `Troe` and replacing it with
     `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
     `scalar a0_, a1_`;
   * In the `inline TsangHerronFallOffFunction` input list, change the inputs to
-```
+
         const scalar a0,
         const scalar a1
-```
+
 * Open `TsangHerronFallOffFunctionI.H` and make the following edits:
   * Replace all `Troe` with `TsangHerron`
   * Change the three constructor functions to be:
