@@ -158,18 +158,19 @@ modifications you will just be searching for `Troe` and replacing it with
 ```
 * Open `TsangHerronFallOffFunctionI.H` and make the following edits:
   1. Replace all `Troe` with `TsangHerron`
+  
   2. Change the three constructor functions to be:
-```
-    inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction
-    (
-        const scalar a0,
-        const scalar a1
-    )
-    :
-    a0_(a0),
-    a1_(a1)
-    {}
-```
+
+        inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction
+        (
+            const scalar a0,
+            const scalar a1
+        )
+        :
+        a0_(a0),
+        a1_(a1)
+        {}
+
 ```
     inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(Istream& is)
     :
