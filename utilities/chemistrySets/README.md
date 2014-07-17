@@ -140,8 +140,8 @@ modifications you will just be searching for `Troe` and replacing it with
 
 ## Part 1: Adding a TsangHerron fallOffFunction to OpenFOAM
 
-* Locate the fallOffFunctions folder. In my version, it is at
-  thermophysicalModels/specie/reaction/reactionRate/fallOffFunctions
+* Locate the `fallOffFunctions` folder. In my version, it is at
+  `thermophysicalModels/specie/reaction/reactionRate/fallOffFunctions`
    
 * Copy the `TroeFallOffFunction` folder and rename the new folder 
   `TsangHerronFallOffFunction`
@@ -149,10 +149,10 @@ modifications you will just be searching for `Troe` and replacing it with
 * Rename `TroeFallOffFunction.H` and `TroeFallOffFunctionI.H` in the new 
   folder to `TsangHerronFallOffFunction.H` and `TsangHerronFallOffFunctionI.H`
    
-* Open 'TsangHerronFallOffFunction.H' and make the following edits:
-  * Replace all 'Troe' with 'TsangHerron'
-  * In the "// Private data" section, remove the 
-      `scalars alpha_, Tsss_, Tss_, and Ts_;` and add the line `scalar a0_, a1_`;
+* Open `TsangHerronFallOffFunction.H` and make the following edits:
+  * Replace all `Troe` with `TsangHerron`
+  * In the `// Private data` section, remove the 
+      `scalar alpha_; scalars Tsss_, Tss_, Ts_;` lines and add the line `scalar a0_, a1_`;
   * In the `inline TsangHerronFallOffFunction` input list, change the inputs to
 ```
         const scalar a0,
@@ -171,8 +171,8 @@ modifications you will just be searching for `Troe` and replacing it with
     a0_(a0),
     a1_(a1)
     {}
-
-
+```
+```
     inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(Istream& is)
     :
         a0_(readScalar(is.readBegin("TsangHerronFallOffFunction(Istream&)"))),
@@ -180,7 +180,8 @@ modifications you will just be searching for `Troe` and replacing it with
     {
         is.readEnd("TsangHerronFallOffFunction(Istream&)");
     }
-
+```
+```
     inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(const dictionary& dict)
     :
     a0_(readScalar(dict.lookup("a0"))),
@@ -258,18 +259,28 @@ formatted input and create the newly defined reaction.
 
 ## Part 2: Adding the T&H Form to the Chemkin Reader
 
-	Navigate to thermophysicalModels/reactionThermo/chemistryReaders/chemkinReader
-	Open chemkinReader.H and make the following edits:
-	Add 'TsangHerronReactionType' after the 'TroeReactionType' in the enum reactionKeyword
-	Add 'TsangHerron' after 'Troe' in the enum fallOffFunctionType
-	Change the size of fallOffFunctionNames to 5
-	Open chemkinReader.C and make the following edits:
-	Add '#include "TsangHerronFallOffFunction.H"' after the Troe include around line 37
-	Add "TsangHerron" after "Troe" in the fallOffFunctionNames around line 78 and change the '4' in the size to a '5'
-	In the initReactionKeywordTable after the line with "TROE", add the line to look for the �TH� keyword in the chemkin file (note that using �T&H� here results in errors, since the parser hangs on the �&� character for some reason)
-        reactionKeywordTable_.insert("TH", TsangHerronReactionType);
+* Navigate to `thermophysicalModels/reactionThermo/chemistryReaders/chemkinReader`
+* Open `chemkinReader.H` and make the following edits:
+  * Add `TsangHerronReactionType` after the `TroeReactionType` in the `enum reactionKeyword`
+  * Add `TsangHerron` after `Troe` in the `enum fallOffFunctionType`
+  * Change the size of `fallOffFunctionNames` to 5
 
-	Locate the case structure with a Troe entry around line 287 (search for 'Troe') and copy the entire Troe case. Pay particular attention to the large purple letters in the section below. The T&H form needs 1 or 2 coefficients, while the Troe needs more. Edit it to be something like:
+* Open `chemkinReader.C` and make the following edits:
+  * Add `#include "TsangHerronFallOffFunction.H"` after the Troe include around line 37
+  * Add `TsangHerron` after `Troe` in the `fallOffFunctionNames` around 
+    line 78 and change the `4` in the size to a `5`
+  * In the `initReactionKeywordTable` after the line with `TROE`, add the line 
+    to look for the `TH` keyword in the chemkin file (note that using `T&H` 
+    here results in errors, since the parser hangs on the `&` character for some reason)
+```
+reactionKeywordTable_.insert("TH", TsangHerronReactionType);
+```
+
+  * Locate the case structure with a `Troe` entry around line 287 (search 
+    for `Troe`) and copy the entire `Troe` case. Pay particular attention to 
+    the numbers in the section below. The T&H form needs 1 or 2 
+    coefficients, while the Troe needs more. Edit it to be:
+```
         case TsangHerron:
         {
             scalarList TsangHerronCoeffs
@@ -323,9 +334,12 @@ formatted input and create the newly defined reaction.
             );
         }
         break;
+```
 
-	Open chemkinLexer.L and make the following edits:
-	Locate the TroeReactionType case entry around line 926 (search for Troe)  and copy the entire Troe case entry, modifying it as:
+* Open `chemkinLexer.L` and make the following edits:
+  * Locate the `TroeReactionType` case entry around line 926 (search for Troe)
+    and copy the entire Troe case entry, modifying it to be:
+```
         case TsangHerronReactionType:
         {
             if (!pDependentSpecieName.size())
@@ -359,10 +373,15 @@ formatted input and create the newly defined reaction.
             BEGIN(readReactionCoeffs);
             break;
         }
-       
-	Recompile
-	Go up to the 'reactionThermo' folder and run 'wclean', 'rmdepall', then 'wmake libso' to recompile the library. (There are always a load of warnings from chemkinLexer.L  about old-style casts. You can ignore those.)
-	Go to the applications/utilities/thermophysical/chemkinToFoam folder and recompile with �wmake�
+```
+
+* Recompile using the following steps
+  * Go up to the `reactionThermo` folder and run `wclean`, `rmdepall`, 
+    then `wmake libso` to recompile the library. (There are always a load of 
+    warnings from `chemkinLexer.L` about old-style casts. You can ignore those.)
+    
+  * Go to the `applications/utilities/thermophysical/chemkinToFoam` folder 
+    and recompile with �wmake�
        
 
 
