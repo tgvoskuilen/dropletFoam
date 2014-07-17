@@ -242,28 +242,28 @@ modifications you will just be searching for `Troe` and replacing it with
        Troe function
     2. Add the following around line 80 (copy the Troe version and replace 
        Troe with TsangHerron)
-       ```
-       makePressureDependentReactions
-       (
-           gasThermoPhysics,
-           ArrheniusReactionRate,
-           TsangHerronFallOffFunction
-       )
-       ```
+     ```
+     makePressureDependentReactions
+     (
+         gasThermoPhysics,
+         ArrheniusReactionRate,
+         TsangHerronFallOffFunction
+     )
+     ```
        
   2. Open `makeReactionThermoReactions.C` and do the following edits
     1. Add `#include "TsangHerronFallOffFunction.H"` after the line with the 
        Troe function
     2. Add the following lines to the macro after the Troe part, remembering 
        the `\` at the end of each line
-       ```
-       makePressureDependentReactions                                             \
-       (                                                                          \
-          Thermo,                                                                 \
-          ArrheniusReactionRate,                                                  \
-          TsangHerronFallOffFunction                                              \
-       )                                                                          \
-       ```
+     ```
+     makePressureDependentReactions                                             \
+     (                                                                          \
+        Thermo,                                                                 \
+        ArrheniusReactionRate,                                                  \
+        TsangHerronFallOffFunction                                              \
+     )                                                                          \
+     ```
        
 7. Recompile the specie library by going to `thermophysicalModels/specie` and
    running `wclean`, `rmdepall`, and `wmake libso`
@@ -275,27 +275,30 @@ formatted input and create the newly defined reaction.
 
 ## Part 2: Adding the T&H Form to the Chemkin Reader
 
-* Go to `thermophysicalModels/reactionThermo/chemistryReaders/chemkinReader`
-* Open `chemkinReader.H` and make the following edits:
-  * Add `TsangHerronReactionType` after the `TroeReactionType` in the `enum reactionKeyword`
-  * Add `TsangHerron` after `Troe` in the `enum fallOffFunctionType`
-  * Change the size of `fallOffFunctionNames` to 5
+1. Go to `thermophysicalModels/reactionThermo/chemistryReaders/chemkinReader`
+2. Open `chemkinReader.H` and make the following edits:
+  1. Add `TsangHerronReactionType` after the `TroeReactionType` in the `enum reactionKeyword`
+  2. Add `TsangHerron` after `Troe` in the `enum fallOffFunctionType`
+  3. Change the size of `fallOffFunctionNames` to 5
 
-* Open `chemkinReader.C` and make the following edits:
-  * Add `#include "TsangHerronFallOffFunction.H"` after the Troe include around line 37
-  * Add `TsangHerron` after `Troe` in the `fallOffFunctionNames` around 
-    line 78 and change the `4` in the size to a `5`
-  * In the `initReactionKeywordTable` after the line with `TROE`, add the line 
-    to look for the `TH` keyword in the chemkin file (note that using `T&H` 
-    here results in errors, since the parser hangs on the `&` character for some reason)
-```
-reactionKeywordTable_.insert("TH", TsangHerronReactionType);
-```
-  * Locate the case structure with a `Troe` entry around line 287 (search 
-    for `Troe`) and copy the entire `Troe` case. Pay particular attention to 
-    the numbers in the section below. The T&H form needs 1 or 2 
-    coefficients, while the Troe needs more. Edit it to be:
-```
+3. Open `chemkinReader.C` and make the following edits:
+  1. Add `#include "TsangHerronFallOffFunction.H"` after the Troe include around line 37
+  
+  2. Add `TsangHerron` after `Troe` in the `fallOffFunctionNames` around 
+     line 78 and change the `4` in the size to a `5`
+     
+  3. In the `initReactionKeywordTable` after the line with `TROE`, add the line 
+     to look for the `TH` keyword in the chemkin file (note that using `T&H` 
+     here results in errors, since the parser hangs on the `&` character for some reason)
+     ```
+     reactionKeywordTable_.insert("TH", TsangHerronReactionType);
+     ```
+     
+  4. Locate the case structure with a `Troe` entry around line 287 (search 
+     for `Troe`) and copy the entire `Troe` case. Pay particular attention to 
+     the numbers in the section below. The T&H form needs 1 or 2 
+     coefficients, while the Troe needs more. Edit it to be:
+     ```
         case TsangHerron:
         {
             scalarList TsangHerronCoeffs
@@ -349,12 +352,12 @@ reactionKeywordTable_.insert("TH", TsangHerronReactionType);
             );
         }
         break;
-```
+     ```
 
-* Open `chemkinLexer.L` and make the following edits:
-  * Locate the `TroeReactionType` case entry around line 926 (search for Troe)
-    and copy the entire Troe case entry, modifying it to be:
-```
+4. Open `chemkinLexer.L` and make the following edits:
+  1. Locate the `TroeReactionType` case entry around line 926 (search for Troe)
+     and copy the entire Troe case entry, modifying it to be:
+     ```
         case TsangHerronReactionType:
         {
             if (!pDependentSpecieName.size())
@@ -388,15 +391,15 @@ reactionKeywordTable_.insert("TH", TsangHerronReactionType);
             BEGIN(readReactionCoeffs);
             break;
         }
-```
+     ```
 
-* Recompile using the following steps
-  * Go up to the `reactionThermo` folder and run `wclean`, `rmdepall`, 
-    then `wmake libso` to recompile the library. (There are always a load of 
-    warnings from `chemkinLexer.L` about old-style casts. You can ignore those.)
+5. Recompile using the following steps
+  1. Go up to the `reactionThermo` folder and run `wclean`, `rmdepall`, 
+     then `wmake libso` to recompile the library. (There are always a load of 
+     warnings from `chemkinLexer.L` about old-style casts. You can ignore those.)
     
-  * Go to the `applications/utilities/thermophysical/chemkinToFoam` folder 
-    and recompile with �wmake�
+  2. Go to the `applications/utilities/thermophysical/chemkinToFoam` folder 
+     and recompile with �wmake�
        
 
 
