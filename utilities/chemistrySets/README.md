@@ -139,40 +139,37 @@ modifications you will just be searching for `Troe` and replacing it with
 `TsangHerron`. 
 
 ## Part 1: Adding a TsangHerron fallOffFunction to OpenFOAM
-<ul>
 
-<li>Locate the `fallOffFunctions` folder. In my version, it is at
-    `thermophysicalModels/specie/reaction/reactionRate/fallOffFunctions`</li>
+1. Locate the `fallOffFunctions` folder. In my version, it is at
+   `thermophysicalModels/specie/reaction/reactionRate/fallOffFunctions`
     
-<li>Copy the `TroeFallOffFunction` folder and rename the new folder 
-    `TsangHerronFallOffFunction`</li>
+2. Copy the `TroeFallOffFunction` folder and rename the new folder 
+   `TsangHerronFallOffFunction`
     
-<li>Rename `TroeFallOffFunction.H` and `TroeFallOffFunctionI.H` in the new 
-    folder to `TsangHerronFallOffFunction.H` and `TsangHerronFallOffFunctionI.H`</li>
+3. Rename `TroeFallOffFunction.H` and `TroeFallOffFunctionI.H` in the new 
+   folder to `TsangHerronFallOffFunction.H` and `TsangHerronFallOffFunctionI.H`
   
-<li>Open `TsangHerronFallOffFunction.H` and make the following edits:
+4. Open `TsangHerronFallOffFunction.H` and make the following edits:
 
-<ul>
-<li>Replace all `Troe` with `TsangHerron`</li>
-<li>In the `// Private data` section, remove the 
- `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
-`scalar a0_, a1_`;</li>
+  1. Replace all `Troe` with `TsangHerron`
 
-<li>In the `inline TsangHerronFallOffFunction` input list, change the inputs to
-```
-    const scalar a0,
-    const scalar a1
-```
-</li>
-</ul>
-</li>
-</ul>
+  2. In the `// Private data` section, remove the 
+     `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
+     `scalar a0_, a1_`;
 
-> iv\. Open `TsangHerronFallOffFunctionI.H` and make the following edits:
+  3. In the `inline TsangHerronFallOffFunction` input list, change the inputs to
+     ```
+     const scalar a0,
+     const scalar a1
+     ```
 
-    1. Replace all `Troe` with `TsangHerron`
-    2. Change the three constructor functions to be:
-```
+
+5. Open `TsangHerronFallOffFunctionI.H` and make the following edits:
+
+  1. Replace all `Troe` with `TsangHerron`
+   
+  2. Change the three constructor functions to be:
+     ```
         inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction
         (
             const scalar a0,
@@ -182,25 +179,24 @@ modifications you will just be searching for `Troe` and replacing it with
         a0_(a0),
         a1_(a1)
         {}
-```
-```
-    inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(Istream& is)
-    :
-        a0_(readScalar(is.readBegin("TsangHerronFallOffFunction(Istream&)"))),
-        a1_(readScalar(is))
-    {
-        is.readEnd("TsangHerronFallOffFunction(Istream&)");
-    }
-```
-```
-    inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(const dictionary& dict)
-    :
-    a0_(readScalar(dict.lookup("a0"))),
-    a1_(readScalar(dict.lookup("a1")))
-    {}
-
-```
-    3. Change the `operator()` function to use the Tsang and Herron approach
+     ```
+     ```
+     inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(Istream& is)
+     :
+         a0_(readScalar(is.readBegin("TsangHerronFallOffFunction(Istream&)"))),
+         a1_(readScalar(is))
+     {
+         is.readEnd("TsangHerronFallOffFunction(Istream&)");
+     }
+     ```
+     ```
+     inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(const dictionary& dict)
+     :
+     a0_(readScalar(dict.lookup("a0"))),
+     a1_(readScalar(dict.lookup("a1")))
+     {}
+     ```
+  3. Change the `operator()` function to use the Tsang and Herron approach
 ```   
     inline Foam::scalar Foam::TsangHerronFallOffFunction::operator()
     (
