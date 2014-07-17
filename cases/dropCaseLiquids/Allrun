@@ -14,7 +14,7 @@ import os
 import sys
 
 toolPath = '../../../foamTools/python'
-utilPath = '../../utilities/properties'
+propPath = '../../utilities/properties'
 chemPath = '../../utilities/chemistrySets'
 
 sys.path.append(toolPath)
@@ -35,7 +35,7 @@ if not resume:
     reaction_set.write_file('chem.inp')
     
     # Convert the chemistry file from CHEMKIN format to OpenFOAM format
-    pyOpenFOAM.convert_chemistry(utilPath)
+    pyOpenFOAM.convert_chemistry(propPath)
 
     # Read species list from 'constant/reactions'
     species = pyOpenFOAM.read_species()
@@ -44,7 +44,7 @@ if not resume:
     pyOpenFOAM.add_species_to_thermo_dict(species)
 
     # Write the thermo file based on the species list
-    pyOpenFOAM.write_thermo(species,utilPath)
+    pyOpenFOAM.write_thermo(species,propPath)
 
     # Make the *.foam file for ParaView
     pyOpenFOAM.touch_foam_files('liquidDrop')

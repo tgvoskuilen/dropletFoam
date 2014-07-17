@@ -125,6 +125,248 @@ reaction between liquid MMH and liquid NO2
 This includes the global 1-step reaction from LiquidChem1 and the forward
 aerosol reaction.
 
+Adding Tsang & Herron Reactions
+======================================
+Several of the mechanisms above require the use of Tsang & Herron reactions,
+which are not a part of OpenFOAM by default. The following section provides instructions
+for how to add them to OpenFOAM so you can use the mechanisms which require them.
+
+The Tsang & Herron reaction form is a simplified version of Troe, which is already
+a part of OpenFOAM. The difference between these lies in the calculation of 
+F for the pressure-dependence. The line numbers and file locations are from
+OpenFOAM-2.1.x, so they may differ slightly from other versions. For most
+modifications you will just be searching for `Troe` and replacing it with
+`TsangHerron`. 
+
+## Part 1: Adding a TsangHerron fallOffFunction to OpenFOAM
+
+1. Locate the fallOffFunctions folder. In my version, it is at
+   thermophysicalModels/specie/reaction/reactionRate/fallOffFunctions
+   
+2. Copy the `TroeFallOffFunction` folder and rename the new folder 
+   `TsangHerronFallOffFunction`
+   
+3. Rename `TroeFallOffFunction.H` and `TroeFallOffFunctionI.H` in the new 
+   folder to `TsangHerronFallOffFunction.H` and `TsangHerronFallOffFunctionI.H`
+   
+4. Open 'TsangHerronFallOffFunction.H' and make the following edits:
+   1. Replace all 'Troe' with 'TsangHerron'
+   2. In the "// Private data" section, remove the 
+      `scalars alpha_, Tsss_, Tss_, and Ts_;` and add the line `scalar a0_, a1_`;
+   3. In the `inline TsangHerronFallOffFunction` input list, change the inputs to
+   
+      const scalar a0,
+      const scalar a1
+
+5. Open `TsangHerronFallOffFunctionI.H` and make the following edits:
+   1. Replace all `Troe` with `TsangHerron`
+   2. Change the three constructor functions to be:
+   
+    inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction
+    (
+        const scalar a0,
+        const scalar a1
+    )
+    :
+    a0_(a0),
+    a1_(a1)
+    {}
+
+
+    inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(Istream& is)
+    :
+        a0_(readScalar(is.readBegin("TsangHerronFallOffFunction(Istream&)"))),
+        a1_(readScalar(is))
+    {
+        is.readEnd("TsangHerronFallOffFunction(Istream&)");
+    }
+
+    inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(const dictionary& dict)
+    :
+    a0_(readScalar(dict.lookup("a0"))),
+    a1_(readScalar(dict.lookup("a1")))
+    {}
+
+
+   3. Change the operator() function to use the Tsang and Herron approach
+   
+    inline Foam::scalar Foam::TsangHerronFallOffFunction::operator()
+    (
+        const scalar T,
+        const scalar Pr
+    ) const
+    {
+        scalar logFcent = log10(max(a0_ + a1_*T, SMALL));
+
+        scalar logPr = log10(max(Pr, SMALL));
+        return pow(10.0, logFcent/(1.0 + sqr(logPr)));
+    }
+    
+   4. Change the next two writer functions to be
+   
+    inline void Foam::TsangHerronFallOffFunction::write(Ostream& os) const
+    {
+        os.writeKeyword("a0") << a0_ << token::END_STATEMENT << nl;
+        os.writeKeyword("a1") << a1_ << token::END_STATEMENT << nl;
+    }
+
+    inline Foam::Ostream& Foam::operator<<
+    (
+        Foam::Ostream& os,
+        const Foam::TsangHerronFallOffFunction& tfof
+    )
+    {
+        os  << token::BEGIN_LIST
+            << tfof.a0_
+            << token::SPACE << tfof.a1_
+            << token::END_LIST;
+
+        return os;
+    }
+        
+6. Add the new reaction to the reaction building macros in `thermophysicalModels/specie/reaction/reactions`
+7. Open `makeChemkinReactions.C` and make the following edits:
+   1. Add `#include "TsangHerronFallOffFunction.H"` after the line with the Troe function
+   2. Add the following around line 80 (copy the Troe version and replace Troe with TsangHerron)
+   
+    makePressureDependentReactions
+    (
+        gasThermoPhysics,
+        ArrheniusReactionRate,
+        TsangHerronFallOffFunction
+    )
+        
+8. Open `makeReactionThermoReactions.C` and do the following edits
+   1. Add `#include "TsangHerronFallOffFunction.H"` after the line with the Troe function
+   2. Add the following lines to the macro after the Troe part, remembering the '\' at the end of each line
+   
+    makePressureDependentReactions                                             \
+    (                                                                          \
+       Thermo,                                                                 \
+       ArrheniusReactionRate,                                                  \
+       TsangHerronFallOffFunction                                              \
+    )                                                                          \
+
+9. Recompile the specie library and check for errors
+10. Go to the `thermophysicalModels/specie` folder and run `wclean` and 
+    `rmdepall`, then run `wmake libso`
+    
+Congratulations, you have added a new reaction type to openfoam. Next up is to 
+modify the Chemkin reader so it can read the T&H inputs from a chemkin 
+formatted input and create the newly defined reaction.
+
+
+## Part 2: Adding the T&H Form to the Chemkin Reader
+
+	Navigate to thermophysicalModels/reactionThermo/chemistryReaders/chemkinReader
+	Open chemkinReader.H and make the following edits:
+	Add 'TsangHerronReactionType' after the 'TroeReactionType' in the enum reactionKeyword
+	Add 'TsangHerron' after 'Troe' in the enum fallOffFunctionType
+	Change the size of fallOffFunctionNames to 5
+	Open chemkinReader.C and make the following edits:
+	Add '#include "TsangHerronFallOffFunction.H"' after the Troe include around line 37
+	Add "TsangHerron" after "Troe" in the fallOffFunctionNames around line 78 and change the '4' in the size to a '5'
+	In the initReactionKeywordTable after the line with "TROE", add the line to look for the “TH” keyword in the chemkin file (note that using “T&H” here results in errors, since the parser hangs on the “&” character for some reason)
+        reactionKeywordTable_.insert("TH", TsangHerronReactionType);
+
+	Locate the case structure with a Troe entry around line 287 (search for 'Troe') and copy the entire Troe case. Pay particular attention to the large purple letters in the section below. The T&H form needs 1 or 2 coefficients, while the Troe needs more. Edit it to be something like:
+        case TsangHerron:
+        {
+            scalarList TsangHerronCoeffs
+            (
+                reactionCoeffsTable[fallOffFunctionNames[fofType]]
+            );
+
+            if (TsangHerronCoeffs.size() != 2 && TsangHerronCoeffs.size() != 1)
+            {
+                FatalErrorIn("chemkinReader::addPressureDependentReaction")
+                    << "Wrong number of coefficients for T&H rate expression"
+                       " on line " << lineNo_-1 << ", should be 1 or 2 but "
+                    << TsangHerronCoeffs.size() << " supplied." << nl
+                    << "Coefficients are "
+                    << TsangHerronCoeffs << nl
+                    << exit(FatalError);
+            }
+
+            if (TsangHerronCoeffs.size() == 1)
+            {
+                TsangHerronCoeffs.setSize(2);
+                TsangHerronCoeffs[1] = 0.0;
+            }
+
+            addReactionType
+            (
+                rType,
+                lhs, rhs,
+                PressureDependencyType
+                    <ArrheniusReactionRate, TsangHerronFallOffFunction>
+                (
+                    ArrheniusReactionRate
+                    (
+                        Afactor0*k0Coeffs[0],
+                        k0Coeffs[1],
+                        k0Coeffs[2]/RR
+                    ),
+                    ArrheniusReactionRate
+                    (
+                        AfactorInf*kInfCoeffs[0],
+                        kInfCoeffs[1],
+                        kInfCoeffs[2]/RR
+                    ),
+                    TsangHerronFallOffFunction
+                    (
+                        TsangHerronCoeffs[0],
+                        TsangHerronCoeffs[1]
+                    ),
+                    thirdBodyEfficiencies(speciesTable_, efficiencies)
+                )
+            );
+        }
+        break;
+
+	Open chemkinLexer.L and make the following edits:
+	Locate the TroeReactionType case entry around line 926 (search for Troe)  and copy the entire Troe case entry, modifying it as:
+        case TsangHerronReactionType:
+        {
+            if (!pDependentSpecieName.size())
+            {
+                FatalErrorIn("chemkinReader::lex()")
+                    << "T&H keyword given for a"
+                       " reaction which does not contain a pressure"
+                       " dependent specie" << " on line " << lineNo_
+                    << exit(FatalError);
+            }
+
+            if
+            (
+                fofType == unknownFallOffFunctionType
+             || fofType == Lindemann
+            )
+            {
+                fofType = TsangHerron;
+            }
+            else
+            {
+                FatalErrorIn("chemkinReader::lex()")
+                    << "Attempt to set fall-off function type to T&H"
+                       " when it is already set to "
+                    << fallOffFunctionNames[fofType]
+                    << " on line " << lineNo_
+                    << exit(FatalError);
+            }
+
+            reactionCoeffsName = fallOffFunctionNames[fofType];
+            BEGIN(readReactionCoeffs);
+            break;
+        }
+       
+	Recompile
+	Go up to the 'reactionThermo' folder and run 'wclean', 'rmdepall', then 'wmake libso' to recompile the library. (There are always a load of warnings from chemkinLexer.L  about old-style casts. You can ignore those.)
+	Go to the applications/utilities/thermophysical/chemkinToFoam folder and recompile with ‘wmake’
+       
+
+
+
 
 References
 =====================================
