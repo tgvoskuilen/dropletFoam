@@ -146,21 +146,24 @@ modifications you will just be searching for `Troe` and replacing it with
   `TsangHerronFallOffFunction`
 * Rename `TroeFallOffFunction.H` and `TroeFallOffFunctionI.H` in the new 
   folder to `TsangHerronFallOffFunction.H` and `TsangHerronFallOffFunctionI.H`
-* Open `TsangHerronFallOffFunction.H` and make the following edits:
-  * Replace all `Troe` with `TsangHerron`
-  * In the `// Private data` section, remove the 
-    `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
-    `scalar a0_, a1_`;
-  * In the `inline TsangHerronFallOffFunction` input list, change the inputs to
+  
+#### Open `TsangHerronFallOffFunction.H` and make the following edits:
+
+1. Replace all `Troe` with `TsangHerron`
+2. In the `// Private data` section, remove the 
+   `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
+   `scalar a0_, a1_`;
+3. In the `inline TsangHerronFallOffFunction` input list, change the inputs to
 ```
     const scalar a0,
     const scalar a1
 ```
-* Open `TsangHerronFallOffFunctionI.H` and make the following edits:
-  1. Replace all `Troe` with `TsangHerron`
-  
-  2. Change the three constructor functions to be:
 
+4. Open `TsangHerronFallOffFunctionI.H` and make the following edits:
+
+    1. Replace all `Troe` with `TsangHerron`
+    2. Change the three constructor functions to be:
+```
         inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction
         (
             const scalar a0,
@@ -170,7 +173,7 @@ modifications you will just be searching for `Troe` and replacing it with
         a0_(a0),
         a1_(a1)
         {}
-
+```
 ```
     inline Foam::TsangHerronFallOffFunction::TsangHerronFallOffFunction(Istream& is)
     :
@@ -188,7 +191,7 @@ modifications you will just be searching for `Troe` and replacing it with
     {}
 
 ```
-  3. Change the `operator()` function to use the Tsang and Herron approach
+    3. Change the `operator()` function to use the Tsang and Herron approach
 ```   
     inline Foam::scalar Foam::TsangHerronFallOffFunction::operator()
     (
@@ -202,7 +205,7 @@ modifications you will just be searching for `Troe` and replacing it with
         return pow(10.0, logFcent/(1.0 + sqr(logPr)));
     }
 ```
-  * Change the next two writer functions to be
+    4. Change the next two writer functions to be
 ``` 
     inline void Foam::TsangHerronFallOffFunction::write(Ostream& os) const
     {
@@ -224,13 +227,14 @@ modifications you will just be searching for `Troe` and replacing it with
         return os;
     }
 ```
-* Add the new reaction to the reaction building macros in 
-  `thermophysicalModels/specie/reaction/reactions` by making the following edits:
-  * Open `makeChemkinReactions.C` and make the following edits:
-    * Add `#include "TsangHerronFallOffFunction.H"` after the line with the 
-      Troe function
-    * Add the following around line 80 (copy the Troe version and replace 
-      Troe with TsangHerron)
+
+5. Edit the reaction macros
+    1. Go to `thermophysicalModels/specie/reaction/reactions`
+    2. Open `makeChemkinReactions.C` and make the following edits:
+        1. Add `#include "TsangHerronFallOffFunction.H"` after the line with the 
+           Troe function
+        2. Add the following around line 80 (copy the Troe version and replace 
+           Troe with TsangHerron)
 ```
     makePressureDependentReactions
     (
