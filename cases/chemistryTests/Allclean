@@ -8,9 +8,9 @@ cleanCase
 
 \rm -rf *~
 \rm -rf 0 chemFoam.out log* output.log tmpFile
-\rm constant/chem.inp
-\rm constant/reactions
-\rm constant/thermo
+\rm -rf constant/chem.inp
+\rm -rf constant/reactions
+\rm -rf constant/thermo
 
 # ----------------------------------------------------------------- end-of-file
 

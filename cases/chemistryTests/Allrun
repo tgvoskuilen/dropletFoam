@@ -27,11 +27,13 @@ gasChemSets = [os.path.splitext(f)[0] for f in sorted(os.listdir(chemPath)) \
 
 # Loop through all mechanisms
 for gasChem in gasChemSets:
-    print "Running '%s'" % gasChem
     
     # Create the chemistry input file
     reaction_set = chemBuilder.build_set(gas=gasChem)
     reaction_set.write_file('chem.inp')
+
+    print "Running '%s' (%d species, %d reactions)" % \
+            (gasChem, len(reaction_set.species), len(reaction_set.reactions))
     
     # Convert the chemistry file from CHEMKIN format to OpenFOAM format
     pyOpenFOAM.convert_chemistry(propPath)

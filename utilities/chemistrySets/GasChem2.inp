@@ -177,9 +177,9 @@ CH3NNH+O=CH3NN+OH                      9.6E12       0.0       0.
 CH3NHNH2+NO2=CH3NNH2+HONO              2.2E11       0.0    5900.
 CH3NNH+NO2=CH3NN+HONO                  2.2E11       0.0    5900.
 CH3NNH2+NO2=CH3NNH+HONO                1.0E08       2.0       0.
-!N2O4(+M)=NO2+NO2(+M)                   4.05E18     -1.1   12840.
-!                                  LOW/ 1.96E28     -3.8   12800. /
-!   THIRD BODY
+N2O4(+M)=NO2+NO2(+M)                   4.05E18     -1.1   12840.
+                                  LOW/ 1.96E28     -3.8   12800. /
+!   THIRDBODY
 CH3O+NO=CH2O+HNO                       1.30E14     -0.70      0.
 CH3O+NO2=CH2O+HONO                     6.00E12      0.0    2285.
 END

@@ -41,6 +41,12 @@ folder without altering the base template.
 There are several case templates currently in the case folder. Brief d
 descriptions of the current cases are included below.
 
+#### `chemistryTests`
+
+This is a 0D constant pressure, adiabatic chemistry test that runs all the
+gas phase chemistry mechanisms in the `utilities/chemistrySets` folder with
+MMH and RFNA at an initial temperature of 800 K.
+
 #### `burningDrop`
 
 This is a 2D axisymmetric case with a liquid MMH drop hanging by surface

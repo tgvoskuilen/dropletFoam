@@ -344,8 +344,5 @@ CN+HNCO<=>HCN+NCO                              1.00E+13    0.0        0.0
 CH3O+NO2(+M)<=>CH3ONO2(+M)                     1.20E+13    0.0        0.0
       LOW/  0.14000E+31 -0.45000E+01  0.00000E+00 /
 !   THIRDBODY
-N2O4(+M)=NO2+NO2(+M)                           4.05E18   -1.1   12840.
-      LOW/ 1.96E28   -3.8   12800. /
-!   THIRDBODY
 END
 

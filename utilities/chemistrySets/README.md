@@ -39,7 +39,7 @@ the chemkinToFoam converter crashes with 0 reactions.
 
 | Species | Reactions | References   |
 | ------- | --------- | ------------ |
-| 80      | 512       | 1            |
+| 80      | 519       | 1            |
 
 This is the original ARL mechanism, but without the 'NAMMH' reaction. Note, this
 requires you to have implemented the T&H reaction type (see below for instructions
@@ -68,7 +68,7 @@ This is Labbe's second reduced version of the ARL mechanism.
 
 | Species | Reactions | References   |
 | ------- | --------- | ------------ |
-| 41      | 198       | 3, 5         |
+| 41      | 200       | 3, 5         |
 
 This is the reduced version of Labbe's new mechanism.
 
@@ -77,7 +77,7 @@ This is the reduced version of Labbe's new mechanism.
 
 | Species | Reactions | References   |
 | ------- | --------- | ------------ |
-| 41      | 194       | 3            |
+| 41      | 196       | 3            |
 
 This is the reduced and stabilized version of Labbe's new mechanism, which is
 the same as GasChem4 but with 4 stiff reactions removed
