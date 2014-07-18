@@ -39,7 +39,10 @@ Vapor
    
    subspecies
    (
+        CH2          {}
+        CH2(S)       {}
         CH2O         {}
+        CH2OH        {}
         CH3          {}
         CH3NHNH2     {}
         CH3NN        {}
@@ -53,16 +56,17 @@ Vapor
         H2           {}
         H2O          {}
         HCO          {}
+        HNCO         {}
         HNO          {}
         HNO3         {}
-        HO2          {}
         HONO         {}
+        N            {}
         N2           {}
         N2O4         {}
+        NCO          {}
         NO           {}
         NO2          {}
         O            {}
-        O2           {}
         OH           {}
    );
 }

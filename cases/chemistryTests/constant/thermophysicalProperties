@@ -17,9 +17,10 @@ FoamFile
 
 thermoType      hsPsiMixtureThermo<reactingMixture<gasThermoPhysics>>;
 
-CHEMKINFile     "$FOAM_CASE/chemkin/chem.inp";
+chemistryReader foamChemistryReader;
 
-CHEMKINThermoFile "$FOAM_CASE/chemkin/therm.dat";
+foamChemistryFile "$FOAM_CASE/constant/reactions";
 
+foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 
 // ************************************************************************* //

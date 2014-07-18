@@ -23,7 +23,7 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         1e-2;
+endTime         2e-3;
 
 deltaT          1e-9;
 
@@ -35,7 +35,7 @@ writeInterval   1e-6;
 
 purgeWrite      0;
 
-writeFormat     binary;
+writeFormat     ascii;
 
 writeCompression compressed;
 

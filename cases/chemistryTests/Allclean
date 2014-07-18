@@ -7,7 +7,10 @@ cd ${0%/*} || exit 1    # run from this directory
 cleanCase
 
 \rm -rf *~
-\rm -rf 0 chemFoam.out
+\rm -rf 0 chemFoam.out log* output.log tmpFile
+\rm constant/chem.inp
+\rm constant/reactions
+\rm constant/thermo
 
 # ----------------------------------------------------------------- end-of-file
 

@@ -1,0 +1,30 @@
+#!/usr/local/bin/python
+
+import subprocess
+import signal
+import os
+import time
+
+zombieChemFoamLives = True
+
+while zombieChemFoamLives:
+
+    print "Waiting 5 seconds for chemFoam processes to show up..."
+    time.sleep(5)
+
+    p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    
+    zombiesRemain = False
+    
+    for line in out.splitlines():
+        if 'chemFoam' in line:
+            pid = int(line.split(None,1)[0])
+            os.kill(pid, signal.SIGKILL)
+            zombiesRemain = True
+            print " - Killed chemFoam process %d" % pid
+            
+    if not zombiesRemain:
+        print " - No more chemFoam processes detected"
+        zombieChemFoamLives = False
+        

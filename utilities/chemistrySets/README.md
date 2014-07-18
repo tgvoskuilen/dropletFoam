@@ -42,8 +42,8 @@ the chemkinToFoam converter crashes with 0 reactions.
 | 80      | 512       | 1            |
 
 This is the original ARL mechanism, but without the 'NAMMH' reaction. Note, this
-requires you to have implemented the T&H reaction type and requires CH2(S), which
-can sometimes cause problems because of the parentheses in its name.
+requires you to have implemented the T&H reaction type (see below for instructions
+to implement it).
 
 
 ## GasChem2
@@ -61,9 +61,7 @@ This is Labbe's first reduced version of the ARL mechanism.
 | ------- | --------- | ------------ |
 | 29      | 120       | 4            |
 
-This is Labbe's second reduced version of the ARL mechanism. This requires
-CH2(S), which can sometimes cause problems because of the parentheses in 
-its name.
+This is Labbe's second reduced version of the ARL mechanism.
 
 
 ## GasChem4
@@ -95,7 +93,7 @@ the same as GasChem4 but with 4 stiff reactions removed
 This is a reduced version of the original ARL mechanism provided by Mike
 McQuaid from ARL. The only modification made internally is the removal of 
 the NAMMH reaction. Note, this requires you to have implemented the T&H 
-reaction type.
+reaction type (see below for instructions to implement it).
 
    
     
@@ -154,7 +152,7 @@ modifications you will just be searching for `Troe` and replacing it with
   1. Replace all `Troe` with `TsangHerron`
 
   2. In the `// Private data` section, remove the 
-     `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line 
+     `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line  
      `scalar a0_, a1_`;
 
   3. In the `inline TsangHerronFallOffFunction` input list, change the inputs to
@@ -259,9 +257,9 @@ modifications you will just be searching for `Troe` and replacing it with
      ```
      makePressureDependentReactions                                             \
      (                                                                          \
-        Thermo,                                                                 \
-        ArrheniusReactionRate,                                                  \
-        TsangHerronFallOffFunction                                              \
+         Thermo,                                                                 \
+         ArrheniusReactionRate,                                                  \
+         TsangHerronFallOffFunction                                              \
      )                                                                          \
      ```
        
@@ -393,13 +391,13 @@ formatted input and create the newly defined reaction.
         }
      ```
 
-5. Recompile using the following steps
+5. Recompile using the following steps:
   1. Go up to the `reactionThermo` folder and run `wclean`, `rmdepall`, 
      then `wmake libso` to recompile the library. (There are always a load of 
      warnings from `chemkinLexer.L` about old-style casts. You can ignore those.)
     
   2. Go to the `applications/utilities/thermophysical/chemkinToFoam` folder 
-     and recompile with �wmake�
+     and recompile with `wmake`
        
 
 

@@ -1,20 +1,73 @@
-#!/bin/sh
-cd ${0%/*} || exit 1    # run from this directory
+#!/usr/local/bin/python
 
-# Source tutorial run functions
-. $WM_PROJECT_DIR/bin/tools/RunFunctions
+# Note: If you abort this script during the chemFoam execution, the chemFoam 
+# process will continue to run in the background creating new time folders. 
+# Run the killChemFoam script to stop it and any new processes that may show up.
+# Keep in mind this will kill any and all instances of chemFoam that are 
+# running, so don't run it if you have other instances of chemFoam running on
+# the same machine you want to keep alive.
 
-# Set application name
-application=`getApplication`
+import os
+import sys
+import csv
 
-#cp chemkin/chem25plus.inp chemkin/chem.inp
-#cp chemkin/therm25plus.dat chemkin/therm.dat
+toolPath = '../../../foamTools/python'
+propPath = '../../utilities/properties'
+chemPath = '../../utilities/chemistrySets'
 
-cp chemkin/chem41S.inp chemkin/chem.inp
-cp chemkin/therm41.dat chemkin/therm.dat
+sys.path.append(toolPath)
+sys.path.append(chemPath)
 
-#runApplication $application
-chemFoam
+import pyOpenFOAM   # from foamTools/python
+import chemBuilder  # from dropletFoam/utilities/chemistrySets
 
-# ----------------------------------------------------------------- end-of-file
+# Find all gas mechanisms present in the chemistrySets folder
+gasChemSets = [os.path.splitext(f)[0] for f in sorted(os.listdir(chemPath)) \
+               if f.startswith("GasChem") and f.endswith(".inp")]
+
+# Loop through all mechanisms
+for gasChem in gasChemSets:
+    print "Running '%s'" % gasChem
+    
+    # Create the chemistry input file
+    reaction_set = chemBuilder.build_set(gas=gasChem)
+    reaction_set.write_file('chem.inp')
+    
+    # Convert the chemistry file from CHEMKIN format to OpenFOAM format
+    pyOpenFOAM.convert_chemistry(propPath)
+    
+    # Write thermo file with species used in this reaction set
+    pyOpenFOAM.write_thermo(reaction_set.species,propPath)
+    
+    # Skip chemistry sets without MMH
+    if 'CH3NHNH2' not in reaction_set.species:
+        print " - Skipping dummy chemistry set '%s'\n" % gasChem
+        continue
+    
+    # Run chemFoam
+    os.system('chemFoam > output.log &')
+    pyOpenFOAM.monitor_log()
+    
+    # Extract data to a csv file
+    print "\n - Converting results from '%s' to a csv file" % gasChem
+    times = pyOpenFOAM.get_times()
+    fields = pyOpenFOAM.get_fields(times[0])
+    data = []
+    
+    for i,t in enumerate(times):
+        pyOpenFOAM.write_progress(int(100*i/float(len(times))))
+        data.append(pyOpenFOAM.get_field_data(t,fields))
+    
+    with open(gasChem+'.csv','w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(fields)
+        for row in data:
+            writer.writerow(row)
+            
+    # Clean the case (removes all but the csv file) to prepare for the next
+    # chemistry set
+    print "\n - Cleaning case\n"
+    os.system('Allclean > /dev/null')
+
+
 

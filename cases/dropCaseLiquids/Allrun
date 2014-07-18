@@ -37,14 +37,11 @@ if not resume:
     # Convert the chemistry file from CHEMKIN format to OpenFOAM format
     pyOpenFOAM.convert_chemistry(propPath)
 
-    # Read species list from 'constant/reactions'
-    species = pyOpenFOAM.read_species()
-
     # Add all gas species to "subSpecies" list in the "Vapor" phase
-    pyOpenFOAM.add_species_to_thermo_dict(species)
+    pyOpenFOAM.add_species_to_thermo_dict(reaction_set.species)
 
     # Write the thermo file based on the species list
-    pyOpenFOAM.write_thermo(species,propPath)
+    pyOpenFOAM.write_thermo(reaction_set.species,propPath)
 
     # Make the *.foam file for ParaView
     pyOpenFOAM.touch_foam_files('liquidDrop')
