@@ -50,9 +50,10 @@ to implement it).
 
 | Species | Reactions | References   |
 | ------- | --------- | ------------ |
-| 25      | 98        | 2, 3         |
+| 26      | 99        | 2, 3         |
 
-This is Labbe's first reduced version of the ARL mechanism.
+This is Labbe's first reduced version of the ARL mechanism, modified to add the
+decomposition reaction for CH3ONO2 from GasChem4.
 
 
 ## GasChem3
