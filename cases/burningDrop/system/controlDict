@@ -52,8 +52,6 @@ maxAlphaCo      0.4;
 
 maxDeltaT       1;
 
-volSourceLimit  0.2;
-
 libs
 (
     "libdynamicFvMesh-dev.so"

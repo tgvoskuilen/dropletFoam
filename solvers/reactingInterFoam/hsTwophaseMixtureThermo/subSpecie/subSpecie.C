@@ -124,6 +124,8 @@ Foam::subSpecie::subSpecie
 
     if( subSpecieDict_.found("transportModel") )
     {
+        // This means this subspecie is a liquid, make sure the other inputs
+        // were also provided
         nuModel_ = viscosityModel::New
         (
             "nu" + name_, 
@@ -131,6 +133,19 @@ Foam::subSpecie::subSpecie
             mesh.lookupObject<volVectorField>("U"), 
             mesh.lookupObject<surfaceScalarField>("phi")
         );
+        
+        if( rho0_.value() == 0.0   || 
+            kappa_.value() == 0.0  || 
+            Tc_.value() == 0.0     ||
+            sigma0_.value() == 0.0 )
+        {
+            FatalErrorIn
+            (
+                "subSpecie::subSpecie"
+            )   << "Liquid subspecie " << name
+                << "\n    requires entries for rho0, kappa, Tc, and sigma0 "
+                << exit(FatalError);
+        }
     }
     
     Foam::Info<< "Created and linked subSpecie " << name << Foam::endl;
@@ -168,34 +183,7 @@ Foam::autoPtr<Foam::subSpecie> Foam::subSpecie::clone() const
     return autoPtr<subSpecie>(NULL);
 }
 
-/*
-tmp<volScalarField> Foam::subSpecie::hs
-(
-    const volScalarField& T
-) const
-{
-    tmp<volScalarField> ths
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "ths"+name_,
-                T.mesh().time().timeName(),
-                T.mesh()
-            ),
-            T.mesh(),
-            dimensionedScalar("ths"+name_, dimEnergy/dimMass, 0.0)
-        )
-    );
 
-    forAll(ths(), cellI)
-    {
-        ths()[cellI] = thermo_.Hs( T[cellI] );
-    }
-        
-    return ths;
-}*/
 
 Foam::tmp<Foam::scalarField> Foam::subSpecie::Cp
 (
@@ -320,8 +308,6 @@ Foam::tmp<Foam::scalarField> Foam::subSpecie::kappa
 {
     tmp<scalarField> tkappa(new scalarField(T.size()));
 
-    //scalarField& kappa = tkappa();
-
     forAll(T, facei)
     {
         tkappa()[facei] = thermo_.kappa( T[facei] );
@@ -379,7 +365,14 @@ tmp<volScalarField> Foam::subSpecie::sigma
     const volScalarField& T
 ) const
 {
-    return sigma0_ * Foam::pow(1.0 - Foam::min(T,Tc_)/Tc_,sigmaa_);
+    if( sigmaa_ > 0.0 )
+    {
+        return sigma0_ * Foam::pow(1.0 - Foam::min(T,Tc_)/Tc_,sigmaa_);
+    }
+    else
+    {
+        return sigma0_*neg(T-Tc_);
+    }
 }
 
 

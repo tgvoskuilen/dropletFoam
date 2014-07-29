@@ -77,10 +77,13 @@ class phase
         //- Volume flux field for this phase
         surfaceScalarField rhoPhiAlpha_;
         
+        //- Density of this phase
         volScalarField rhoAlpha_;
         
+        //- Mass fraction sum of this phase
         volScalarField Ypsum_;
                 
+        //- Pointer to the other phase
         const phase* otherPhase_;
         
         //- Pointer to the top-level combustion model
@@ -98,12 +101,10 @@ class phase
         //- Dictionary of pointers to phase subspecies
         PtrDictionary<subSpecie> subSpecies_;
 
+        //- Cell and face masks to define phase boundaries
         volScalarField cellMask_;
-        
         surfaceScalarField faceMask_;
-        
-        surfaceScalarField D_;
-        
+                
 
 public:
 
@@ -273,8 +274,6 @@ public:
             const subSpecie& specieI,
             const PtrDictionary<mixturePhaseChangeModel>& phaseChangeModels
         ) const;
-
-        //tmp<volVectorField> n() const; //normal pointing out of this phase
         
 };
 

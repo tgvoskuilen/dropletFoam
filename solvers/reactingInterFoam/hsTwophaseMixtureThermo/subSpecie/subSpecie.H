@@ -80,6 +80,7 @@ class subSpecie
         //- Mass fraction of this subspecie
         volScalarField& Y_;
         
+        //- Phase-specific mass fraction of this subspecie
         volScalarField Yp_;
         
         //- Thermo properties of this subspecie
@@ -90,11 +91,10 @@ class subSpecie
         
         dimensionedScalar rho0_;
         dimensionedScalar Tc_;
+        
+        
         dimensionedScalar sigma0_;
         scalar sigmaa_;
-        
-        scalar sigmaLJ_;
-        scalar TLJ_;
         
         dimensionedScalar kappa_;
         

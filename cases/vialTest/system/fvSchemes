@@ -28,27 +28,29 @@ gradSchemes
 
 divSchemes
 {
-    div(rho*phi,k)      Gauss vanLeer;
+    // Turbulence
+    div(rho*phi,k)          Gauss vanLeer;
+    div(rho*phi,omega)      Gauss vanLeer;
     
-    div(rho*phi,U)  Gauss upwind;
-    div(phi,alpha)  Gauss vanLeer;
-    div(phirb,alpha) Gauss interfaceCompression;
-    
-    div(phi,Yi_h)   Gauss limitedLinear01 1;
-    div(rho*phi*alpha,Yi)   Gauss upwind;
-    div(rho*phi,hs)   Gauss limitedLinear01 1;
-    div(phi,h)      Gauss limitedLinear 1;
-    div(phi,K)      Gauss limitedLinear 1;
-    div(rho*phi,K)  Gauss limitedLinear 1;
-    div(phid,p_rgh)     Gauss limitedLinear 1;
-    div(phi,p_rgh)      Gauss limitedLinear 1;
-    div(phi,p)      Gauss limitedLinear 1;
-    div(phi,epsilon) Gauss limitedLinear 1;
-    div(rho*phi,T)  Gauss limitedLinear 1;
-    div(phi,T)      Gauss limitedLinear 1;
-    div(phi,k) Gauss limitedLinear 1;
+    // Momentum
+    div(rho*phi,U)                Gauss linearUpwindV grad(U);
     div((muEff*dev2(T(grad(U))))) Gauss linear;
-    div(uc,Yi)      Gauss linear corrected;
+    
+    // Phase volume (VOF-SLIC)
+    div(phi,alpha)          Gauss MUSCL01; //SuperBee; //vanLeer;
+    div(phirb,alpha)        Gauss interfaceCompression;
+    
+    // Species mass fractions
+    div(rho*phi*alpha,Yi)   Gauss limitedLinear 1;
+
+    // Energy
+    div(rho*phi,T)          Gauss limitedLinear 1;
+    div(DgradY,T)           Gauss linear corrected;
+    
+    // Pressure/volumetric continuity
+    div(phi,p_rgh)          Gauss limitedLinear 1;
+    div(phi,p)              Gauss limitedLinear 1;
+    div(phi,T)              Gauss limitedLinear 1;
 }
 
 laplacianSchemes

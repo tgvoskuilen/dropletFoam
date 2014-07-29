@@ -153,7 +153,7 @@ modifications you will just be searching for `Troe` and replacing it with
 
   2. In the `// Private data` section, remove the 
      `scalar alpha_; scalar Tsss_, Tss_, Ts_;` lines and add the line  
-     `scalar a0_, a1_`;
+     `scalar a0_, a1_;`
 
   3. In the `inline TsangHerronFallOffFunction` input list, change the inputs to
      ```

@@ -42,16 +42,15 @@ divSchemes
     
     // Species mass fractions
     div(rho*phi*alpha,Yi)   Gauss limitedLinear 1;
-    div(DgradY,T)           Gauss linear corrected;
-    
+
     // Energy
     div(rho*phi,T)          Gauss limitedLinear 1;
+    div(DgradY,T)           Gauss linear corrected;
     
     // Pressure/volumetric continuity
     div(phi,p_rgh)          Gauss limitedLinear 1;
     div(phi,p)              Gauss limitedLinear 1;
     div(phi,T)              Gauss limitedLinear 1;
-    
 }
 
 laplacianSchemes

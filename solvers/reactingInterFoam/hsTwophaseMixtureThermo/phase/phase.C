@@ -100,7 +100,7 @@ Foam::phase::phase
         phaseDict_.lookupOrDefault
         (
             "Sc",
-            dimensionedScalar("Sc",dimDensity*dimArea/dimTime,1.0)
+            dimensionedScalar("Sc",dimless,1.0)
         )
     ),
     subSpecies_
@@ -133,33 +133,7 @@ Foam::phase::phase
         ),
         mesh,
         dimensionedScalar("faceMask_"+name, dimless, 1.0)
-    ),
-    D_
-    (
-        IOobject
-        (
-            "D_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("D_"+name, dimDensity*dimArea/dimTime, 1.0)
     )
-    /*diffErr_
-    (
-        IOobject
-        (
-            "diffErr_"+name,
-            mesh.time().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("diffErr_"+name, dimDensity, 0.0)
-    )*/
 {  
     this->oldTime();
     cellMask_.oldTime();
@@ -199,8 +173,6 @@ void Foam::phase::setSpecies( const volScalarField& otherRhoAlpha )
             isIC = true;
             
             //only set Yp if Y == Yp (only the case if Yp not read from file)
-            //dimensionedScalar s("s",dimDensity,SMALL);
-            //specieI().Yp() = specieI().Y()*cellMask_*(rhoAlpha_+otherRhoAlpha)/(rhoAlpha_+s);
             specieI().Yp() = specieI().Y() / (Yp() + SMALL);
             
             //Allow a little diffusion within masked region
@@ -239,33 +211,6 @@ void Foam::phase::setSpecies( const volScalarField& otherRhoAlpha )
     rhoAlpha_ = sharp(0.0)*rho(p,T)*cellMask_;
     
     rhoAlpha_.oldTime();
-    
-    
-
-/*
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {   
-        specieI().Yp() = specieI().Y() / (Yp() + SMALL);
-        
-        //Allow a little diffusion within masked region
-        dimensionedScalar dA = Foam::pow(Foam::min(mesh().V()),2.0/3.0)/40.0;
-    
-        for(label i = 0; i < 5; i++)
-        {
-            specieI().Yp() += dA * fvc::laplacian(faceMask_, specieI().Yp());
-        }
-        specieI().Yp().min(1.0);
-        specieI().Yp().max(0.0);
-    }
-    
-    tmp<volScalarField> YpSum = Ypp();
-    
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    { 
-        specieI().Yp() /= (YpSum() + SMALL);
-        specieI().Yp().correctBoundaryConditions();
-        specieI().Yp().oldTime();
-    }*/
 }
 
 // Calculate viscosity
@@ -353,96 +298,7 @@ bool Foam::phase::read(const dictionary& phaseDict)
     return true;
 }
 
-// Calculates the total net volumetric source due to evaporation. Only relevant
-// for the liquid phase, and called by S_evap() in thermo for in pEqn
-/*Foam::tmp<Foam::volScalarField> Foam::phase::S_evap
-(
-    const volScalarField& p,
-    const volScalarField& T
-) const
-{
-    tmp<volScalarField> tS_evap
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tS_evap",
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("S_evap", dimless/dimTime, 0.0)
-        )
-    );
-    
-    dimensionedScalar Ru("Ru", dimEnergy/dimMoles/dimTemperature, 8314);
-    
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        dimensionedScalar rho0 = specieI().rho0();
-        
-        if( specieI().hasEvaporation() && rho0.value() > SMALL )
-        {
-            dimensionedScalar Wv = specieI().W();
-            
-            tS_evap() += specieI().evapModel().rho_evap()*(Ru*T/(p*Wv) - 1/rho0);
-        }
-    }
-    
-    return tS_evap;
-}*/
 
-// Calculates the total mass source/sink due to evaporation.
-/*Foam::tmp<Foam::volScalarField> Foam::phase::m_evap_sum() const
-{
-    tmp<volScalarField> tS_evap
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tm_evap",
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("m_evap", dimDensity/dimTime, 0.0)
-        )
-    );
-    
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        if (name_ == "Vapor")
-        {
-            forAllConstIter
-            (
-                PtrDictionary<subSpecie>, 
-                otherPhase_->subSpecies(), 
-                specieLI
-            )
-            {
-                if (specieLI().hasEvaporation())
-                {
-                    if (specieLI().evapModel().vaporName() == specieI().Y().name())
-                    {
-                        tS_evap() += specieLI().evapModel().rho_evap();
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (specieI().hasEvaporation())
-            {
-                tS_evap() -= specieI().evapModel().rho_evap();
-            }
-        }
-    }
-    
-    return tS_evap;
-}*/
 
 // Calculate the mole fraction of a named specie
 Foam::tmp<Foam::volScalarField> Foam::phase::x(const word& specie) const
@@ -507,125 +363,6 @@ Foam::tmp<Foam::volScalarField> Foam::phase::xByY(const word& specie) const
     return txByY;
 }
 
-/*
-Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::pSuSp
-(
-    const volScalarField& p,
-    const volScalarField& T
-) const
-{
-    Pair<tmp<volScalarField> > tSuSp
-    (
-        tmp<volScalarField>
-        (
-            new volScalarField
-            (
-                IOobject
-                (
-                    "tpSu",
-                    mesh().time().timeName(),
-                    mesh()
-                ),
-                mesh(),
-                dimensionedScalar("pSu", dimless/dimTime, 0.0)
-            )
-        ),
-        tmp<volScalarField>
-        (
-            new volScalarField
-            (
-                IOobject
-                (
-                    "tpSp",
-                    mesh().time().timeName(),
-                    mesh()
-                ),
-                mesh(),
-                dimensionedScalar("pSp", dimless/dimTime/dimPressure, 0.0)
-            )
-        )
-    );
-    
-    dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
-    
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies(), specieI)
-    {
-        dimensionedScalar rho0 = specieI().rho0();
-        
-        if (specieI().hasEvaporation() && rho0.value() > SMALL )
-        {
-            dimensionedScalar Wv = specieI().W();
-            
-            Pair<tmp<volScalarField> > tpSuSp = specieI().evapModel().pSuSp();
-            
-            
-            //full source term linearization, including density relationship
-            tmp<volScalarField> tdSdp = tpSuSp.second()()/rho0 - tpSuSp.first()()*Ru*T/(p*p*Wv);
-            tmp<volScalarField> tSu = (tpSuSp.first()() - tpSuSp.second()()*p)*(Ru*T/(p*Wv) - 1/rho0) - tdSdp()*p;
-            
-            tSuSp.first()() += tSu;
-            tSuSp.second()() -= tdSdp;
-            
-            
-            //fully explicit treatment
-            //tSuSp.first()() += (tpSuSp.first() - tpSuSp.second()*p)*(Ru*T/(p*Wv) - 1/rho0);
-            //tSuSp.first()() += tpSuSp.first()*(Ru*T/(p*Wv) - 1/rho0);
-            
-        }
-    }
-            
-    return tSuSp;
-}*/
-
-/*
-Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::TSuSp() const
-{
-    Pair<tmp<volScalarField> > tSuSp
-    (
-        tmp<volScalarField>
-        (
-            new volScalarField
-            (
-                IOobject
-                (
-                    "tTSu",
-                    mesh().time().timeName(),
-                    mesh()
-                ),
-                mesh(),
-                dimensionedScalar("TSu", dimPower/dimVolume, 0.0)
-            )
-        ),
-        tmp<volScalarField>
-        (
-            new volScalarField
-            (
-                IOobject
-                (
-                    "tTSp",
-                    mesh().time().timeName(),
-                    mesh()
-                ),
-                mesh(),
-                dimensionedScalar("TSp", dimPower/dimVolume/dimTemperature, 0.0)
-            )
-        )
-    );
-    
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies(), specieI)
-    {
-        if( specieI().hasEvaporation() )
-        {
-            Pair<tmp<volScalarField> > tTSuSp = specieI().evapModel().TSuSp();
-            tSuSp.first()() += tTSuSp.first();
-            tSuSp.second()() += tTSuSp.second();
-        }
-    }
-        
-    return tSuSp;
-}
-*/
-
 
 
 Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::YiSuSp
@@ -683,61 +420,6 @@ Foam::Pair<Foam::tmp<Foam::volScalarField> > Foam::phase::YiSuSp
     
     return tYSuSp;
 }
-
-// Mass source term due to evaporation for a given subspecie. This is a source
-// term in the Yi equation for each subspecie
-/*
-Foam::tmp<Foam::volScalarField> Foam::phase::Su_Yi_evap
-(
-    const subSpecie& specieI
-) const
-{
-    tmp<volScalarField> tSu_evap
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tS_Yiu_evap",
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("S_Yiu_evap", dimDensity/dimTime, 0.0)
-        )
-    );
-    
-    if (name_ == "Vapor")
-    {
-        forAllConstIter
-        (
-            PtrDictionary<subSpecie>, 
-            otherPhase_->subSpecies(), 
-            specieLI
-        )
-        {
-            if (specieLI().hasEvaporation())
-            {
-                if (specieLI().evapModel().vaporName() == specieI.Y().name())
-                {
-                    tSu_evap() += specieLI().evapModel().rho_evap();
-                    break;
-                }
-            }
-        }
-    }
-    else
-    {
-        if (specieI.hasEvaporation())
-        {
-            tSu_evap() -= specieI.evapModel().rho_evap();
-        }
-    }
-    
-   
-    return tSu_evap;
-}
-*/
 
 
 Foam::tmp<volScalarField> Foam::phase::sigma
@@ -799,43 +481,8 @@ Foam::tmp<volScalarField> Foam::phase::sigma
     tn() += neg(tn() - SMALL);
 
     return tsigma/tn;
-    //return tsigma;
 }
 
-
-
-// calculate the net heat source/sink for evaporation for this phase. This is
-// called by thermo when assembling the total sources for the TEqn. It
-// is only called on the liquid phase.
-/*
-Foam::tmp<volScalarField> Foam::phase::Sh_evap() const
-{
-    tmp<volScalarField> tSh
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tSh"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("tSh"+name_, dimPower/dimVolume, 0.0)
-        )
-    );
-    
-    // Get evaporation enthalpy source
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        if(specieI().hasEvaporation())
-        {
-            tSh() += specieI().evapModel().Sh();
-        }
-    }
-    
-    return tSh;    
-}*/
 
 
 // Get the mass fraction sum of this phase
@@ -890,123 +537,6 @@ Foam::tmp<volScalarField> Foam::phase::Ypp() const
     return tYpp;
 }
 
-/*
-Foam::tmp<volVectorField> Foam::phase::URecoil(const volVectorField& n) const
-{
-    tmp<volVectorField> tUr
-    (
-        new volVectorField
-        (
-            IOobject
-            (
-                "tUr"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedVector("tUr"+name_, dimVelocity, vector::zero)
-        )
-    );
-
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        forAllConstIter
-        (
-            PtrDictionary<subSpecie>, 
-            otherPhase_->subSpecies(), 
-            specieLI
-        )
-        {
-            if (specieLI().hasEvaporation())
-            {
-                if (specieLI().evapModel().vaporName() == specieI().Y().name())
-                {
-                    tUr() += specieLI().evapModel().U_evap(n);
-                    break;
-                }
-            }
-        }
-    }
-    
-    Info<<"Max recoil velocity = " << Foam::max(Foam::mag(tUr())).value() << endl;
-
-    return tUr;
-}*/
-
-/*
-Foam::tmp<volScalarField> Foam::phase::pRecoil() const
-{
-    tmp<volScalarField> tpR
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tpR"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("tpR"+name_, dimPressure, 0.0)
-        )
-    );
-
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        forAllConstIter
-        (
-            PtrDictionary<subSpecie>, 
-            otherPhase_->subSpecies(), 
-            specieLI
-        )
-        {
-            if (specieLI().hasEvaporation())
-            {
-                if (specieLI().evapModel().vaporName() == specieI().Y().name())
-                {
-                    tpR() += specieLI().evapModel().pRecoil();
-                    break;
-                }
-            }
-        }
-    }
-    
-    return tpR;
-}*/
-
-// Volumetric sink term from evaporation = rho_evap/rhoL (only applicable to
-//  liquid phase, used in the alpha equation in the source term)
-/*
-Foam::tmp<volScalarField> Foam::phase::Sv_evap() const
-{
-    tmp<volScalarField> tSv
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "tSv"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("tSv"+name_, dimless/dimTime, 0.0)
-        )
-    );
-
-    forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        if( specieI().hasEvaporation() )
-        {
-            tSv() += specieI().evapModel().rho_evap() / specieI().rho0();
-        }
-    }
-    
-    dimensionedScalar volSink = fvc::domainIntegrate(tSv());
-    Info<<"total evaporation volume sink = " << volSink.value() << endl;
-
-    return tSv;
-}*/
 
 
 // Construct the density field of the phase. For the vapor phase will never
@@ -1051,10 +581,6 @@ Foam::tmp<volScalarField> Foam::phase::rho
         }
         
         return (Yvoid + Yp_)/den;
-        
-        //trho() = rhoBase;
-        //return trho;
-        
     }
 }
 
@@ -1090,7 +616,6 @@ Foam::tmp<volScalarField> Foam::phase::psi
     if (name_ == "Vapor")
     {
         dimensionedScalar Ru("Ru",dimensionSet(1, 2, -2, -1, -1),8314);
-        //dimensionedScalar W0("W0",dimMass/dimMoles, 28);
         tpsi() = W() / (Ru * T);
     }
 
@@ -1243,43 +768,8 @@ void Foam::phase::calculateDs
     {
         specieI().calculateDs(mut, trho(), T);
     }
-
-    //D_ = fvc::interpolate(muEff) * faceMask_ / Sc_;
 }
 
-
-/*tmp<surfaceScalarField> Foam::phase::calculateDs
-(
-    const compressible::turbulenceModel& turb
-)
-{
-    Info<< "Calculating diffusion coefficients for " << name_ << endl;
-    
-    tmp<surfaceScalarField> tUc
-    (
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                "tUc"+name_,
-                mesh().time().timeName(),
-                mesh()
-            ),
-            mesh(),
-            dimensionedScalar("Uc",dimMass/dimTime,0.0)
-        )
-    );
-
-    D_ = Sc_ * fvc::interpolate(turb.muEff()) * faceMask_;
-    
-    forAllIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
-    {
-        const volScalarField& Yi = specieI().Yp();
-        tUc() += D_ * fvc::snGrad(Yi) * mesh().magSf();
-    }
-
-    return tUc;
-}*/
 
 
 // Calculate phase specific heat using subspecie Cp model, which calls the
@@ -1553,23 +1043,7 @@ void Foam::phase::setPhaseMasks
     //  2. alpha = 1e-8, alphaOld = 0, div = 0, laplacian = 0, area > 0
     //
     //  area condition seems too problematic
-    
-    //tmp<volScalarField> oldMask = cellMask_;
-    //cellMask_ = pos(alpha - maskTol + area*oneA - SMALL);
     cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM - SMALL);
-    //cellMask_ = pos(alpha - maskTol + mag(mdot_phase)*oneM + area*oneA - SMALL);
-    
-    
-    /*forAll(cellMask_, cellI)
-    {
-        if( alpha[cellI] < SMALL && mag(mdot_phase[cellI]) < SMALL && cellMask_[cellI] > 0.5)
-        {
-            // Close off cells in problem case 1
-            cellMask_[cellI] = 0.0;
-        }
-    
-    }*/
-    
     faceMask_ = pos(fvc::interpolate(cellMask_) - 0.95);
     
     //apply the current-time mask to the old-time rhoAlpha
@@ -1590,7 +1064,6 @@ void Foam::phase::setPhaseMasks
         {
             rhoAlpha_.oldTime()[cellI] = cellMask_[cellI]
                  * alpha.oldTime()[cellI] * rhoOld()[cellI];
-            //cellMask_.oldTime()[cellI] = cellMask_[cellI];
         }
     }
     
@@ -1612,7 +1085,6 @@ void Foam::phase::updateGlobalYs
     {   
         specieI().Y() = specieI().Yp()*myRhoAlpha/(myRhoAlpha + otherRhoAlpha + s);
         specieI().Y().max(0.0);
-        //specieI().Y().min(1.0);
         specieI().Y().correctBoundaryConditions();
     }
     

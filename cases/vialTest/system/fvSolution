@@ -110,7 +110,7 @@ solvers
             mergeLevels     1;
         }
 
-        tolerance       1e-08;
+        tolerance       1e-12;
         relTol          0;
         maxIter         20;
     }
@@ -134,29 +134,29 @@ solvers
 
     T
     {
-        solver          PCG;
-        preconditioner  DIC;
+        solver          PBiCG;
+        preconditioner  DILU;
         tolerance       1e-12;
-        relTol          0.01;
+        relTol          0.001;
     }
     
     TFinal
     {
-        solver          PCG;
-        preconditioner  DIC;
+        solver          PBiCG;
+        preconditioner  DILU;
         tolerance       1e-12;
         relTol          0;
     }
 
-    "(U|hs||k|epsilon)"
+    "(U|hs||k|epsilon|omega)"
     {
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-08;
-        relTol          0.1;
+        relTol          0.01;
     }
 
-    "(U|hs||k|epsilon)Final"
+    "(U|hs||k|epsilon|omega)Final"
     {
         solver          PBiCG;
         preconditioner  DILU;
@@ -183,9 +183,6 @@ PIMPLE
     nAlphaCorr      1;
     nAlphaSubCycles 2;
     cAlpha          1;
-
-//    pRefPoint      (0.51 0.51 0.51);
-//    pRefValue      0;
 }
 
 // ************************************************************************* //

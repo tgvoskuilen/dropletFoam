@@ -31,7 +31,10 @@ if not resume:
     print "Running with %d processors" % np
 
     # Create the chemistry input file from a gas and liquid set
-    reaction_set = chemBuilder.build_set(gas='GasChem2', liquid='LiquidChem2')
+    # LiquidChem2 adds CH3ONO2L, but GasChem2 doesn't have CH3ONO2, so we must
+    # add it
+    reaction_set = chemBuilder.build_set(gas='GasChem2', liquid='LiquidChem2',
+                                         extra_species=['CH3ONO2'])
     reaction_set.write_file('chem.inp')
     
     # Convert the chemistry file from CHEMKIN format to OpenFOAM format

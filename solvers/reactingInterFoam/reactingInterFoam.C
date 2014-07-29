@@ -22,14 +22,13 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    ICRFoam
+    reactingInterFoam
 
 Description
     Solver for 2 reacting fluids, one compressible, which captures the 
-    interfaces and includes surface-tension and contact-angle effects 
-    for each phase.
+    interfaces and includes surface-tension.
 
-    Turbulence modelling is generic, i.e. laminar, RAS or LES may be selected.
+    Turbulence modeling is generic, i.e. laminar, RAS or LES may be selected.
 
 \*---------------------------------------------------------------------------*/
 
@@ -53,14 +52,14 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "readTimeControls.H"
 
-    scalar maxVolSource = 0.0;
-    scalar MaxFo = 0.0;
     scalar totalMass = 0.0;
     scalar massError = 0.0;
-    scalar volSourceLimit =
-        runTime.controlDict().lookupOrDefault<scalar>("volSourceLimit", 1e-2);
 
-    word clipDir = runTime.controlDict().lookupOrDefault<word>("clipDirection","none");
+    word clipDir = runTime.controlDict().lookupOrDefault<word>
+    (
+        "clipDirection",
+        "none"
+    );
 
     pimpleControl pimple(mesh);
     volScalarField divU(fvc::div(phi));
@@ -79,38 +78,6 @@ int main(int argc, char *argv[])
         #include "alphaCourantNo.H"
         #include "CourantNo.H"
         #include "setDeltaT.H"
-
-        //Limit deltaT based on maxVolSource
-        if (adjustTimeStep)
-        {
-            //scalar maxVolDeltaT = maxDeltaT;
-
-            //if( mag(maxVolSource) > SMALL )
-            //    maxVolDeltaT = volSourceLimit / (mag(maxVolSource));
-
-
-            if( MaxFo > 0.4 )
-            {
-                runTime.setDeltaT
-                (
-                    runTime.deltaTValue() * 0.4 / MaxFo
-                );
-            }
-                
-            //Info<< "Source*dT = " << mag(maxVolSource)*runTime.deltaTValue() 
-            //    << endl;
-
-            /*runTime.setDeltaT
-            (
-                min
-                (
-                    runTime.deltaTValue(),
-                    maxVolDeltaT
-                )
-            );*/
-
-            Info<< "Fo-limited deltaT = " << runTime.deltaTValue() << endl;
-        }
 
         runTime++;
         
@@ -150,7 +117,7 @@ int main(int argc, char *argv[])
         {
             // --- Phase-Pressure-Velocity PIMPLE corrector loop
             Info<<"Solving alpha transport equations"<<endl;
-            MaxFo = mixture.solve( rho, pimple.corr() );
+            mixture.solve( rho, pimple.corr() );
 
             dQ = combustion->dQ() + mixture.dQ_phaseChange();
 

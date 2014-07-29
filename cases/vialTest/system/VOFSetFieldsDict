@@ -24,7 +24,7 @@ vaporPhaseName   alphaVapor;
 
 shapes
 (
-    DropNA
+    DropRFNA
     {
         alphaName alphaLiquid;
         
@@ -32,7 +32,7 @@ shapes
         
         ellipsoidCoeffs
         {
-            center   (0 0.005 0.0032);
+            center   (0 0.005 0.004);
             radius   (0 0.001 0.001);
         }
         

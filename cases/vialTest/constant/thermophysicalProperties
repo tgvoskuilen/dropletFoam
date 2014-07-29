@@ -26,38 +26,43 @@ foamChemistryThermoFile "$FOAM_CASE/constant/thermo";
 // Phase volume fraction tolerance for diffusion mask
 phaseMaskTol 0.01;
 
+// Phase smoother settings
+nSmootherIters  5;
+smootherSharpening 0.05;
+
 Vapor
 {
    SchmidtNo  0.9;
    
    subspecies
    (
-        CH3ONO2      {}
-        MMHN         {}
+        CH2O         {}
+        CH3          {}
         CH3NHNH2     {}
-        CH3NNH2      {}
-        CH3NNH       {}
         CH3NN        {}
+        CH3NNH       {}
+        CH3NNH2      {}
+        CH3O         {}
+        CH3OH        {}
+        CH3ONO2      {}
+        CO           {}
+        CO2          {}
         H            {}
         H2           {}
-        O2           {}
         H2O          {}
-        CO2          {}
-        CO           {}
-        N2           {}
-        NO2          {}
-        NO           {}
-        HONO         {}
-        OH           {}
-        O            {}
-        HO2          {}
-        CH3O         {}
-        CH3          {}
-        CH2O         {}
-        CH3OH        {}
         HCO          {}
         HNO          {}
         HNO3         {}
+        HO2          {}
+        HONO         {}
+        MMHN-3HNO3   {}
+        N2           {}
+        N2O4         {}
+        NO           {}
+        NO2          {}
+        O            {}
+        O2           {}
+        OH           {}
    );
 }
 
@@ -152,6 +157,10 @@ Liquid
    );
 }
 
+noVaporPairs
+(
+    (CH3NHNH2L HNO3L)
+);
 
 
 phaseChangeReactions
