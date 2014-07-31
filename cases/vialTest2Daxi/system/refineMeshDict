@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.1.1                                 |
+|  \\    /   O peration     | Version:  2.1.x                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -11,52 +11,33 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      controlDict;
+    object      refineMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     reactingInterFoam;
+set             refineSet;
 
-startFrom       latestTime;
+coordinateSystem global;
 
-startTime       0;
+globalCoeffs
+{
+    tan1            ( 1 0 0 );
+    tan2            ( 0 1 0 );
+}
 
-stopAt          endTime;
+patchLocalCoeffs
+{
+    patch           outside;
+    tan1            ( 1 0 0 );
+}
 
-endTime         1.5e-2;
+directions      ( tan1 tan2 );
 
-deltaT          1e-8;
+useHexTopology  no;
 
-writeControl    adjustableRunTime; //timeStep
+geometricCut    yes;
 
-writeInterval   5e-5;
+writeMesh       no;
 
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  7;
-
-writeCompression compressed;
-
-timeFormat      general;
-
-timePrecision   7;
-
-runTimeModifiable yes;
-
-adjustTimeStep  yes;
-
-maxCo           0.5;
-maxAlphaCo      0.5;
-
-maxDeltaT       1;
-
-clipDirection   x;
-
-libs
-(
-    "libdynamicFvMesh-dev.so"
-);
 
 // ************************************************************************* //

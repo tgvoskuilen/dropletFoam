@@ -23,13 +23,13 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         1.5e-2;
+endTime         5e-3;
 
 deltaT          1e-8;
 
-writeControl    adjustableRunTime; //timeStep
+writeControl    adjustableRunTime;
 
-writeInterval   5e-5;
+writeInterval   1e-6;
 
 purgeWrite      0;
 
@@ -51,8 +51,6 @@ maxCo           0.5;
 maxAlphaCo      0.5;
 
 maxDeltaT       1;
-
-clipDirection   x;
 
 libs
 (

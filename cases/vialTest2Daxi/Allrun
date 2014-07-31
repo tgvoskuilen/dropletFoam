@@ -1,0 +1,80 @@
+#!/usr/local/bin/python
+
+# Custom Python Allrun script. Run with number of processors as an input, as
+#  ./Allrun 16
+#
+# Or with no processors input for a serial run, as
+#  ./Allrun
+#
+# To resume a parallel run that was stopped while preserving .out files, use
+#  ./Allrun resume
+#
+
+import os
+import sys
+
+toolPath = '../../../foamTools/python'
+propPath = '../../utilities/properties'
+chemPath = '../../utilities/chemistrySets'
+
+sys.path.append(toolPath)
+sys.path.append(chemPath)
+
+import pyOpenFOAM   # from foamTools/python
+import chemBuilder  # from dropletFoam/utilities/chemistrySets
+
+
+# Read number of processors from command line (1 by default)
+(np,resume) = pyOpenFOAM.read_inputs(sys.argv)
+
+if not resume:
+    print "Running with %d processors" % np
+
+    # Create the chemistry input file from a gas and liquid set
+    reaction_set = chemBuilder.build_set(gas='GasChem2', liquid='LiquidChem2')
+    reaction_set.write_file('chem.inp')
+    
+    # Convert the chemistry file from CHEMKIN format to OpenFOAM format
+    pyOpenFOAM.convert_chemistry(propPath)
+
+    # Add all gas species to "subSpecies" list in the "Vapor" phase
+    pyOpenFOAM.add_species_to_thermo_dict(reaction_set.species)
+
+    # Write the thermo file based on the species list
+    pyOpenFOAM.write_thermo(reaction_set.species,propPath)
+
+    # Make the *.foam file for ParaView
+    pyOpenFOAM.touch_foam_files('vial')
+
+    # Make the 0 folder
+    os.system('cp -r 0.org 0')
+
+    # Generate the initial mesh
+    print "Generating blockMesh"
+    pyOpenFOAM.run('blockMesh')
+
+    # Statically refine the mesh along the drop/pool path
+    pyOpenFOAM.run('topoSet',args='-dict system/topoSetDict.0')
+    pyOpenFOAM.run('refineMesh',args='-overwrite -dict')
+    
+    if np > 1:
+        # For parallel runs, decompose the problem
+        print "Decomposing problem"
+        pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+        pyOpenFOAM.set_balance_par(np)
+        pyOpenFOAM.run('decomposePar',args='-cellDist')
+
+    print "Setting final field values"
+    pyOpenFOAM.run('VOFSetFields',np)
+
+
+# Run the problem
+print "Running the problem"
+if np > 1:
+    os.system('foamJob -parallel -screen reactingInterFoam')
+else:
+    pyOpenFOAM.run('reactingInterFoam',hide=False,logName='log')
+
+print "Finished!"
+
+

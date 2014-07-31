@@ -10,53 +10,12 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      controlDict;
+    location    "constant";
+    object      turbulenceProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     reactingInterFoam;
+simulationType  laminar; //LESModel; //laminar;
 
-startFrom       latestTime;
-
-startTime       0;
-
-stopAt          endTime;
-
-endTime         1.5e-2;
-
-deltaT          1e-8;
-
-writeControl    adjustableRunTime; //timeStep
-
-writeInterval   5e-5;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  7;
-
-writeCompression compressed;
-
-timeFormat      general;
-
-timePrecision   7;
-
-runTimeModifiable yes;
-
-adjustTimeStep  yes;
-
-maxCo           0.5;
-maxAlphaCo      0.5;
-
-maxDeltaT       1;
-
-clipDirection   x;
-
-libs
-(
-    "libdynamicFvMesh-dev.so"
-);
 
 // ************************************************************************* //

@@ -9,54 +9,38 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      controlDict;
+    class       volScalarField;
+    object      p;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     reactingInterFoam;
+dimensions      [1 -1 -2 0 0 0 0];
 
-startFrom       latestTime;
+internalField   uniform 0;
 
-startTime       0;
+boundaryField
+{
+    atmosphere
+    {
+        type            totalPressure;
+        p0              uniform 0;
+        U               U;
+        phi             phi;
+        rho             rho;
+        psi             none;
+        gamma           1;
+        value           uniform 0;
+    }
 
-stopAt          endTime;
-
-endTime         1.5e-2;
-
-deltaT          1e-8;
-
-writeControl    adjustableRunTime; //timeStep
-
-writeInterval   5e-5;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  7;
-
-writeCompression compressed;
-
-timeFormat      general;
-
-timePrecision   7;
-
-runTimeModifiable yes;
-
-adjustTimeStep  yes;
-
-maxCo           0.5;
-maxAlphaCo      0.5;
-
-maxDeltaT       1;
-
-clipDirection   x;
-
-libs
-(
-    "libdynamicFvMesh-dev.so"
-);
+    walls
+    {
+        type            buoyantPressure;
+        value           uniform 1e5;
+    }
+    
+    axis { type empty; }
+    wedge_pos { type wedge; }
+    wedge_neg { type wedge; }
+}
 
 // ************************************************************************* //

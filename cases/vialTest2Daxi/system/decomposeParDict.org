@@ -11,52 +11,18 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      controlDict;
+    object      decomposeParDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     reactingInterFoam;
+numberOfSubdomains NUMPROCS;
 
-startFrom       latestTime;
+method          DECOMPOSEPAR_METHOD;
 
-startTime       0;
-
-stopAt          endTime;
-
-endTime         1.5e-2;
-
-deltaT          1e-8;
-
-writeControl    adjustableRunTime; //timeStep
-
-writeInterval   5e-5;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  7;
-
-writeCompression compressed;
-
-timeFormat      general;
-
-timePrecision   7;
-
-runTimeModifiable yes;
-
-adjustTimeStep  yes;
-
-maxCo           0.5;
-maxAlphaCo      0.5;
-
-maxDeltaT       1;
-
-clipDirection   x;
-
-libs
-(
-    "libdynamicFvMesh-dev.so"
-);
+simpleCoeffs
+{
+    n       ( 1 VALUE1 VALUE2 );
+    delta   0.001;
+}
 
 // ************************************************************************* //
