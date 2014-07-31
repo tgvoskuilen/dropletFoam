@@ -60,7 +60,7 @@ if not resume:
     if np > 1:
         # For parallel runs, decompose the problem
         print "Decomposing problem"
-        pyOpenFOAM.set_decompose_par(np,"simple",1) #aspect ratio = 1 H/W
+        pyOpenFOAM.set_decompose_par(np,"scotch")
         pyOpenFOAM.set_balance_par(np)
         pyOpenFOAM.run('decomposePar',args='-cellDist')
 
