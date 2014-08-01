@@ -221,7 +221,7 @@ public:
             const volScalarField& T
         ) const;
         
-        tmp<volScalarField> Cp
+        tmp<volScalarField> Cv
         (
             const volScalarField& p, 
             const volScalarField& T

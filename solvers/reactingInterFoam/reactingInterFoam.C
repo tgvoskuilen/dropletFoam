@@ -22,12 +22,12 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    ICRFoam
+    reactingInterFoam
 
 Description
     Solver for 2 reacting fluids, one compressible, which captures the 
     interfaces and includes surface-tension and contact-angle effects 
-    for each phase.
+    for each phase. Sub-species for each phase are tracked separately.
 
     Turbulence modelling is generic, i.e. laminar, RAS or LES may be selected.
 

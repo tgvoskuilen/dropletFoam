@@ -15,7 +15,16 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-thermoType hsTwophaseMixtureThermo<reactingMixture<gasThermoPhysics>>;
+thermoType
+{
+    type            heTwophaseMixtureThermo;
+    mixture         reactingMixture;
+    transport       sutherland;
+    thermo          janaf;
+    energy          sensibleEnthalpy;
+    equationOfState perfectGas;
+    specie          specie;
+}
 
 chemistryReader foamChemistryReader;
 

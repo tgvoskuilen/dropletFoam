@@ -290,8 +290,8 @@ public:
             //- Get the total phase change heat generation
             tmp<volScalarField> dQ_phaseChange() const;
             
-            tmp<volScalarField> kByCp(const volScalarField& muEff) const;
-            tmp<volScalarField> rCp() const;
+            tmp<volScalarField> kByCv(const volScalarField& muEff) const;
+            tmp<volScalarField> rCv() const;
             
             void setHE();
 };

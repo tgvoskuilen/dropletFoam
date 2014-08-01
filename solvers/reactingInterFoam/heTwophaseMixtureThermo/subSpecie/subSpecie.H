@@ -261,14 +261,14 @@ public:
             return dimensionedScalar("R", dimensionSet(1, 2, -2, -1, -1), thermo_.RR);
         }
         
-        tmp<scalarField> Cp
+        tmp<scalarField> Cv
         (
             const scalarField& p,
             const scalarField& T,
             const label patchi
         ) const;
         
-        tmp<volScalarField> Cp
+        tmp<volScalarField> Cv
         (
             const volScalarField& p,
             const volScalarField& T

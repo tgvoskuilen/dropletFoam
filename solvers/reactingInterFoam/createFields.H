@@ -110,7 +110,7 @@
 
     // Set the turbulence into the combustion model
     reaction->setTurbulence(turbulence());
-
+    const surfaceScalarField& rhoPhi = mixture.rhoPhi();
 
     #include "readGravitationalAcceleration.H"
 

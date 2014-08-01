@@ -15,7 +15,11 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-rhoChemistryModel  ODEChemistryModel<gasThermoPhysics>;
+chemistryType
+{
+    chemistrySolver   ode;
+    chemistryThermo   rho;
+}
 
 chemistry           on;
 

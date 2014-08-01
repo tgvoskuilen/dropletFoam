@@ -27,7 +27,7 @@ boundaryField
     
     walls
     {
-        type            muSgsUSpaldingWallFunction;
+        type            mutUSpaldingWallFunction;
         value           uniform 1e-11;
     }
 

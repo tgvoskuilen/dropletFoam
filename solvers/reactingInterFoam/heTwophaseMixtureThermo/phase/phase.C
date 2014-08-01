@@ -1255,28 +1255,28 @@ void Foam::phase::calculateDs
 }*/
 
 
-// Calculate phase specific heat using subspecie Cp model, which calls the
+// Calculate phase specific heat using subspecie Cv model, which calls the
 // underlying thermo model for each specie (Janaf table)
 // Where the phase is trace (Yp < 1e-4) the Cv is just the average of the
 // phase's subspecies, otherwise it is weighted by mass fraction
-Foam::tmp<Foam::volScalarField> Foam::phase::Cp
+Foam::tmp<Foam::volScalarField> Foam::phase::Cv
 (
     const volScalarField& p,
     const volScalarField& T
 ) const
 {
-    tmp<volScalarField> tCp
+    tmp<volScalarField> tCv
     (
         new volScalarField
         (
             IOobject
             (
-                "tCp"+name_,
+                "tCv"+name_,
                 mesh().time().timeName(),
                 mesh()
             ),
             mesh(),
-            dimensionedScalar("Cp",dimEnergy/dimMass/dimTemperature,SMALL)
+            dimensionedScalar("Cv",dimEnergy/dimMass/dimTemperature,SMALL)
         )
     );
     
@@ -1289,12 +1289,12 @@ Foam::tmp<Foam::volScalarField> Foam::phase::Cp
     
     forAllConstIter(PtrDictionary<subSpecie>, subSpecies_, specieI)
     {
-        tCp() += ( mask1()*specieI().Y() + mask2() )*specieI().Cp(p,T);
+        tCv() += ( mask1()*specieI().Y() + mask2() )*specieI().Cv(p,T);
     }
     
-    tCp().correctBoundaryConditions();
+    tCv().correctBoundaryConditions();
     
-    return tCp;
+    return tCv;
 }
 
 // Returns a sharpened version of the phase volume fraction
